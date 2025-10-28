@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    # name: Check the source code
+    name: Check the source code
     runs-on: ubuntu-latest # 최신 Ubuntu 환경에서 실행
 
     steps:
