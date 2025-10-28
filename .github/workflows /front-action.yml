@@ -1,4 +1,4 @@
-name: Check the source code
+name: react code style check
 
 # push 또는 pull_request 이벤트가 발생할 때 실행됩니다.
 on:

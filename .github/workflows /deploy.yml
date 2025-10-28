@@ -1,0 +1,65 @@
+name: deploy react app
+
+on:
+  workflow_run:
+    # ❗️ (주의) "React CI"는 React 프로젝트의 린트/테스트 CI 워크플로 이름으로 변경해야 합니다.
+    workflows: ["react code style check"]
+    types:
+      - completed
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    name: Build React and Deploy to EC2
+    runs-on: ubuntu-latest
+    
+    if: github.event.workflow_run.conclusion == 'success'
+
+    steps:
+      # 1. 레포지토리 코드 체크아웃
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 2. Node.js 환경 설정
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # 3. 의존성 설치 및 React 앱 '빌드' (Next.js/Remix 등)
+      - name: Install and Build
+        run: |
+          npm ci
+          npm run build  # (예: next build)
+
+      # 4. 배포 패키지(zip) 생성 (node_modules, .git 등 제외)
+      - name: Create deployment package
+        run: |
+          # npm ci가 아닌, npm install --production을 EC2에서 직접 실행할 것이므로
+          # node_modules는 제외하고 압축합니다.
+          zip -r app.zip . -x ".git*" ".github/*" "node_modules/*"
+
+      # 5. AWS 자격 증명 설정
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # 6. zip 파일을 S3 버킷에 업로드
+      - name: Upload package to S3
+        run: |
+          aws s3 cp app.zip s3://${{ secrets.S3_BUCKET }}/react-ssr-app/app.zip
+
+      # 7. AWS CodeDeploy 배포 생성
+      - name: Create CodeDeploy Deployment
+        run: |
+          aws deploy create-deployment \
+            --application-name ${{ secrets.CODEDEPLOY_APP_NAME }} \
+            --deployment-group-name ${{ secrets.CODEDEPLOY_DEPLOYMENT_GROUP_NAME }} \
+            --s3-location bucket=${{ secrets.S3_BUCKET }},key=react-ssr-app/app.zip,bundleType=zip \
+            --description "React SSR Deployment from GitHub Actions" \
+            --ignore-application-stop-failures
