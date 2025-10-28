@@ -17,7 +17,7 @@ echo "Starting React SSR (Node.js) server using pm2..."
 # 'react-app'이라는 이름으로 'npm start' 명령어를 실행합니다.
 # (예: "start": "next start")
 
-pm2 start npm --name "react-app" -- start
+pm2 start npm --name "react-app" -- run build
 
 # (참고) 만약 'npm start'가 아니라 build/server.js 등을 직접 실행해야 한다면:
 # pm2 start build/server.js --name "react-app"
