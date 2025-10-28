@@ -26,6 +26,13 @@ echo "--- END DEBUG INFO ---"
 APP_DIR="/home/ubuntu/app"
 # (폴더가 없으면 생성)
 mkdir -p $APP_DIR
+cd $APP_DIR
+
+# 3. 임시 폴더에서 package.json 파일들을 '현재 위치'(APP_DIR)로 복사
+echo "Copying package.json files from $ARCHIVE_ROOT..."
+cp "$ARCHIVE_ROOT/package.json" .
+cp "$ARCHIVE_ROOT/package-lock.json" .
+
 
 # 4. (핵심) 임시 폴더(ARCHIVE_ROOT)에서 package.json 파일들을 복사해옴
 #    'Install' 훅(hook)은 아직 실행 전이므로, 이 스크립트가
