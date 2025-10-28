@@ -9,16 +9,17 @@
 # --- (필수) 스크립트 자신의 위치를 기준으로 '루트 폴더' 찾기 ---
 # $BASH_SOURCE[0]는 이 스크립트 파일의 전체 경로를 의미합니다.
 # 1. 스크립트 파일이 있는 디렉토리 (예: /opt/.../deploy)
-# SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 # 2. 그 상위 디렉토리 (압축이 풀린 루트, /opt/.../deployment-archive)
-# ARCHIVE_ROOT=$( dirname "$SCRIPT_DIR" )
+ARCHIVE_ROOT=$( dirname "$SCRIPT_DIR" )
 # ---
+set -e
 
 # (디버깅용)
-# echo "--- DEBUG INFO (install_dependencies.sh) ---"
-# echo "SCRIPT_DIR is: $SCRIPT_DIR"
-# echo "ARCHIVE_ROOT is: $ARCHIVE_ROOT"
-# echo "--- END DEBUG INFO ---"
+echo "--- DEBUG INFO (install_dependencies.sh) ---"
+echo "SCRIPT_DIR is: $SCRIPT_DIR"
+echo "ARCHIVE_ROOT is: $ARCHIVE_ROOT"
+echo "--- END DEBUG INFO ---"
 
 
 # 3. 최종 배포 디렉토리로 이동
