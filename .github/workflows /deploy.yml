@@ -2,7 +2,6 @@ name: deploy react app
 
 on:
   workflow_run:
-    # ❗️ (주의) "React CI"는 React 프로젝트의 린트/테스트 CI 워크플로 이름으로 변경해야 합니다.
     workflows: ["react code style check"]
     types:
       - completed
