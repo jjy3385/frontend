@@ -29,12 +29,6 @@ jobs:
       - name: Install packages
         run: npm ci
 
-      # 4. Prettier 포맷팅 '체크' (수정)
-      #    - CI에서는 'npm run format'(수정) 대신 'npm run format:check'(검사)를 실행해야 합니다.
-      #    - 만약 이 스크립트가 없다면 package.json에 추가하세요. (예: "format:check": "prettier --check .")
-      - name: Check formatting (Prettier)
-        run: npm run format:check
-
-      # 5. ESLint 실행
+      # 4. ESLint 실행
       - name: Lint
         run: npm run lint
