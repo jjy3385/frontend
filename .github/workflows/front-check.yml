@@ -21,8 +21,8 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
 
       # 3. 의존성 패키지 설치 (npm ci 사용 권장)
       #    (ci는 package-lock.json을 기반으로 정확한 버전을 설치합니다.)
