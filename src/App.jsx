@@ -7,7 +7,6 @@ import CreatePostPage from './pages/CreatePostPage';
 import RegisterPage from './pages/RegisterPage';
 
 function App() {
-  
   return (
     // 🔑 배경색 변경, 폰트 적용
     <div className="min-h-screen flex flex-col items-center bg-gray-100 font-sans"> 
