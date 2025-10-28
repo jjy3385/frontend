@@ -16,6 +16,7 @@ const HomePage = () => {
   const [totalPage, setTotalPage] = useState(1);
   const { user, token } = useAuth();
   const navigate = useNavigate();
+  const name = "";
 
 
 const fetchPosts = async () => {
