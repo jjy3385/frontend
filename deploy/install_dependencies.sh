@@ -43,6 +43,5 @@ echo "Copying package.json files from $ARCHIVE_ROOT..."
 #    (GitHub Actions에서 이미 'npm ci'와 'npm run build'를 실행했음)
 echo "Installing production dependencies (npm install --production)..."
 npm install --production
-npm ci
 
 echo "Dependency installation complete."
