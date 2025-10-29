@@ -11,4 +11,4 @@ echo "Stopping Node.js server (pm2)..."
 pm2 stop react-app || true
 pm2 delete react-app || true
 
-echo "Server stop command executed."
+echo "Life Cycle - ApplicationStop: Server stop command executed."
