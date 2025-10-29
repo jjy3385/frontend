@@ -6,7 +6,6 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 # 2. 그 상위 디렉토리 (압축이 풀린 루트, /opt/.../deployment-archive)
 ARCHIVE_ROOT=$( dirname "$SCRIPT_DIR" )
 # ---
-set -e
 
 # 3. 최종 배포 디렉토리로 이동
 APP_DIR="/home/ubuntu/app"
@@ -19,6 +18,8 @@ fi
 echo "Created directory: $APP_DIR"
 mkdir -p $APP_DIR
 cd $APP_DIR
+
+npm install vite
 
 # 3. 임시 폴더에서 package.json 파일들을 '현재 위치'(APP_DIR)로 복사
 echo "Copying package.json files from $ARCHIVE_ROOT..."
