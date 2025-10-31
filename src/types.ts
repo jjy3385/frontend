@@ -96,3 +96,31 @@ export interface Project {
   reviewerId?: string
   ownerId?: string
 }
+
+// API 응답 타입 추가
+export interface ApiProjectIssue {
+  issue_id: string
+  editor_id: string
+}
+
+export interface ApiProjectSegment {
+  segment_id: string
+  segment_text: string
+  score: number
+  start_point: number
+  end_point: number
+  editor_id: string
+  translate_context: string
+  sub_langth: number
+  issues: ApiProjectIssue[]
+}
+
+export interface ApiProject {
+  _id: string
+  video_source: string
+  audio_source: string
+  created_at: string
+  updated_at: string
+  editor_id: string
+  segments: ApiProjectSegment[]
+}

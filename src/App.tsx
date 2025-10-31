@@ -1,109 +1,62 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ProjectCard } from './components/ProjectCard'
 import { ProcessingDashboard } from './components/ProcessingDashboard'
 import { Button } from './components/ui/button'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from './components/ui/select'
-import {
-  TranslatorAssignments,
-  type TranslatorAssignment,
-} from './components/TranslatorAssignments'
-import { TranslatorEditorShell } from './components/TranslatorEditorShell'
 import { Plus, Video } from 'lucide-react'
 import { Toaster } from './components/ui/sonner'
-import type { Project } from './types'
+import type { ApiProject, Project } from './types'
 import { CreateProjectModal } from './features/projects/components/CreateProjectModal'
 import { useCreateProjectModal } from './features/projects/hooks/useCreateProjectModal'
 
+//  API 스키마 / UI 스키마 매핑
+function mapApiProject(api: ApiProject): Project {
+  const fileName = api.video_source.split('/').pop() ?? api._id
+  const displayName = fileName.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ')
+
+  return {
+    id: api._id,
+    name: displayName,
+    status: 'processing',
+    uploadProgress: 0,
+    createdAt: new Date(api.created_at).toLocaleString('ko-KR'),
+    languages: [
+      {
+        code: 'default',
+        name: '기본',
+        subtitle: true,
+        dubbing: true,
+        progress: Math.round(
+          api.segments.length > 0
+            ? (api.segments.filter((s) => s.score >= 0.9).length / api.segments.length) * 100
+            : 0
+        ),
+        status: 'processing',
+        translatorId: api.editor_id,
+        translator: api.editor_id,
+      },
+    ],
+  }
+}
+
 export default function App() {
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
+  if (!API_BASE_URL) {
+    throw new Error('환경 변수 VITE_API_BASE_URL이 설정되지 않았습니다.')
+  }
+
   const [viewMode, setViewMode] = useState<'owner' | 'translator'>('owner')
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
-  const [projects, setProjects] = useState<Project[]>([
-    {
-      id: '1',
-      name: 'product_demo_final.mp4',
-      languages: [
-        {
-          code: 'en',
-          name: 'English',
-          subtitle: true,
-          dubbing: true,
-          progress: 100,
-          status: 'completed',
-          translator: 'Emily Carter',
-        },
-        {
-          code: 'ja',
-          name: '日本語',
-          subtitle: true,
-          dubbing: false,
-          progress: 100,
-          status: 'completed',
-          translator: 'Aiko Tanaka',
-        },
-      ],
-      status: 'completed',
-      uploadProgress: 100,
-      createdAt: '2025-10-24 14:30',
-    },
-  ])
-
-  const translatorNames = useMemo(() => {
-    const names = new Set<string>()
-    projects.forEach((project) => {
-      project.languages.forEach((lang) => {
-        if (lang.translator) {
-          names.add(lang.translator)
-        }
-      })
-    })
-    return Array.from(names)
-  }, [projects])
-  const [selectedTranslator, setSelectedTranslator] = useState<string>(
-    () => translatorNames[0] ?? ''
-  )
+  const [projects, setProjects] = useState<Project[]>([])
 
   useEffect(() => {
-    if (translatorNames.length === 0) {
-      setSelectedTranslator('')
-    } else if (!translatorNames.includes(selectedTranslator)) {
-      setSelectedTranslator(translatorNames[0])
+    async function loadProjects() {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/projects`)
+      const data: ApiProject[] = await res.json()
+      setProjects(data.map(mapApiProject))
     }
-  }, [translatorNames, selectedTranslator])
 
-  const translatorAssignments = useMemo<TranslatorAssignment[]>(
-    () =>
-      projects.flatMap((project) =>
-        project.languages
-          .filter((lang) => lang.translator === selectedTranslator)
-          .map((lang) => ({
-            projectId: project.id,
-            projectName: project.name,
-            languageCode: lang.code,
-            languageName: lang.name,
-            status: lang.status,
-            progress: lang.progress,
-            translator: lang.translator ?? '',
-            isDubbing: lang.dubbing,
-          }))
-      ),
-    [projects, selectedTranslator]
-  )
-  const [activeTranslatorAssignment, setActiveTranslatorAssignment] =
-    useState<TranslatorAssignment | null>(null)
-  useEffect(() => {
-    if (
-      activeTranslatorAssignment &&
-      activeTranslatorAssignment.translator !== selectedTranslator
-    ) {
-      setActiveTranslatorAssignment(null)
-    }
-  }, [activeTranslatorAssignment, selectedTranslator])
+    loadProjects()
+  }, [])
 
   const createProjectModal = useCreateProjectModal({
     async onSubmit() {
@@ -114,15 +67,6 @@ export default function App() {
   const handleProjectUpdate = (updated: Project) => {
     setProjects((prev) => prev.map((project) => (project.id === updated.id ? updated : project)))
     setSelectedProject(updated)
-  }
-
-  if (activeTranslatorAssignment) {
-    return (
-      <TranslatorEditorShell
-        assignment={activeTranslatorAssignment}
-        onBack={() => setActiveTranslatorAssignment(null)}
-      />
-    )
   }
 
   if (selectedProject && viewMode === 'owner') {
@@ -167,8 +111,8 @@ export default function App() {
                 variant={viewMode === 'translator' ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => {
-                  setViewMode('translator')
-                  setSelectedProject(null)
+                  // setViewMode('translator')
+                  // setSelectedProject(null)
                 }}
               >
                 번역가 모드
@@ -186,25 +130,7 @@ export default function App() {
               <p className="text-sm text-gray-600">
                 담당 번역가별로 할당된 작업을 확인하고 편집할 수 있습니다.
               </p>
-              {translatorNames.length > 0 ? (
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-gray-500">번역가 선택</span>
-                  <Select value={selectedTranslator} onValueChange={setSelectedTranslator}>
-                    <SelectTrigger className="w-[200px]">
-                      <SelectValue placeholder="번역가 선택" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {translatorNames.map((name) => (
-                        <SelectItem key={name} value={name}>
-                          {name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              ) : (
-                <p className="text-xs text-gray-500">아직 번역가에게 할당된 작업이 없습니다.</p>
-              )}
+              {<p className="text-xs text-gray-500">아직 번역가에게 할당된 작업이 없습니다.</p>}
             </div>
           )}
         </div>
@@ -240,10 +166,10 @@ export default function App() {
           )
         ) : (
           <div className="space-y-6">
-            <TranslatorAssignments
+            {/* <TranslatorAssignments
               assignments={translatorAssignments}
               onOpenAssignment={setActiveTranslatorAssignment}
-            />
+            /> */}
           </div>
         )}
       </main>
