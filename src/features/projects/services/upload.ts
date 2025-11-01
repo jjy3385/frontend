@@ -3,6 +3,7 @@ import {
   type CreateProjectResponse,
   type CreateProjectPayload,
   type FinUploadPayload,
+  type FinishUploadResponse,
 } from '../types/createProject'
 import { handleResponse } from '@/lib/http'
 import type { Project } from '@/types'
@@ -36,9 +37,10 @@ export const uploadFile = async (upload_url: string, formData: FormData) => {
 export const finishUpload = async (p: FinUploadPayload) => {
   const res = await fetch(getApiUrl('/api/storage/finish-upload'), {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', credentials: 'include' },
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
     body: JSON.stringify(p),
   })
 
-  return handleResponse<Project>(res)
+  return handleResponse<FinishUploadResponse>(res)
 }
