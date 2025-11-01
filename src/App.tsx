@@ -19,6 +19,8 @@ import { Toaster } from './components/ui/sonner'
 import type { Project } from './types'
 import { CreateProjectModal } from './features/projects/components/CreateProjectModal'
 import { useCreateProjectModal } from './features/projects/hooks/useCreateProjectModal'
+import { finishUpload, getPresignedUrl, uploadFile } from './features/projects/services/upload'
+import { toast } from 'sonner'
 
 export default function App() {
   const [viewMode, setViewMode] = useState<'owner' | 'translator'>('owner')
@@ -105,16 +107,32 @@ export default function App() {
     }
   }, [activeTranslatorAssignment, selectedTranslator])
 
-  const createProjectModal = useCreateProjectModal({
-    async onSubmit() {
-      // TODO: S3 업로드 등 실제 처리를 여기에 작성
-    },
-  })
-
   const handleProjectUpdate = (updated: Project) => {
     setProjects((prev) => prev.map((project) => (project.id === updated.id ? updated : project)))
     setSelectedProject(updated)
   }
+
+  const createProjectModal = useCreateProjectModal({
+    onSubmit: async (p) => {
+      try {
+        const { upload_url, fields, object_key, project_id } = await getPresignedUrl(p)
+
+        const formData = new FormData()
+        Object.entries(fields).forEach(([key, value]) => {
+          formData.append(key, value)
+        })
+        formData.append('file', p.videoFile)
+
+        await uploadFile(upload_url, formData)
+        await finishUpload({ object_key, project_id })
+
+        toast.success('프로젝트 업로드 완료')
+      } catch (error) {
+        toast.error('업로드 중 오류가 발생했습니다.')
+        throw error // 모달 상태를 유지하거나 에러 처리를 계속하려면 필요에 따라 재던지기
+      }
+    },
+  })
 
   if (activeTranslatorAssignment) {
     return (
@@ -142,7 +160,7 @@ export default function App() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b sticky top-0 z-10">
         <div className="max-w-7xl mx-auto px-6 py-4 space-y-3">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div className="flex  gap-3 md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-linear-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
                 <Video className="w-6 h-6 text-white" />
