@@ -70,7 +70,7 @@ export interface Translation {
   original: string
   translated: string
   confidence: number
-  issues: TranslationIssue[]
+  issues?: TranslationIssue[]
   speaker?: string
   segmentDurationSeconds?: number
   originalSpeechSeconds?: number
