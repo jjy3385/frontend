@@ -9,10 +9,11 @@ interface RawProject {
   video_source?: string | null
   created_at?: string
   updated_at?: string
+  progress?: number
 }
 
 const projectStatusMap: Record<string, ProjectStatus> = {
-  upload_ready: 'uploading',
+  upload_ready: 'upload_done',
   uploaded: 'processing',
   done: 'completed',
   failed: 'failed',
@@ -65,7 +66,7 @@ const mapProject = (raw: RawProject): Project => {
     name: derivedName,
     languages,
     status,
-    uploadProgress: status === 'completed' ? 100 : status === 'processing' ? 50 : 0,
+    uploadProgress: raw.progress,
     createdAt: formatDateTime(raw.created_at),
   }
 }

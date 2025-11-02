@@ -12,7 +12,7 @@ interface ProjectCardProps {
 
 const getProjectStatusLabel = (status: string) => {
   switch (status) {
-    case 'uploading':
+    case 'upload_done':
       return '업로드 중'
     case 'processing':
       return '처리 중'
@@ -27,7 +27,7 @@ const getProjectStatusLabel = (status: string) => {
 
 const getProjectStatusStyle = (status: string) => {
   switch (status) {
-    case 'uploading':
+    case 'upload_done':
       return 'bg-blue-100 text-blue-700'
     case 'processing':
       return 'bg-yellow-100 text-yellow-700'
@@ -79,13 +79,13 @@ export function ProjectCard({ project, onClick }: ProjectCardProps) {
             <span className={`text-xs px-2 py-1 rounded ${getProjectStatusStyle(project.status)}`}>
               {getProjectStatusLabel(project.status)}
             </span>
-            {(project.status === 'uploading' || project.status === 'processing') && (
+            {(project.status === 'upload_done' || project.status === 'processing') && (
               <span className="text-xs text-gray-500">
                 {clampProgress(project.uploadProgress).toFixed(0)}%
               </span>
             )}
           </div>
-          {(project.status === 'uploading' || project.status === 'processing') && (
+          {(project.status === 'upload_done' || project.status === 'processing') && (
             <Progress value={clampProgress(project.uploadProgress)} />
           )}
         </div>
