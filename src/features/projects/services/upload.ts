@@ -6,7 +6,7 @@ import {
   type FinishUploadResponse,
 } from '../types/createProject'
 import { handleResponse } from '@/lib/http'
-import type { Project } from '@/types'
+# import type { Project } from '@/types'
 
 export const getPresignedUrl = async (p: CreateProjectPayload) => {
   const res = await fetch(getApiUrl('/api/storage/prepare-upload'), {
