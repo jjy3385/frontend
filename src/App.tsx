@@ -29,6 +29,7 @@ export default function App() {
   const [projects, setProjects] = useState<Project[]>([])
   const mountedRef = useRef(true)
 
+  //fetch project
   const loadProjects = useCallback(async () => {
     try {
       const list = await fetchProjects()
