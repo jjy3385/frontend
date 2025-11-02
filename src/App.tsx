@@ -27,15 +27,11 @@ export default function App() {
   const [viewMode, setViewMode] = useState<'owner' | 'translator'>('owner')
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [projects, setProjects] = useState<Project[]>([])
-  const mountedRef = useRef(true)
 
-  //fetch project
   const loadProjects = useCallback(async () => {
     try {
       const list = await fetchProjects()
-      if (mountedRef.current) {
-        setProjects(list)
-      }
+      setProjects(list)
       return list
     } catch (err) {
       console.error('프로젝트 조회 실패', err)
@@ -47,9 +43,6 @@ export default function App() {
     loadProjects().catch(() => {
       // 이미 콘솔에 에러 로그 출력됨
     })
-    return () => {
-      mountedRef.current = false
-    }
   }, [loadProjects])
 
   const translatorNames = useMemo(() => {
@@ -123,7 +116,6 @@ export default function App() {
         await uploadFile(upload_url, formData)
         await finishUpload({ object_key, project_id })
         await loadProjects()
-
         toast.success('프로젝트 업로드 완료')
       } catch (error) {
         toast.error('업로드 중 오류가 발생했습니다.')
