@@ -6,7 +6,7 @@ interface RawProject {
   _id: string
   title?: string
   status?: string
-  s3_key?: string | null
+  video_source?: string | null
   created_at?: string
   updated_at?: string
 }
@@ -58,7 +58,7 @@ const mapProject = (raw: RawProject): Project => {
   const status = mapProjectStatus(raw.status)
   const languages = createDefaultLanguages(status)
 
-  const derivedName = raw.title || raw.s3_key?.split('/').pop() || '새 프로젝트'
+  const derivedName = raw.title || raw.video_source?.split('/').pop() || '새 프로젝트'
 
   return {
     id: raw._id,

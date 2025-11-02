@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ProjectCard } from './components/ProjectCard'
 import { ProcessingDashboard } from './components/ProcessingDashboard'
 import { Button } from './components/ui/button'
@@ -21,39 +21,35 @@ import { CreateProjectModal } from './features/projects/components/CreateProject
 import { useCreateProjectModal } from './features/projects/hooks/useCreateProjectModal'
 import { finishUpload, getPresignedUrl, uploadFile } from './features/projects/services/upload'
 import { toast } from 'sonner'
+import { fetchProjects } from './features/projects/services/projects'
 
 export default function App() {
   const [viewMode, setViewMode] = useState<'owner' | 'translator'>('owner')
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
-  const [projects, setProjects] = useState<Project[]>([
-    {
-      id: '1',
-      name: 'product_demo_final.mp4',
-      languages: [
-        {
-          code: 'en',
-          name: 'English',
-          subtitle: true,
-          dubbing: true,
-          progress: 100,
-          status: 'completed',
-          translator: 'Emily Carter',
-        },
-        {
-          code: 'ja',
-          name: '日本語',
-          subtitle: true,
-          dubbing: false,
-          progress: 100,
-          status: 'completed',
-          translator: 'Aiko Tanaka',
-        },
-      ],
-      status: 'completed',
-      uploadProgress: 100,
-      createdAt: '2025-10-24 14:30',
-    },
-  ])
+  const [projects, setProjects] = useState<Project[]>([])
+  const mountedRef = useRef(true)
+
+  const loadProjects = useCallback(async () => {
+    try {
+      const list = await fetchProjects()
+      if (mountedRef.current) {
+        setProjects(list)
+      }
+      return list
+    } catch (err) {
+      console.error('프로젝트 조회 실패', err)
+      throw err
+    }
+  }, [])
+
+  useEffect(() => {
+    loadProjects().catch(() => {
+      // 이미 콘솔에 에러 로그 출력됨
+    })
+    return () => {
+      mountedRef.current = false
+    }
+  }, [loadProjects])
 
   const translatorNames = useMemo(() => {
     const names = new Set<string>()
@@ -125,6 +121,7 @@ export default function App() {
 
         await uploadFile(upload_url, formData)
         await finishUpload({ object_key, project_id })
+        await loadProjects()
 
         toast.success('프로젝트 업로드 완료')
       } catch (error) {
