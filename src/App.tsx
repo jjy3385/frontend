@@ -84,6 +84,7 @@ export default function App() {
       ),
     [projects]
   )
+
   const [activeTranslatorAssignment, setActiveTranslatorAssignment] =
     useState<TranslatorAssignment | null>(null)
   useEffect(() => {
