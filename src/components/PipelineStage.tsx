@@ -3,13 +3,12 @@ import { Progress } from './ui/progress'
 import { Badge } from './ui/badge'
 import { Button } from './ui/button'
 import { CheckCircle2, Circle, Clock, AlertCircle, Edit } from 'lucide-react'
-
-export type StageStatus = 'pending' | 'processing' | 'completed' | 'failed' | 'review'
+import type { PipelineStatus } from '../types'
 
 interface PipelineStageProps {
   title: string
   description: string
-  status: StageStatus
+  status: PipelineStatus
   progress?: number
   onEdit?: () => void
   showEditButton?: boolean
