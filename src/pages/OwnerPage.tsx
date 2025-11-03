@@ -8,9 +8,11 @@ import { fetchProjects } from '@/features/projects/services/projects'
 import { finishUpload, getPresignedUrl, uploadFile } from '@/features/projects/services/upload'
 import type { Project } from '@/types'
 import { useCallback, useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 
 export default function OwnerPage() {
+  const navigate = useNavigate()
   const [projects, setProjects] = useState<Project[]>([])
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
 
@@ -67,13 +69,15 @@ export default function OwnerPage() {
       />
     )
   }
-
   return (
     <div>
       {/* 헤더, 버튼 등 기존 JSX */}
-      <div className="flex justify-end mb-6">
+      <div className="flex justify-end gap-3 mb-6">
         <Button onClick={createProjectModal.open} className="gap-2">
           새 프로젝트
+        </Button>
+        <Button onClick={() => navigate('/translators/manage')} className="gap-2">
+          번역가 등록
         </Button>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
