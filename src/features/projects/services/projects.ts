@@ -13,10 +13,13 @@ interface RawProject {
 }
 
 const projectStatusMap: Record<string, ProjectStatus> = {
-  upload_ready: 'upload_done',
-  uploaded: 'processing',
-  done: 'completed',
-  failed: 'failed',
+  upload_done: 'upload_done',
+  stt: 'stt',
+  mt: 'mt',
+  tts: 'tts',
+  pack: 'pack',
+  publish: 'publish',
+  done: 'done',
 }
 
 const languageStatusMap: Record<string, LanguageStatus> = {
