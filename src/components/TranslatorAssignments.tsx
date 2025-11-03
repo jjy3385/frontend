@@ -42,7 +42,7 @@ export function TranslatorAssignments({
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {assignments.map((assignment) => (
         <Card
-          key={`${assignment.projectId}-${assignment.languageCode}`}
+          key={`${assignment.projectId}`}
           className="bg-white/80 border border-gray-200 shadow-sm"
         >
           <CardHeader className="pb-3">

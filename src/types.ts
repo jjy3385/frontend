@@ -65,6 +65,7 @@ export interface TermCorrection {
 }
 
 export interface Translation {
+  projectId: string
   id: string
   timestamp: string
   original: string

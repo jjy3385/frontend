@@ -3,8 +3,10 @@ import { Button } from './ui/button'
 import { AdvancedTranslationEditor } from './AdvancedTranslationEditor'
 import type { TranslatorAssignment } from './TranslatorAssignments'
 import { ArrowLeft } from 'lucide-react'
+import { getApiUrl } from '@/config'
 
 interface TranslationEntry {
+  projectId: string
   _id: string
   segment_id: string
   segment_text: string
@@ -73,6 +75,7 @@ export function TranslatorEditorShell({ assignment, onBack }: TranslatorEditorSh
   const editorTranslations = useMemo((): Translation[] => {
     return translations.map((segment) => {
       return {
+        projectId: assignment.projectId,
         id: segment.segment_id,
         timestamp: `${formatTime(segment.start_point)} - ${formatTime(segment.end_point)}`,
         original: segment.segment_text || '',
@@ -88,11 +91,9 @@ export function TranslatorEditorShell({ assignment, onBack }: TranslatorEditorSh
   }, [translations])
 
   useEffect(() => {
-    const apiUrl = 'http://localhost:8000/api/segment/'
-
     const fetchData = async () => {
       try {
-        const response = await fetch(apiUrl)
+        const response = await fetch(getApiUrl(`api/segment/${assignment.projectId}`))
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`)
         }
