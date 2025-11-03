@@ -224,21 +224,6 @@ export function AdvancedTranslationEditor({
       }
     }
   }
-
-  // const handlePreview = (translation: Translation) => {
-  //   setPreviewTranslation(translation)
-  //   setIsPreviewOpen(true)
-  //   setIsPreviewProcessing(true)
-
-  //   if (previewTimerRef.current) {
-  //     window.clearTimeout(previewTimerRef.current)
-  //   }
-
-  //   previewTimerRef.current = window.setTimeout(() => {
-  //     setIsPreviewProcessing(false)
-  //   }, 1200)
-  // }
-
   const handlePreviewOpenChange = (open: boolean) => {
     if (!open) {
       if (previewTimerRef.current) {
@@ -403,7 +388,7 @@ export function AdvancedTranslationEditor({
           <TabsContent value="edit" className="grid grid-cols-1 lg:grid-cols-4 gap-6 m-0">
             {/* 왼쪽: 영상 미리보기 + 이슈 요약 */}
             <div className="lg:col-span-1 space-y-4">
-              <Card className="lg:sticky lg:top-24">
+              <Card>
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base flex items-center gap-2">
                     <MonitorPlay className="w-4 h-4 text-blue-500" />
