@@ -1,16 +1,7 @@
 import type { AuthContextValue, AuthUser } from '@/types'
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from 'react'
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { fetchCurrentUser } from './auth-api'
-
-const AuthContext = createContext<AuthContextValue | undefined>(undefined)
+import { AuthContext } from './AuthContext'
 
 interface AuthProviderProps {
   children: ReactNode
@@ -49,12 +40,4 @@ export function AuthProvider({ children }: AuthProviderProps) {
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
-}
-
-export function useAuth(): AuthContextValue {
-  const ctx = useContext(AuthContext)
-  if (!ctx) {
-    throw new Error('useAuth must be used within an AuthProvider')
-  }
-  return ctx
 }
