@@ -203,9 +203,6 @@ export default function TranslatorManagementPage() {
       <Card>
         <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <CardTitle>번역가 목록</CardTitle>
-          <Button variant="outline" size="sm" onClick={loadTranslators} disabled={isLoading}>
-            새로고침
-          </Button>
         </CardHeader>
         <CardContent>{tableContent}</CardContent>
       </Card>
