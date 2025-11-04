@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from './ui/card'
-import { AlertCircle, Loader2 } from 'lucide-react'
+import { AlertCircle, Link, Loader2 } from 'lucide-react'
 import { Input } from './ui/input'
 import { Label } from './ui/label'
 import { LogIn } from 'lucide-react'
@@ -16,12 +16,24 @@ export const LoginView = () => {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (localStorage.getItem('authToken')) {
-      setError('이미 로그인되어 있습니다.')
-      setIsLoading(false)
-      navigate('/')
+    // HttpOnly 쿠키 방식은 /api/auth/me를 호출하여 상태를 확인합니다.
+    const checkLoginStatus = async () => {
+      try {
+        const response = await fetch(getApiUrl('api/auth/me'), {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+        })
+        if (response.ok) {
+          console.log('이미 로그인된 상태입니다. 메인 페이지로 이동합니다.')
+          navigate('/', { replace: true })
+        }
+      } catch (error) {
+        console.error('자동 로그인 확인 오류:', error)
+      }
     }
-  }, [])
+    checkLoginStatus()
+  }, [navigate])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -29,27 +41,20 @@ export const LoginView = () => {
     setError(null)
 
     try {
-      // --- 실제 API 호출 예시 ---
-      const formData = new URLSearchParams()
-      formData.append('username', email)
-      formData.append('password', password)
-
       const response = await fetch(getApiUrl('api/auth/login'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: formData,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+        credentials: 'include',
       })
       if (!response.ok) {
         throw new Error('로그인에 실패했습니다. 이메일과 비밀번호를 확인해주세요.')
       }
       const data = await response.json()
-      console.log('로그인 성공, 토큰:', data.access_token)
-      if (data.access_token) {
-        localStorage.setItem('authToken', data.access_token)
+      if (!data.message) {
+        throw new Error('서버 응답이 올바르지 않습니다.')
       }
-
-      // onLoginSuccess(data.token)
-      navigate('/')
+      navigate('/', { replace: true })
     } catch (err) {
       setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.')
     } finally {
@@ -127,9 +132,9 @@ export const LoginView = () => {
         <CardFooter className="flex justify-center">
           <p className="text-sm text-gray-500">
             계정이 없으신가요?{' '}
-            <a href="/signup" className="font-medium text-blue-600 hover:text-blue-500">
+            <Link className="font-medium text-blue-600 hover:text-blue-500" to="/signup">
               회원가입
-            </a>
+            </Link>
           </p>
         </CardFooter>
       </Card>
