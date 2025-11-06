@@ -208,13 +208,42 @@ export const fetchProjectDetail = async (projectId: string): Promise<ProjectDeta
   }
 }
 
-export const fetchProjectsByOwner = async (): Promise<Project[]> => {
-  const res = await fetch(getApiUrl(`/api/projects/me`), {
+export interface FetchProjectsByOwnerParams {
+  page?: number
+  limit?: number
+  sort?: string
+}
+
+export interface OwnerProjectsPage {
+  items: Project[]
+  page: number
+  limit: number
+  hasMore: boolean
+}
+
+export const fetchProjectsByOwner = async (
+  params: FetchProjectsByOwnerParams = {}
+): Promise<OwnerProjectsPage> => {
+  const { page = 1, limit = 6, sort = 'createdAt' } = params
+  const searchParams = new URLSearchParams({
+    sort,
+    page: String(page),
+    limit: String(limit),
+  })
+
+  const res = await fetch(getApiUrl(`/api/projects/me?${searchParams.toString()}`), {
     method: 'GET',
     credentials: 'include',
   })
   const data = await handleResponse<RawProject[]>(res)
-  return data.map(mapProject)
+  const items = data.map(mapProject)
+
+  return {
+    items,
+    page,
+    limit,
+    hasMore: items.length === limit,
+  }
 }
 
 export const getProjectStatusLabel = (status: string) => {

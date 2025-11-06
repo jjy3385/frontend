@@ -1,6 +1,14 @@
 import { ProcessingDashboard } from '@/components/ProcessingDashboard'
 import { ProjectCard } from '@/components/ProjectCard'
 import { Button } from '@/components/ui/button'
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination'
 import { Toaster } from '@/components/ui/sonner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CreateProjectModal } from '@/features/projects/components/CreateProjectModal'
@@ -10,24 +18,63 @@ import { finishUpload, getPresignedUrl, uploadFile } from '@/features/projects/s
 import { useAuth } from '@/hooks/useAuth'
 import TranslatorManagementPage from '@/pages/TranslatorManagementPage'
 import type { Project } from '@/types'
-import { Plus } from 'lucide-react'
+import { Loader2, Plus } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
+
+const PROJECTS_PER_PAGE = 6
 
 export default function OwnerPage() {
   const [projects, setProjects] = useState<Project[]>([])
   const [selectedProject, setSelectedProject] = useState<Project | null>(null)
   const [activeTab, setActiveTab] = useState<'projects' | 'translators'>('projects')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [isLoadingProjects, setIsLoadingProjects] = useState(false)
+  const [hasNextPage, setHasNextPage] = useState(false)
   const { user } = useAuth()
   const ownerCode = user?.code ?? ''
-  const loadProjects = useCallback(async () => {
-    const list = await fetchProjectsByOwner()
-    setProjects(list)
+
+  const loadProjects = useCallback(async (pageToLoad = 1) => {
+    setIsLoadingProjects(true)
+    try {
+      const { items, hasMore } = await fetchProjectsByOwner({
+        page: pageToLoad,
+        limit: PROJECTS_PER_PAGE,
+      })
+
+      setHasNextPage(hasMore)
+
+      if (pageToLoad > 1 && items.length === 0) {
+        return false
+      }
+
+      setProjects(items)
+      setCurrentPage(pageToLoad)
+      return true
+    } catch (error) {
+      toast.error('프로젝트 목록을 불러오지 못했습니다.')
+      return false
+    } finally {
+      setIsLoadingProjects(false)
+    }
   }, [])
+
+  const handlePreviousPage = useCallback(async () => {
+    if (isLoadingProjects || currentPage === 1) return
+    await loadProjects(currentPage - 1)
+  }, [currentPage, isLoadingProjects, loadProjects])
+
+  const handleNextPage = useCallback(async () => {
+    if (isLoadingProjects || !hasNextPage) return
+    const hasData = await loadProjects(currentPage + 1)
+    if (!hasData) {
+      setHasNextPage(false)
+    }
+  }, [currentPage, hasNextPage, isLoadingProjects, loadProjects])
 
   useEffect(() => {
     if (!ownerCode) return
-    void loadProjects()
+    void loadProjects(1)
   }, [ownerCode, loadProjects])
 
   const createProjectModal = useCreateProjectModal({
@@ -43,7 +90,7 @@ export default function OwnerPage() {
 
         await uploadFile(upload_url, formData)
         await finishUpload({ object_key, project_id, ownerCode })
-        await loadProjects()
+        await loadProjects(1)
         toast.success('프로젝트 업로드 완료')
       } catch (error) {
         toast.error('업로드 중 오류가 발생했습니다.')
@@ -63,7 +110,7 @@ export default function OwnerPage() {
       <ProcessingDashboard
         project={selectedProject}
         onBack={async () => {
-          await loadProjects()
+          await loadProjects(currentPage)
           setSelectedProject(null)
         }}
         onUpdateProject={(updated) => {
@@ -106,14 +153,56 @@ export default function OwnerPage() {
             </Button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {projects.map((project) => (
-              <ProjectCard
-                key={project.id}
-                project={project}
-                onClick={() => setSelectedProject(project)} // 사용자가 클릭할 때 액션
-              />
-            ))}
+            {isLoadingProjects ? (
+              <div className="col-span-full flex items-center justify-center py-12 text-muted-foreground">
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                프로젝트를 불러오는 중입니다...
+              </div>
+            ) : projects.length === 0 ? (
+              <div className="col-span-full rounded-lg border border-dashed border-gray-200 bg-white/70 py-16 text-center text-sm text-gray-500">
+                업로드된 프로젝트가 없습니다. 새 프로젝트를 생성해보세요.
+              </div>
+            ) : (
+              projects.map((project) => (
+                <ProjectCard
+                  key={project.id}
+                  project={project}
+                  onClick={() => setSelectedProject(project)} // 사용자가 클릭할 때 액션
+                />
+              ))
+            )}
           </div>
+          {(projects.length > 0 || currentPage > 1 || hasNextPage) && (
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    href="#"
+                    onClick={(event) => {
+                      event.preventDefault()
+                      void handlePreviousPage()
+                    }}
+                    className={currentPage === 1 ? 'pointer-events-none opacity-50' : undefined}
+                  />
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationLink href="#" isActive>
+                    {currentPage}
+                  </PaginationLink>
+                </PaginationItem>
+                <PaginationItem>
+                  <PaginationNext
+                    href="#"
+                    onClick={(event) => {
+                      event.preventDefault()
+                      void handleNextPage()
+                    }}
+                    className={!hasNextPage ? 'pointer-events-none opacity-50' : undefined}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          )}
         </TabsContent>
 
         <TabsContent value="translators" className="space-y-6">

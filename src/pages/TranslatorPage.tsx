@@ -25,8 +25,8 @@ export default function TranslatorDashboardPage() {
 
   const loadProjects = useCallback(async () => {
     try {
-      const list = await fetchProjectsByOwner()
-      setProjects(list)
+      const { items } = await fetchProjectsByOwner({ limit: 50 })
+      setProjects(items)
     } catch (err) {
       console.error('프로젝트 조회 실패', err)
     }
