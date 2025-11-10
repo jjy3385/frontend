@@ -18,6 +18,8 @@ if ! command -v pnpm >/dev/null 2>&1; then
   corepack prepare pnpm@8 --activate
 fi
 
+pnpm build
+
 echo "Installing dependencies with npm ci..."
 pnpm install --frozen-lockfile
 echo "Life Cycle - AfterInstall: Dependency installation complete."
