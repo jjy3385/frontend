@@ -26,13 +26,19 @@ let exampleItems: ExampleItem[] = [
   },
 ]
 
+const mockUser = {
+  id: 'jjy3386',
+  email: 'jjy3386@gmail.com',
+  name: '진주영',
+  roles: ['editor'],
+}
+
 export const handlers = [
   http.get('/api/projects', () => {
     const items = sampleProjects.map((project) => ({
       id: project.id,
       title: project.title,
       sourceLanguage: project.sourceLanguage,
-      targetLanguages: project.targetLanguages,
       status: project.status,
       dueDate: project.dueDate,
       assignedEditor: project.assignedEditor,
@@ -53,7 +59,7 @@ export const handlers = [
     return HttpResponse.json(project)
   }),
 
-  http.get('/api/editor/:id', ({ params }) => {
+  http.get('/api/projects/:id/languages/:lang', ({ params }) => {
     const project = sampleProjects.find((item) => item.id === params.id)
     if (!project) {
       return HttpResponse.json({ message: 'Editor state not found' }, { status: 404 })
@@ -115,4 +121,26 @@ export const handlers = [
   http.get('/api/languages', () => {
     return HttpResponse.json({ items: sampleLanguages })
   }),
+
+  http.post('/api/auth/login', async ({ request }) => {
+    const body = (await request.json()) as { email: string; password: string }
+    if (body.email !== 'jjy3386@gmail.com' || body.password !== 'password') {
+      return HttpResponse.json({ message: 'Invalid credentials' }, { status: 401 })
+    }
+
+    return HttpResponse.json({
+      token: 'mock-jwt-token',
+      user: mockUser,
+    })
+  }),
+
+  http.get('/api/users/me', () => {
+    // 필요하다면 Authorization 헤더 검증 로직 추가 가능
+    return HttpResponse.json({
+      user: mockUser,
+    })
+  }),
+
 ]
+
+

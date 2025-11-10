@@ -12,17 +12,17 @@ export interface Segment {
 export const sampleSegments: Segment[] = [
   {
     id: 'seg-001',
-    speakerId: 'spk-01',
+    speakerId: 'spk-001',
     speakerName: 'Narrator',
     start: 0,
     end: 4.5,
     originalText: 'Welcome to the future of localisation.',
-    translatedText: '현지화의 미래에 오신 것을 환영합니다.',
+    translatedText:  '현지화의 미래에 오신 것을 환영합니다.',
     reviewing: false,
   },
   {
     id: 'seg-002',
-    speakerId: 'spk-02',
+    speakerId: 'spk-002',
     speakerName: 'Creator',
     start: 4.5,
     end: 9.2,
@@ -32,8 +32,8 @@ export const sampleSegments: Segment[] = [
   },
   {
     id: 'seg-003',
-    speakerId: 'spk-01',
-    speakerName: 'Narrator',
+    speakerId: 'spk-003',
+    speakerName: 'Speaker 01',
     start: 9.2,
     end: 14.1,
     originalText: 'Assign translators, manage glossaries, and track progress in one place.',
