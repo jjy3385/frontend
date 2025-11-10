@@ -1,6 +1,7 @@
 import { Download, Play } from 'lucide-react'
 
 import type { ProjectAsset, ProjectDetail } from '@/entities/project/types'
+import { env } from '@/shared/config/env'
 import { trackEvent } from '@/shared/lib/analytics'
 import { cn } from '@/shared/lib/utils'
 import { Button } from '@/shared/ui/Button'
@@ -27,7 +28,7 @@ export function ProjectLanguagePanel({
   const targetLanguageCodes = project.targets?.map((target) => target.languageCode)
   const uniqueTargetLanguages = Array.from(new Set(targetLanguageCodes))
 
-  const assets = assetsByLanguage[activeLanguage] ?? []    
+  const assets = assetsByLanguage[activeLanguage] ?? []
   return (
     <div className="border-surface-3 bg-surface-1 space-y-3 rounded-3xl border p-6 shadow-soft">
       <LanguagePreview
@@ -36,11 +37,11 @@ export function ProjectLanguagePanel({
         version={version}
         onVersionChange={onVersionChange}
         videoSource={project.video_source}
-        sourceLanguage={project.sourceLanguage}
+        sourceLanguage={project.source_language}
         targetLanguages={uniqueTargetLanguages}
         onLanguageChange={onLanguageChange}
         activeLanguage={activeLanguage}
-        languageNameMap={languageNameMap}        
+        languageNameMap={languageNameMap}
       />
     </div>
   )
@@ -78,13 +79,12 @@ function LanguagePreview({
       language: lang,
     }
   })
-  
 
   const selectedAsset = assets.find((asset) => asset.type === 'preview_video')
   const translatedSource = selectedAsset?.file_path
   const previewSource = version === 'original' ? videoSource : (translatedSource ?? videoSource)
   const languageLabel = languageNameMap[language] ?? language
-  const videoSrc = `${previewSource}`
+  const videoSrc = `${env.apiBaseUrl}/api/storage/media/${previewSource}`
 
   return (
     <div className="space-y-5">
@@ -113,13 +113,13 @@ function LanguagePreview({
           )
         })}
       </div>
-      <div className="border-surface-3 bg-surface-1 relative overflow-hidden rounded-md border">
+      <div className="border-surface-3 bg-surface-1 relative overflow-hidden rounded-lg border">
         {previewSource ? (
           <video
             key={`${language}-${version}`}
             controls
             autoPlay={false}
-            className="h-[24em] w-full bg-black object-contain"
+            className="h-auto max-h-[32em] min-h-[20em] w-full bg-black"
             src={videoSrc}
             preload="metadata"
           >
