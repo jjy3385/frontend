@@ -1,7 +1,10 @@
 import { Download, Play } from 'lucide-react'
 
-import type { ProjectAsset, ProjectDetail } from '@/entities/project/types'
-import { env } from '@/shared/config/env'
+import type { AssetEntry } from '@/entities/asset/types'
+import type { ProjectDetail, ProjectTarget } from '@/entities/project/types'
+import { useAssets } from '@/features/assets/hooks/useAssets'
+import VideoPlayer from '@/features/projects/components/VideoPlayer'
+import { usePresignedUrl } from '@/features/projects/hooks/useProjectStorage'
 import { trackEvent } from '@/shared/lib/analytics'
 import { cn } from '@/shared/lib/utils'
 import { Button } from '@/shared/ui/Button'
@@ -9,10 +12,11 @@ import { Button } from '@/shared/ui/Button'
 type ProjectLanguagePanelProps = {
   project: ProjectDetail
   activeLanguage: string
+  activeTarget?: ProjectTarget
   onLanguageChange: (language: string) => void
   version: 'original' | 'translated'
   onVersionChange: (version: 'original' | 'translated') => void
-  assetsByLanguage: Record<string, ProjectAsset[]>
+  // assetsByLanguage: Record<string, ProjectAsset[]>
   languageNameMap?: Record<string, string>
 }
 
@@ -22,13 +26,22 @@ export function ProjectLanguagePanel({
   onLanguageChange,
   version,
   onVersionChange,
-  assetsByLanguage,
+  // assetsByLanguage,
   languageNameMap = {},
 }: ProjectLanguagePanelProps) {
-  const targetLanguageCodes = project.targets?.map((target) => target.language_code)
+  const targetLanguageCodes = project.targets?.map((target) => target.language_code) ?? []
   const uniqueTargetLanguages = Array.from(new Set(targetLanguageCodes))
+  const targetStatusMap =
+    project.targets?.reduce<Record<string, ProjectTarget['status']>>((acc, target) => {
+      acc[target.language_code] = target.status
+      return acc
+    }, {}) ?? {}
 
-  const assets = assetsByLanguage[activeLanguage] ?? []
+  const { data: assests } = useAssets(project.id, activeLanguage)
+  const assets = assests ?? []
+
+  // const assets = assetsByLanguage[activeLanguage] ?? []
+
   return (
     <div className="border-surface-3 bg-surface-1 space-y-3 rounded-3xl border p-6 shadow-soft">
       <LanguagePreview
@@ -39,6 +52,7 @@ export function ProjectLanguagePanel({
         videoSource={project.video_source}
         sourceLanguage={project.source_language}
         targetLanguages={uniqueTargetLanguages}
+        targetStatusMap={targetStatusMap}
         onLanguageChange={onLanguageChange}
         activeLanguage={activeLanguage}
         languageNameMap={languageNameMap}
@@ -49,50 +63,55 @@ export function ProjectLanguagePanel({
 
 type LanguagePreviewProps = {
   language: string
-  assets: ProjectAsset[]
+  assets: AssetEntry[]
   version: 'original' | 'translated'
   onVersionChange: (version: 'original' | 'translated') => void
   videoSource?: string
   sourceLanguage: string
   targetLanguages: string[]
+  targetStatusMap: Record<string, ProjectTarget['status']>
   onLanguageChange: (language: string) => void
   activeLanguage: string
   languageNameMap: Record<string, string>
 }
 
 function LanguagePreview({
-  language,
   assets,
   version,
   onVersionChange,
   videoSource,
   sourceLanguage,
   targetLanguages,
+  targetStatusMap,
   onLanguageChange,
   activeLanguage,
   languageNameMap,
 }: LanguagePreviewProps) {
   const languageButtons = [sourceLanguage, ...targetLanguages].map((lang) => {
     const displayName = languageNameMap[lang] ?? lang
+    const isCompleted = lang === sourceLanguage ? true : targetStatusMap[lang] === 'completed'
     return {
       label: lang === sourceLanguage ? `${displayName}(원본)` : displayName,
       language: lang,
+      disabled: !isCompleted,
     }
   })
 
-  const selectedAsset = assets.find((asset) => asset.type === 'preview_video')
-  const translatedSource = selectedAsset?.file_path
+  const previewAsset = assets.find((asset) => asset.asset_type === 'preview_video')
+  const translatedSource = previewAsset?.file_path
   const previewSource = version === 'original' ? videoSource : (translatedSource ?? videoSource)
-  const languageLabel = languageNameMap[language] ?? language
-  const isAbsoluteUrl = previewSource?.startsWith('http')
-  const videoSrc = isAbsoluteUrl
-    ? previewSource
-    : `${env.apiBaseUrl}/api/storage/media/${previewSource}`
+  const languageLabel = languageNameMap[activeLanguage] ?? activeLanguage
+  const { data: videoSrc } = usePresignedUrl(previewSource || '')
+
+  // const isAbsoluteUrl = previewSurce?.startsWith('http')
+  // const videoSrc = isAbsoluteUrl
+  //   ? previewSource
+  //   : `${env.apiBaseUrl}/api/storage/media/${previewSource}`
 
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap gap-2">
-        {languageButtons.map(({ label, language: buttonLang }) => {
+        {languageButtons.map(({ label, language: buttonLang, disabled }) => {
           const isActive = buttonLang === activeLanguage
           const buttonClass = cn('rounded-full px-3 py-1 text-xs transition')
           return (
@@ -101,6 +120,7 @@ function LanguagePreview({
               variant={isActive ? 'primary' : 'ghost'}
               size="sm"
               className={buttonClass}
+              disabled={disabled}
               aria-pressed={isActive}
               onClick={() => {
                 onLanguageChange(buttonLang)
@@ -117,48 +137,37 @@ function LanguagePreview({
         })}
       </div>
       <div className="border-surface-3 bg-surface-1 relative overflow-hidden rounded-lg border">
-        {previewSource ? (
-          <video
-            key={`${language}-${version}`}
-            controls
-            autoPlay={false}
-            className="h-auto max-h-[32em] min-h-[20em] w-full bg-black"
-            src={videoSrc}
-            preload="metadata"
-          >
-            <track kind="captions" />
-          </video>
-        ) : (
+        {videoSrc && <VideoPlayer src={videoSrc} active={true} />}
+
+        {!previewSource && (
           <div className="bg-surface-2 text-muted flex h-64 flex-col items-center justify-center gap-3">
             <Play className="h-8 w-8" />
             <p className="text-sm">더빙 영상 미리보기 (모의)</p>
           </div>
         )}
-        {selectedAsset ? (
+        {/* {selectedAsset ? (
           <div className="absolute left-4 top-4 flex items-center gap-2 rounded-full bg-black/60 px-3 py-1 text-xs text-white">
             <span>{selectedAsset.codec}</span>
             <span>{selectedAsset.resolution}</span>
             <span>{selectedAsset.duration}s</span>
           </div>
-        ) : null}
+        ) : null} */}
       </div>
       <div className="space-y-2">
         <p className="text-foreground mb-3 text-sm font-semibold">결과물</p>
         <div className="space-y-2">
           {assets.map((asset) => (
             <div
-              key={asset.id}
+              key={asset.asset_id}
               className={cn(
                 'border-surface-4 bg-surface-1 text-muted flex items-center justify-between rounded-2xl border px-4 py-3 text-sm',
               )}
             >
               <div>
                 <p className="text-foreground font-medium">
-                  {asset.type === 'preview_video' ? '더빙 영상' : '자막'} • {languageLabel}
+                  {asset.asset_type === 'preview_video' ? '더빙 영상' : '자막'} • {languageLabel}
                 </p>
-                <p className="text-muted text-xs">
-                  {asset.codec} • {asset.resolution} • {asset.sizeMb}MB
-                </p>
+                <p className="text-muted text-xs">{asset.created_at}</p>
               </div>
               <Button
                 variant="outline"
@@ -166,8 +175,8 @@ function LanguagePreview({
                 onClick={() =>
                   trackEvent('asset_download', {
                     lang: languageLabel,
-                    type: asset.type,
-                    assetId: asset.id,
+                    type: asset.asset_type,
+                    assetId: asset.asset_id,
                   })
                 }
               >
