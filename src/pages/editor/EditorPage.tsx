@@ -45,7 +45,7 @@ export default function EditorPage() {
             videoSource={data.playback.video_source}
           /> */}
         </div>
-        <div className="h-[380px] flex-shrink-0">
+        <div className="h-[395px] flex-shrink-0">
           <AudioTrackWorkspace segments={data.segments} duration={data.playback.duration} />
         </div>
       </div>

@@ -47,12 +47,12 @@ export function AudioTrackWorkspace({ segments, duration }: AudioTrackWorkspaceP
         />
 
         {/* Timeline area with sidebar */}
-        <div className="grid min-h-0 flex-1 overflow-hidden lg:grid-cols-[220px,1fr]">
-          <div className="border-surface-3 sticky left-0 top-0 z-10 hidden h-full border-r lg:block">
+        <div className="grid min-h-0 flex-1 overflow-y-auto lg:grid-cols-[220px,1fr]">
+          <div className="border-surface-3 sticky left-0 z-10 hidden h-full border-r lg:block">
             <AudioTrackSidebar trackRows={trackRows} />
           </div>
 
-          <div className="bg-surface-1 overflow-hidden">
+          <div className="bg-surface-1 flex min-h-0 flex-1 flex-col overflow-x-auto overflow-y-hidden">
             <AudioTimeline
               trackRows={trackRows}
               timelineTicks={timelineTicks}

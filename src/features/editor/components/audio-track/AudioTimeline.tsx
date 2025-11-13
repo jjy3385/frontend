@@ -8,6 +8,7 @@ import { PlayheadIndicator } from './PlayheadIndicator'
 import { TimeRuler } from './TimeRuler'
 import { TrackRow as TrackRowComponent } from './TrackRow'
 import type { TrackRow } from './types'
+import './timeline-scrollbar.css'
 
 type WaveformBar = {
   id: number
@@ -34,6 +35,11 @@ type AudioTimelineProps = {
  * 2. z-10: SpeakerSegment (클릭 가능한 세그먼트들)
  * 3. z-20: 타임라인 컨테이너 (포인터 이벤트 처리)
  * 4. z-[100]: PlayheadIndicator (최상위 - 삼각형과 세로선)
+ *
+ * 높이 계산:
+ * - TimeRuler: 40px (h-10)
+ * - 각 트랙 행: 84px (rowHeight)
+ * - 스크롤 영역: 전체 높이 - 40px
  */
 export function AudioTimeline({
   trackRows,
@@ -59,26 +65,39 @@ export function AudioTimeline({
   }, [duration, setDuration])
 
   const timelineWidth = getTimelineWidth(duration, scale)
+  const contentHeight = trackRows.length * rowHeight
+
   return (
-    <div className="bg-surface-1 relative flex flex-1 flex-col overflow-hidden">
+    <div
+      className="bg-surface-1 relative flex h-full flex-col"
+      style={{ width: `${timelineWidth}px` }}
+    >
       {/* 재생 위치 표시자 (최상위 레이어) */}
       <PlayheadIndicator playhead={playhead} duration={duration} scale={scale} />
 
-      {/* 시간 눈금자 */}
-      <TimeRuler
-        timelineTicks={timelineTicks}
-        duration={duration}
-        scale={scale}
-        onTimelinePointerDown={onTimelinePointerDown}
-      />
+      {/* 시간 눈금자 - 고정 헤더 */}
+      <div className="sticky top-0 z-20">
+        <TimeRuler
+          timelineTicks={timelineTicks}
+          duration={duration}
+          scale={scale}
+          onTimelinePointerDown={onTimelinePointerDown}
+        />
+      </div>
 
-      {/* 타임라인 콘텐츠 영역 */}
-      <div className="flex-1 overflow-hidden" ref={timelineRef}>
+      {/* 타임라인 콘텐츠 래퍼 - 실제 크기 정의 */}
+      <div
+        ref={timelineRef}
+        style={{
+          width: `${timelineWidth}px`,
+          minHeight: `${contentHeight}px`,
+        }}
+      >
         <div
           className="relative z-20 select-none"
           style={{
-            minHeight: trackRows.length * rowHeight,
             width: `${timelineWidth}px`,
+            minHeight: `${contentHeight}px`,
           }}
         >
           {/* 트랙 행들 */}

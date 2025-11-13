@@ -1,7 +1,3 @@
-import { Plus } from 'lucide-react'
-
-import { Button } from '@/shared/ui/Button'
-
 import type { TrackRow } from './types'
 
 type AudioTrackSidebarProps = {
@@ -11,13 +7,6 @@ type AudioTrackSidebarProps = {
 export function AudioTrackSidebar({ trackRows }: AudioTrackSidebarProps) {
   return (
     <div className="border-surface-3 bg-surface-2 border-r">
-      <div className="border-surface-3 border-b px-2 py-1.5">
-        <Button type="button" variant="ghost" size="sm" className="w-full justify-start gap-2">
-          <Plus className="h-4 w-4" />
-          트랙 추가
-        </Button>
-      </div>
-
       {/* 티커라인 패딩 */}
       <div className="border-surface-3 h-10 border-b" />
 
