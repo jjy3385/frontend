@@ -65,17 +65,21 @@ export function AudioTimeline({
       <PlayheadIndicator playhead={playhead} duration={duration} scale={scale} />
 
       {/* 시간 눈금자 */}
-      <TimeRuler timelineTicks={timelineTicks} duration={duration} scale={scale} />
+      <TimeRuler
+        timelineTicks={timelineTicks}
+        duration={duration}
+        scale={scale}
+        onTimelinePointerDown={onTimelinePointerDown}
+      />
 
       {/* 타임라인 콘텐츠 영역 */}
       <div className="flex-1 overflow-hidden" ref={timelineRef}>
         <div
-          className="relative z-20 cursor-col-resize select-none"
+          className="relative z-20 select-none"
           style={{
             minHeight: trackRows.length * rowHeight,
             width: `${timelineWidth}px`,
           }}
-          onPointerDown={onTimelinePointerDown}
         >
           {/* 트랙 행들 */}
           {trackRows.map((track, index) => (

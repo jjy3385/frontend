@@ -111,6 +111,7 @@ export function useAudioTimeline(segments: Segment[], duration: number) {
 
   const onTimelinePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
     event.preventDefault()
+
     setPlaying(false)
     scrub(event.clientX)
     setIsScrubbing(true)
