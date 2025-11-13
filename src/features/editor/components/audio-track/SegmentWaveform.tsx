@@ -15,33 +15,32 @@ type SegmentWaveformProps = {
 /**
  * Renders waveform bars for a segment
  * Memoized to prevent unnecessary re-renders
+ *
+ * 균일한 바 크기를 위해 고정 너비(3px)와 간격(1px) 사용
  */
 export const SegmentWaveform = memo(function SegmentWaveform({
   waveformData,
   color,
   height = 40,
 }: SegmentWaveformProps) {
-  const barWidth = 100 / waveformData.length
-  const barGap = 0.5 // percentage
+  const BAR_WIDTH = 3 // 고정 바 너비 (px)
 
   return (
     <div className="absolute inset-x-0 bottom-1 top-1 flex items-center px-2">
-      <div className="relative h-full w-full">
+      <div className="relative flex h-full items-center justify-center gap-px">
         {waveformData.map((amplitude, index) => {
-          const barHeight = amplitude * height * 1.75
-          const leftPosition = index * barWidth
+          const barHeight = amplitude * height * 1.5
 
           return (
             <div
               key={index}
-              className="absolute bottom-1/2 translate-y-1/2"
+              className="flex-shrink-0"
               style={{
-                left: `${leftPosition}%`,
-                width: `${Math.max(barWidth - barGap, 1)}%`,
+                width: `${BAR_WIDTH}px`,
                 height: `${barHeight}px`,
                 backgroundColor: color,
                 opacity: 0.75,
-                borderRadius: '1px',
+                borderRadius: '3px',
               }}
             />
           )

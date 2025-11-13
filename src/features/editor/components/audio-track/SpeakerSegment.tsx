@@ -41,10 +41,15 @@ export function SpeakerSegment({ segment, duration, scale, color }: SpeakerSegme
   })
 
   // Step 2: Generate waveform from audio URL (only when URL is available)
+  // 바 너비 3px + 간격 1px = 4px 기준으로 세그먼트에 맞는 샘플 수 계산
+  const BAR_UNIT = 4 // 바 하나당 차지하는 공간 (3px bar + 1px gap)
+  const availableWidth = widthPx - 16 // 좌우 padding 8px씩 제외
+  const optimalSamples = Math.max(Math.floor(availableWidth / BAR_UNIT), 10) // 최소 10개
+
   const { data: waveformData, isLoading: waveformLoading } = useAudioWaveform(
     audioSrc,
     !!audioSrc && isVisible, // URL 있고 visible일 때만 파형 생성
-    Math.min(Math.floor(widthPx / 4), 100),
+    optimalSamples,
   )
 
   const isLoading = isVisible && (urlLoading || waveformLoading)
