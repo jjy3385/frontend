@@ -17,7 +17,7 @@ import { generateWaveformData } from '../utils/audio-waveform'
 export function useAudioWaveform(
   audioUrl: string | null | undefined,
   enabled = true,
-  samples = 50
+  samples = 35,
 ) {
   return useQuery({
     queryKey: ['waveform', audioUrl, samples] as const,
