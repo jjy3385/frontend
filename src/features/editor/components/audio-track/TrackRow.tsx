@@ -24,7 +24,7 @@ export function TrackRow({ track, index, duration, scale, waveformData }: TrackR
 
   return (
     <div
-      className="border-surface-3 relative h-[84px] border-b px-4 py-3"
+      className="border-surface-3 relative h-[84px] overflow-visible border-b px-4 py-3"
       style={{ backgroundColor }}
     >
       {track.type === 'waveform' && waveformData ? (

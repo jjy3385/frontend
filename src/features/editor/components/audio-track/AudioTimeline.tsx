@@ -65,7 +65,7 @@ export function AudioTimeline({
   }, [duration, setDuration])
 
   const timelineWidth = getTimelineWidth(duration, scale)
-  const contentHeight = trackRows.length * rowHeight
+  const contentHeight = trackRows.length * rowHeight + 40
 
   return (
     <div className="relative" style={{ width: `${timelineWidth}px` }}>
@@ -87,10 +87,10 @@ export function AudioTimeline({
       {/* 타임라인 콘텐츠 */}
       <div
         ref={timelineRef}
-        className="bg-surface-1"
+        className="bg-surface-1 overflow-visible"
         style={{
           width: `${timelineWidth}px`,
-          height: `${contentHeight}px`,
+          minHeight: `${contentHeight}px`,
         }}
       >
         {/* 트랙 행들 */}
