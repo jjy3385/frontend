@@ -9,8 +9,8 @@ import { useEditorStore } from '@/shared/store/useEditorStore'
 import type { TrackRow } from './types'
 
 const STATIC_TRACKS: TrackRow[] = [
-  { id: 'track-original', label: 'Original', color: '#ec4899', type: 'waveform' },
-  { id: 'track-fx', label: 'Music & FX', color: '#38bdf8', type: 'muted' },
+  { id: 'track-original', label: 'Original', color: '#ec4899', type: 'waveform', size: 'small' },
+  { id: 'track-fx', label: 'Music & FX', color: '#38bdf8', type: 'muted', size: 'small' },
 ]
 
 const ROW_HEIGHT = 84

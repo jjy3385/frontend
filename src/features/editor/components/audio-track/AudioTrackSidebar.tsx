@@ -11,13 +11,16 @@ type AudioTrackSidebarProps = {
 export function AudioTrackSidebar({ trackRows }: AudioTrackSidebarProps) {
   return (
     <div className="border-surface-3 bg-surface-2 border-r">
-      <div className="border-surface-3 border-b px-4 py-3">
+      <div className="border-surface-3 border-b px-2 py-1.5">
         <Button type="button" variant="ghost" size="sm" className="w-full justify-start gap-2">
           <Plus className="h-4 w-4" />
           트랙 추가
         </Button>
       </div>
-      <div className="border-surface-3 border-b h-14 px-4 py-2" />
+
+      {/* 티커라인 패딩 */}
+      <div className="border-surface-3 h-10 border-b" />
+
       {trackRows.map((track) => (
         <div
           key={track.id}
@@ -27,7 +30,7 @@ export function AudioTrackSidebar({ trackRows }: AudioTrackSidebarProps) {
             <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: track.color }} />
             <span className="text-foreground font-medium">{track.label}</span>
           </div>
-          <span className="text-muted text-xs uppercase tracking-[0.2em]">S</span>
+          {/* <span className="text-muted text-xs uppercase tracking-[0.2em]">S</span> */}
         </div>
       ))}
     </div>

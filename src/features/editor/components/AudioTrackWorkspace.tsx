@@ -29,13 +29,13 @@ export function AudioTrackWorkspace({ segments, duration }: AudioTrackWorkspaceP
     formatTime,
   } = useAudioTimeline(segments, duration)
   return (
-    <section className="border-surface-3 bg-surface-1 flex flex-col gap-4 rounded-3xl border p-5 shadow-soft">
-      <AudioTrackHeader
+    <section className="border-surface-3 bg-surface-1 flex h-full flex-col gap-3 border-t shadow-soft">
+      {/* <AudioTrackHeader
         playbackRate={playbackRate}
         onDecreaseRate={() => setPlaybackRate(Math.max(playbackRate - 0.1, 0.5))}
         onIncreaseRate={() => setPlaybackRate(Math.min(playbackRate + 0.1, 2))}
-      />
-      <div className="border-surface-3 grid rounded-2xl border lg:grid-cols-[220px,1fr]">
+      /> */}
+      <div className="border-surface-3 grid min-h-0 flex-1 rounded-2xl border lg:grid-cols-[220px,1fr]">
         <AudioTrackSidebar trackRows={trackRows} />
         <div className="bg-surface-1 flex flex-col">
           <AudioTimelineControls

@@ -61,7 +61,7 @@ export function TranslationWorkspace({
     if (!activeSegmentId) return
     const node = segmentRefs.current[activeSegmentId]
     if (!node) return
-    node.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    // node.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }, [activeSegmentId])
 
   return (

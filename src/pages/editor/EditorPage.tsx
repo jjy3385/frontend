@@ -27,23 +27,28 @@ export default function EditorPage() {
   const targetLanguage = data.playback.active_language || '번역본'
 
   return (
-    <div className="bg-surface-1 flex min-h-screen w-full flex-col gap-2 p-2">
-      <EditorToolbar />
-      <div className="flex-1 space-y-2">
-        <div className="grid gap-2 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-          <TranslationWorkspace
-            segments={data.segments}
-            sourceLanguage={sourceLanguage}
-            targetLanguage={targetLanguage}
-          />
-          <StudioVideoPreview
+    <div className="bg-surface-1 flex h-full flex-col">
+      {/* <EditorToolbar /> */}
+
+      <div className="flex min-h-0 flex-1 flex-col gap-4">
+        <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)]">
+          <div className="overflow-y-auto">
+            <TranslationWorkspace
+              segments={data.segments}
+              sourceLanguage={sourceLanguage}
+              targetLanguage={targetLanguage}
+            />
+          </div>
+          {/* <StudioVideoPreview
             activeLanguage={targetLanguage}
             duration={data.playback.duration}
             playbackRate={data.playback.playback_rate}
             videoSource={data.playback.video_source}
-          />
+          /> */}
         </div>
-        <AudioTrackWorkspace segments={data.segments} duration={data.playback.duration} />
+        <div className="h-[400px] flex-shrink-0">
+          <AudioTrackWorkspace segments={data.segments} duration={data.playback.duration} />
+        </div>
       </div>
     </div>
   )
