@@ -13,6 +13,8 @@ type EditorUiState = {
   currentAudio: HTMLAudioElement | null
   currentAudioUrl: string | null
   segmentEnd: number | null
+  scale: number // Timeline zoom scale (always 0.1 to 3, but effect scales with duration)
+  duration: number // Total duration of the timeline
   setActiveSegment: (id: string | null) => void
   setPlaybackRate: (rate: number) => void
   toggleSplitMode: () => void
@@ -26,7 +28,12 @@ type EditorUiState = {
   ) => void
   stopAudio: () => void
   setSegmentEnd: (time: number | null) => void
+  setScale: (scale: number) => void
+  setDuration: (duration: number) => void
 }
+
+const MIN_SCALE = 0.1
+const MAX_SCALE = 2
 
 export const useEditorStore = create<EditorUiState>()(
   devtools((set) => ({
@@ -39,6 +46,8 @@ export const useEditorStore = create<EditorUiState>()(
     currentAudio: null,
     currentAudioUrl: null,
     segmentEnd: null,
+    scale: 1,
+    duration: 0,
     setActiveSegment: (id) =>
       set({ activeSegmentId: id }, false, { type: 'editor/setActiveSegment', payload: id }),
     setPlaybackRate: (rate) =>
@@ -93,5 +102,21 @@ export const useEditorStore = create<EditorUiState>()(
       }),
     setSegmentEnd: (time) =>
       set({ segmentEnd: time }, false, { type: 'editor/setSegmentEnd', payload: time }),
+    setScale: (scale) =>
+      set(
+        {
+          scale: Math.max(MIN_SCALE, Math.min(MAX_SCALE, scale)),
+        },
+        false,
+        { type: 'editor/setScale', payload: scale },
+      ),
+    setDuration: (duration) =>
+      set(
+        {
+          duration,
+        },
+        false,
+        { type: 'editor/setDuration', payload: duration },
+      ),
   })),
 )

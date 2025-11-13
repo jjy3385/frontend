@@ -1,7 +1,6 @@
 import { useParams } from 'react-router-dom'
 
 import { AudioTrackWorkspace } from '@/features/editor/components/AudioTrackWorkspace'
-import { EditorToolbar } from '@/features/editor/components/EditorToolbar'
 import { StudioVideoPreview } from '@/features/editor/components/StudioVideoPreview'
 import { TranslationWorkspace } from '@/features/editor/components/TranslationWorkspace'
 import { useEditorState } from '@/features/editor/hooks/useEditorState'
@@ -30,8 +29,8 @@ export default function EditorPage() {
     <div className="bg-surface-1 flex h-full flex-col">
       {/* <EditorToolbar /> */}
 
-      <div className="flex min-h-0 flex-1 flex-col gap-4">
-        <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)]">
+      <div className="flex h-full flex-1 flex-col gap-3">
+        <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
           <div className="overflow-y-auto">
             <TranslationWorkspace
               segments={data.segments}

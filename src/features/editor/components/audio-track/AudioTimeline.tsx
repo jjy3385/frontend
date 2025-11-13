@@ -1,12 +1,12 @@
-import type {
-  PointerEvent as ReactPointerEvent,
-  MouseEvent as ReactMouseEvent,
-  RefObject,
-} from 'react'
+import type { PointerEvent as ReactPointerEvent, RefObject } from 'react'
+import { useEffect } from 'react'
 
-import type { Segment } from '@/entities/segment/types'
+import { getTimelineWidth } from '@/features/editor/utils/timeline-scale'
 import { useEditorStore } from '@/shared/store/useEditorStore'
 
+import { PlayheadIndicator } from './PlayheadIndicator'
+import { TimeRuler } from './TimeRuler'
+import { TrackRow as TrackRowComponent } from './TrackRow'
 import type { TrackRow } from './types'
 
 type WaveformBar = {
@@ -26,120 +26,68 @@ type AudioTimelineProps = {
   playhead: number
 }
 
+/**
+ * AudioTimeline 메인 컴포넌트
+ *
+ * 레이어 구조 (z-index 순서):
+ * 1. 기본 레이어 (z-index 없음): TimeRuler, TrackRow 배경
+ * 2. z-10: SpeakerSegment (클릭 가능한 세그먼트들)
+ * 3. z-20: 타임라인 컨테이너 (포인터 이벤트 처리)
+ * 4. z-[100]: PlayheadIndicator (최상위 - 삼각형과 세로선)
+ */
 export function AudioTimeline({
   trackRows,
   timelineTicks,
   waveformData,
   timelineRef,
-  playheadPercent,
+  // playheadPercent,
   onTimelinePointerDown,
   rowHeight,
   duration,
   playhead,
 }: AudioTimelineProps) {
-  const { playSegmentAudio, setPlayhead, setSegmentEnd } = useEditorStore((state) => ({
-    playSegmentAudio: state.playSegmentAudio,
-    setPlayhead: state.setPlayhead,
-    setSegmentEnd: state.setSegmentEnd,
+  const { scale, setDuration } = useEditorStore((state) => ({
+    scale: state.scale,
+    setDuration: state.setDuration,
   }))
+
+  // Set duration when component mounts or duration changes
+  useEffect(() => {
+    if (duration > 0) {
+      setDuration(duration)
+    }
+  }, [duration, setDuration])
+
+  const timelineWidth = getTimelineWidth(duration, scale)
   return (
-    <div className="bg-surface-1 flex flex-col">
-      <div className="border-surface-3 cursor-pointer border-b">
-        <div className="text-muted flex h-10 items-end justify-between text-[10px]">
-          {timelineTicks.map((tick) => (
-            <div key={tick} className="flex flex-col items-center">
-              <span>{tick.toFixed(0).padStart(2, '0')}s</span>
-              <span className="bg-surface-3 mt-1 h-4 w-px" />
-            </div>
-          ))}
-        </div>
-      </div>
+    <div className="bg-surface-1 relative flex flex-1 flex-col overflow-hidden">
+      {/* 재생 위치 표시자 (최상위 레이어) */}
+      <PlayheadIndicator playhead={playhead} duration={duration} scale={scale} />
 
-      <div
-        ref={timelineRef}
-        className="relative flex-1 cursor-col-resize select-none"
-        style={{ minHeight: trackRows.length * rowHeight }}
-        onPointerDown={onTimelinePointerDown}
-      >
-        {trackRows.map((track, index) => (
-          <div
-            key={track.id}
-            className="border-surface-3 relative h-[84px] border-b px-4 py-3"
-            style={{ backgroundColor: index % 2 === 0 ? 'rgba(15,23,42,0.02)' : 'transparent' }}
-          >
-            {track.type === 'waveform' ? (
-              <div className="flex h-full items-center gap-px">
-                {waveformData.map((bar) => (
-                  <span
-                    key={bar.id}
-                    className="bg-primary/60 flex-1 rounded-full"
-                    style={{ height: `${bar.height}%` }}
-                  />
-                ))}
-              </div>
-            ) : track.type === 'speaker' ? (
-              track.segments.map((segment) => {
-                const startPercent = duration > 0 ? (segment.start / duration) * 100 : 0
-                const widthPercent =
-                  duration > 0 ? Math.max(((segment.end - segment.start) / duration) * 100, 1) : 0
+      {/* 시간 눈금자 */}
+      <TimeRuler timelineTicks={timelineTicks} duration={duration} scale={scale} />
 
-                const handleSegmentClick = (
-                  event: ReactMouseEvent<HTMLDivElement>,
-                  segment: Segment,
-                ) => {
-                  if (!segment.segment_audio_url) return
-
-                  const rect = event.currentTarget.getBoundingClientRect()
-                  const segmentDuration = segment.end - segment.start
-                  const clickRatio =
-                    rect.width > 0
-                      ? Math.min(Math.max((event.clientX - rect.left) / rect.width, 0), 1)
-                      : 0
-                  const timelinePosition = segment.start + clickRatio * segmentDuration
-                  const localOffset = clickRatio * segmentDuration
-                  setPlayhead(timelinePosition) // 초록 진행바를 클릭 지점으로 이동
-                  setSegmentEnd(segment.end)
-                  playSegmentAudio(segment.segment_audio_url, {
-                    audioOffset: localOffset,
-                    timelinePosition,
-                  }) // 세그먼트 오디오를 해당 지점부터 재생
-                }
-                return (
-                  <div
-                    key={segment.id}
-                    className="absolute top-3 flex h-[60px] cursor-pointer items-center justify-between rounded-2xl border px-3 text-xs font-semibold"
-                    onClick={(event) => handleSegmentClick(event, segment)}
-                    style={{
-                      left: `${startPercent}%`,
-                      width: `${widthPercent}%`,
-                      minWidth: '64px',
-                      backgroundColor: `${track.color}20`,
-                      borderColor: track.color,
-                      color: track.color,
-                    }}
-                  >
-                    <span>{segment.speaker_tag}</span>
-                    <span>
-                      {segment.start.toFixed(1)}s → {segment.end.toFixed(1)}s
-                    </span>
-                  </div>
-                )
-              })
-            ) : (
-              <div className="border-surface-3 text-muted flex h-full items-center justify-center rounded-xl border border-dashed text-xs">
-                FX Placeholder
-              </div>
-            )}
-          </div>
-        ))}
-
+      {/* 타임라인 콘텐츠 영역 */}
+      <div className="flex-1 overflow-hidden" ref={timelineRef}>
         <div
-          className="pointer-events-none absolute inset-y-0"
-          style={{ left: `calc(${playheadPercent}% - 1px)` }}
+          className="relative z-20 cursor-col-resize select-none"
+          style={{
+            minHeight: trackRows.length * rowHeight,
+            width: `${timelineWidth}px`,
+          }}
+          onPointerDown={onTimelinePointerDown}
         >
-          <div className="bg-primary absolute inset-y-0 left-1/2 w-0.5" />
-          <div className="bg-primary shadow-primary/40 absolute -top-3 left-1/2 h-3 w-3 -translate-x-1/2 rounded-full shadow-lg" />
-          <div className="bg-primary shadow-primary/40 absolute -bottom-3 left-1/2 h-3 w-3 -translate-x-1/2 rounded-full shadow-lg" />
+          {/* 트랙 행들 */}
+          {trackRows.map((track, index) => (
+            <TrackRowComponent
+              key={track.id}
+              track={track}
+              index={index}
+              duration={duration}
+              scale={scale}
+              waveformData={track.type === 'waveform' ? waveformData : undefined}
+            />
+          ))}
         </div>
       </div>
     </div>
