@@ -5,6 +5,8 @@ import { useForm } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router-dom'
 import { z } from 'zod'
 
+import { useAuthSuccessHandler } from '@/features/auth/hooks/useAuthMutations'
+
 import { routes } from '../../../shared/config/routes'
 import { trackEvent } from '../../../shared/lib/analytics'
 import { Button } from '../../../shared/ui/Button'
@@ -12,8 +14,6 @@ import { Input } from '../../../shared/ui/Input'
 import { Label } from '../../../shared/ui/Label'
 import { ValidationMessage } from '../../../shared/ui/ValidationMessage'
 import type { GoogleAPI, GoogleCredentialResponse } from '../../../types/google'
-import { useAuthSuccessHandler } from '@/features/auth/hooks/useAuthMutations'
-
 import { useLoginMutation } from '../hooks/useAuthMutations'
 
 
