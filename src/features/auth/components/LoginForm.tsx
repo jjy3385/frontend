@@ -1,5 +1,6 @@
+﻿import { useCallback, useEffect } from 'react'
+
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Loader2, LogIn, Mail } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router-dom'
 import { z } from 'zod'
@@ -10,16 +11,21 @@ import { Button } from '../../../shared/ui/Button'
 import { Input } from '../../../shared/ui/Input'
 import { Label } from '../../../shared/ui/Label'
 import { ValidationMessage } from '../../../shared/ui/ValidationMessage'
+import type { GoogleAPI, GoogleCredentialResponse } from '../../../types/google'
+import { useAuthSuccessHandler } from '@/features/auth/hooks/useAuthMutations'
+
 import { useLoginMutation } from '../hooks/useAuthMutations'
 
+
 const loginSchema = z.object({
-  email: z.string().email({ message: '올바른 이메일 형식을 입력하세요.' }),
+  email: z.string().email({ message: '올바른 이메일 형식을 입력해주세요.' }),
   password: z.string().min(8, { message: '비밀번호는 8자 이상이어야 합니다.' }),
 })
 
 type LoginFormValues = z.infer<typeof loginSchema>
 
 export function LoginForm() {
+  const handleAuthSuccess = useAuthSuccessHandler()
   const loginMutation = useLoginMutation()
   const navigate = useNavigate()
 
@@ -42,6 +48,51 @@ export function LoginForm() {
       },
     })
   })
+
+  const handleGoogleCredentialResponse = useCallback(({ credential }: GoogleCredentialResponse) => {
+    if (!credential) {
+      console.warn('Google credential missing')
+      return
+    }
+
+    trackEvent('login_google_credential_received')
+
+    const processLogin = async () => {
+      const response = await fetch('/api/auth/google/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ id_token: credential }),
+      })
+      if (!response.ok) {
+        throw new Error(`Google login failed: ${response.status}`)
+      }
+      await handleAuthSuccess()
+    }
+
+    void processLogin().catch((error) => console.error('Google login error', error))
+  }, [handleAuthSuccess])
+
+  useEffect(() => {
+    const googleClient: GoogleAPI | undefined = window.google
+    if (!googleClient) {
+      console.warn('Google Identity Services script not loaded')
+      return
+    }
+    const target = document.getElementById('google-login-button')
+    if (!target) {
+      console.warn('Google login button container missing')
+      return
+    }
+
+    const clientId = String(import.meta.env.VITE_GOOGLE_CLIENT_ID ?? '')
+
+    googleClient.accounts.id.initialize({
+      client_id: clientId,
+      callback: handleGoogleCredentialResponse,
+    })
+    googleClient.accounts.id.renderButton(target, { theme: 'outline', size: 'large' })
+  }, [handleGoogleCredentialResponse])
 
   return (
     <form
@@ -66,41 +117,14 @@ export function LoginForm() {
       </div>
       <div className="grid gap-3">
         <Button type="submit" disabled={loginMutation.isPending} className="w-full">
-          {loginMutation.isPending ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              로그인 중…
-            </>
-          ) : (
-            <>
-              <LogIn className="h-4 w-4" />
-              로그인
-            </>
-          )}
+          {loginMutation.isPending ? '로그인 중...' : '로그인'}
         </Button>
-        <Button
-          type="button"
-          variant="secondary"
-          className="w-full"
-          onClick={() => {
-            trackEvent('login_google_click')
-          }}
-        >
-          <Mail className="h-4 w-4" />
-          Google로 계속
-        </Button>
+        <div id="google-login-button" className="w-full" />
       </div>
       <div className="text-muted flex flex-wrap items-center justify-between gap-3 text-sm">
         <Link to={routes.signup} className="text-primary font-medium hover:underline">
-          회원가입으로 이동
+          회원가입 이동
         </Link>
-        {/* <button
-          type="button"
-          className="text-muted hover:text-primary text-sm"
-          onClick={() => trackEvent('login_forgot_password_click')}
-        >
-          비밀번호 찾기
-        </button> */}
       </div>
     </form>
   )
