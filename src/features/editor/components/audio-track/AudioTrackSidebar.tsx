@@ -2,9 +2,10 @@ import type { TrackRow } from './types'
 
 type AudioTrackSidebarProps = {
   trackRows: TrackRow[]
+  getTrackRowHeight: (track: TrackRow) => number
 }
 
-export function AudioTrackSidebar({ trackRows }: AudioTrackSidebarProps) {
+export function AudioTrackSidebar({ trackRows, getTrackRowHeight }: AudioTrackSidebarProps) {
   return (
     <div className="border-surface-3 bg-surface-2 border-r">
       {/* 티커라인 패딩 */}
@@ -13,7 +14,8 @@ export function AudioTrackSidebar({ trackRows }: AudioTrackSidebarProps) {
       {trackRows.map((track) => (
         <div
           key={track.id}
-          className="border-surface-3 flex h-[84px] items-center justify-between border-b px-4 text-sm"
+          className="border-surface-3 flex items-center justify-between border-b px-4 text-sm"
+          style={{ height: `${getTrackRowHeight(track)}px` }}
         >
           <div className="flex items-center gap-2">
             <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: track.color }} />

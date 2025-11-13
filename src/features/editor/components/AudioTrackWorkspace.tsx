@@ -22,7 +22,7 @@ export function AudioTrackWorkspace({ segments, duration }: AudioTrackWorkspaceP
     timelineRef,
     playheadPercent,
     onTimelinePointerDown,
-    rowHeight,
+    getTrackRowHeight,
     playhead,
     setPlayhead,
     isPlaying,
@@ -55,7 +55,7 @@ export function AudioTrackWorkspace({ segments, duration }: AudioTrackWorkspaceP
           {/* Sidebar - sticky로 좌측 고정 */}
           <div className="border-surface-3 bg-surface-1 sticky left-0 z-40 hidden border-r lg:block">
             {/* Sidebar 콘텐츠 */}
-            <AudioTrackSidebar trackRows={trackRows} />
+            <AudioTrackSidebar trackRows={trackRows} getTrackRowHeight={getTrackRowHeight} />
           </div>
 
           {/* Timeline 콘텐츠 */}
@@ -67,7 +67,7 @@ export function AudioTrackWorkspace({ segments, duration }: AudioTrackWorkspaceP
               timelineRef={timelineRef}
               playheadPercent={playheadPercent}
               onTimelinePointerDown={onTimelinePointerDown}
-              rowHeight={rowHeight}
+              getTrackRowHeight={getTrackRowHeight}
               duration={duration}
               playhead={playhead}
             />

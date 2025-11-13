@@ -22,7 +22,7 @@ type AudioTimelineProps = {
   timelineRef: RefObject<HTMLDivElement>
   playheadPercent: number
   onTimelinePointerDown: (event: ReactPointerEvent<HTMLDivElement>) => void
-  rowHeight: number
+  getTrackRowHeight: (track: TrackRow) => number
   duration: number
   playhead: number
 }
@@ -48,7 +48,7 @@ export function AudioTimeline({
   timelineRef,
   // playheadPercent,
   onTimelinePointerDown,
-  rowHeight,
+  getTrackRowHeight,
   duration,
   playhead,
 }: AudioTimelineProps) {
@@ -65,7 +65,8 @@ export function AudioTimeline({
   }, [duration, setDuration])
 
   const timelineWidth = getTimelineWidth(duration, scale)
-  const contentHeight = trackRows.length * rowHeight + 40
+  // Calculate total height by summing all track heights
+  const contentHeight = trackRows.reduce((total, track) => total + getTrackRowHeight(track), 0) + 40
 
   return (
     <div className="relative" style={{ width: `${timelineWidth}px` }}>
@@ -101,6 +102,7 @@ export function AudioTimeline({
             index={index}
             duration={duration}
             scale={scale}
+            height={getTrackRowHeight(track)}
             waveformData={track.type === 'waveform' ? waveformData : undefined}
           />
         ))}

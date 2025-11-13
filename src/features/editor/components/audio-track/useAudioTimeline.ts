@@ -14,7 +14,15 @@ const STATIC_TRACKS: TrackRow[] = [
   { id: 'track-fx', label: 'Music & FX', color: '#38bdf8', type: 'muted', size: 'small' },
 ]
 
-const ROW_HEIGHT = 84
+const SPEAKER_ROW_HEIGHT = 84
+const STATIC_ROW_HEIGHT = 42 // 1/3 of speaker height
+
+/**
+ * Get height for a track row based on its type
+ */
+function getTrackRowHeight(track: TrackRow): number {
+  return track.type === 'speaker' ? SPEAKER_ROW_HEIGHT : STATIC_ROW_HEIGHT
+}
 
 export function useAudioTimeline(segments: Segment[], duration: number) {
   const timelineRef = useRef<HTMLDivElement>(null)
@@ -213,7 +221,7 @@ export function useAudioTimeline(segments: Segment[], duration: number) {
     onTimelinePointerDown,
     formatTime,
     duration,
-    rowHeight: ROW_HEIGHT,
+    getTrackRowHeight,
     scale,
   }
 }

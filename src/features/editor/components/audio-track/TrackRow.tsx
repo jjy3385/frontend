@@ -7,6 +7,7 @@ type TrackRowProps = {
   index: number
   duration: number
   scale: number
+  height: number
   waveformData?: Array<{ id: number; height: number }>
 }
 
@@ -15,17 +16,17 @@ type TrackRowProps = {
  * z-index: 없음 (기본 레이어)
  *
  * 트랙 타입:
- * - waveform: 오디오 파형 표시
- * - speaker: 스피커별 세그먼트 표시
- * - fx: FX 플레이스홀더
+ * - waveform: 오디오 파형 표시 (높이: 28px)
+ * - speaker: 스피커별 세그먼트 표시 (높이: 84px)
+ * - muted/fx: FX 플레이스홀더 (높이: 28px)
  */
-export function TrackRow({ track, index, duration, scale, waveformData }: TrackRowProps) {
+export function TrackRow({ track, index, duration, scale, height, waveformData }: TrackRowProps) {
   const backgroundColor = index % 2 === 0 ? 'rgba(15,23,42,0.02)' : 'transparent'
 
   return (
     <div
-      className="border-surface-3 relative h-[84px] overflow-visible border-b px-4 py-3"
-      style={{ backgroundColor }}
+      className="border-surface-3 relative overflow-visible border-b px-4 py-3"
+      style={{ backgroundColor, height: `${height}px` }}
     >
       {track.type === 'waveform' && waveformData ? (
         <WaveformTrack waveformData={waveformData} />
