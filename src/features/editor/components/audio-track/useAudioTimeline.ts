@@ -4,16 +4,25 @@ import { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { shallow } from 'zustand/shallow'
 
 import type { Segment } from '@/entities/segment/types'
+import { pixelToTime } from '@/features/editor/utils/timeline-scale'
 import { useEditorStore } from '@/shared/store/useEditorStore'
 
 import type { TrackRow } from './types'
 
 const STATIC_TRACKS: TrackRow[] = [
-  { id: 'track-original', label: 'Original', color: '#ec4899', type: 'waveform' },
-  { id: 'track-fx', label: 'Music & FX', color: '#38bdf8', type: 'muted' },
+  { id: 'track-original', label: 'Original', color: '#ec4899', type: 'waveform', size: 'small' },
+  { id: 'track-fx', label: 'Music & FX', color: '#38bdf8', type: 'muted', size: 'small' },
 ]
 
-const ROW_HEIGHT = 84
+const SPEAKER_ROW_HEIGHT = 84
+const STATIC_ROW_HEIGHT = 42 // 1/3 of speaker height
+
+/**
+ * Get height for a track row based on its type
+ */
+function getTrackRowHeight(track: TrackRow): number {
+  return track.type === 'speaker' ? SPEAKER_ROW_HEIGHT : STATIC_ROW_HEIGHT
+}
 
 export function useAudioTimeline(segments: Segment[], duration: number) {
   const timelineRef = useRef<HTMLDivElement>(null)
@@ -30,6 +39,7 @@ export function useAudioTimeline(segments: Segment[], duration: number) {
     togglePlayback,
     setActiveSegment,
     segmentEnd,
+    scale,
   } = useEditorStore(
     (state) => ({
       playbackRate: state.playbackRate,
@@ -41,6 +51,7 @@ export function useAudioTimeline(segments: Segment[], duration: number) {
       togglePlayback: state.togglePlayback,
       setActiveSegment: state.setActiveSegment,
       segmentEnd: state.segmentEnd,
+      scale: state.scale,
     }),
     shallow,
   )
@@ -66,6 +77,7 @@ export function useAudioTimeline(segments: Segment[], duration: number) {
       rafRef.current = requestAnimationFrame(loop)
     }
     rafRef.current = requestAnimationFrame(loop)
+
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current)
     }
@@ -79,10 +91,14 @@ export function useAudioTimeline(segments: Segment[], duration: number) {
       const node = timelineRef.current
       if (!node) return
       const rect = node.getBoundingClientRect()
-      const percent = Math.min(Math.max((clientX - rect.left) / rect.width, 0), 1)
-      setPlayhead(percent * duration)
+      // Account for scrolling
+      const scrollLeft = node.parentElement?.scrollLeft || 0
+      // Convert pixel position to time using utility function
+      const pixelPosition = clientX - rect.left + scrollLeft
+      const time = pixelToTime(pixelPosition, duration, scale)
+      setPlayhead(Math.min(Math.max(time, 0), duration))
     },
-    [duration, setPlayhead],
+    [duration, scale, setPlayhead],
   )
 
   useEffect(() => {
@@ -103,6 +119,7 @@ export function useAudioTimeline(segments: Segment[], duration: number) {
 
   const onTimelinePointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
     event.preventDefault()
+
     setPlaying(false)
     scrub(event.clientX)
     setIsScrubbing(true)
@@ -162,9 +179,23 @@ export function useAudioTimeline(segments: Segment[], duration: number) {
 
   const timelineTicks = useMemo(() => {
     if (duration === 0) return [0]
-    const step = duration > 120 ? 10 : duration > 60 ? 5 : 2
+
+    // Adjust tick interval based on scale
+    // At low scale (zoomed out), use larger intervals
+    // At high scale (zoomed in), use smaller intervals
+    let step: number
+    if (scale < 0.5) {
+      step = duration > 120 ? 20 : duration > 60 ? 10 : 5
+    } else if (scale < 1) {
+      step = duration > 120 ? 10 : duration > 60 ? 5 : 2
+    } else if (scale < 2) {
+      step = duration > 120 ? 5 : duration > 60 ? 2 : 1
+    } else {
+      step = duration > 120 ? 2 : 1
+    }
+
     return Array.from({ length: Math.ceil(duration / step) + 1 }, (_, i) => i * step)
-  }, [duration])
+  }, [duration, scale])
 
   const playheadPercent = duration > 0 ? Math.min((playhead / duration) * 100, 100) : 0
 
@@ -190,6 +221,7 @@ export function useAudioTimeline(segments: Segment[], duration: number) {
     onTimelinePointerDown,
     formatTime,
     duration,
-    rowHeight: ROW_HEIGHT,
+    getTrackRowHeight,
+    scale,
   }
 }
