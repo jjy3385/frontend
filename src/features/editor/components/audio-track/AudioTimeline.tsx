@@ -1,5 +1,5 @@
 import type { PointerEvent as ReactPointerEvent, RefObject } from 'react'
-import { useEffect, useRef } from 'react'
+import { useEffect } from 'react'
 
 import { getTimelineWidth } from '@/features/editor/utils/timeline-scale'
 import { useEditorStore } from '@/shared/store/useEditorStore'

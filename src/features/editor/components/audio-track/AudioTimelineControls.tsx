@@ -1,4 +1,4 @@
-import { Pause, Play, Plus, SkipBack, SkipForward } from 'lucide-react'
+import { Pause, Play, Plus } from 'lucide-react'
 
 import { Button } from '@/shared/ui/Button'
 
@@ -33,28 +33,12 @@ export function AudioTimelineControls({
       <div className="flex flex-wrap items-center gap-2">
         <Button
           type="button"
-          variant="secondary"
-          size="icon"
-          // onClick={() => setPlayhead(0)}
-        >
-          <SkipBack className="h-4 w-4" />
-        </Button>
-        <Button
-          type="button"
-          className="border-none bg-white"
+          className="border-none bg-white shadow-none"
           variant="secondary"
           size="icon"
           onClick={togglePlayback}
         >
-          {isPlaying ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6" />}
-        </Button>
-        <Button
-          type="button"
-          variant="secondary"
-          size="icon"
-          // onClick={() => setPlayhead(Math.min(playhead + Math.max(duration * 0.05, 1), duration))}
-        >
-          <SkipForward className="h-4 w-4" />
+          {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
         </Button>
       </div>
       <div className="flex items-center gap-4">

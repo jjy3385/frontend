@@ -1,9 +1,10 @@
 import type { Segment } from '@/entities/segment/types'
 
+import { useEditorHotkeys } from '../hooks/useEditorHotkeys'
+
 import { AudioTimeline } from './audio-track/AudioTimeline'
 import { AudioTimelineControls } from './audio-track/AudioTimelineControls'
 import { AudioTrackSidebar } from './audio-track/AudioTrackSidebar'
-import { PlayheadIndicator } from './audio-track/PlayheadIndicator'
 import { useAudioTimeline } from './audio-track/useAudioTimeline'
 
 type AudioTrackWorkspaceProps = {
@@ -28,6 +29,14 @@ export function AudioTrackWorkspace({ segments, duration }: AudioTrackWorkspaceP
     togglePlayback,
     formatTime,
   } = useAudioTimeline(segments, duration)
+
+  // Register editor hotkeys
+  useEditorHotkeys({
+    playhead,
+    setPlayhead,
+    duration,
+    togglePlayback,
+  })
   return (
     <section className="border-surface-3 bg-surface-1 flex h-full flex-col border-t shadow-soft">
       <div className="border-surface-3 flex h-full flex-col rounded-2xl border">
