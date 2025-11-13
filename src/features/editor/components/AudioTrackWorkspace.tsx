@@ -2,8 +2,8 @@ import type { Segment } from '@/entities/segment/types'
 
 import { AudioTimeline } from './audio-track/AudioTimeline'
 import { AudioTimelineControls } from './audio-track/AudioTimelineControls'
-// import { AudioTrackHeader } from './audio-track/AudioTrackHeader'
 import { AudioTrackSidebar } from './audio-track/AudioTrackSidebar'
+import { PlayheadIndicator } from './audio-track/PlayheadIndicator'
 import { useAudioTimeline } from './audio-track/useAudioTimeline'
 
 type AudioTrackWorkspaceProps = {
@@ -29,14 +29,9 @@ export function AudioTrackWorkspace({ segments, duration }: AudioTrackWorkspaceP
     formatTime,
   } = useAudioTimeline(segments, duration)
   return (
-    <section className="border-surface-3 bg-surface-1 flex h-full flex-col gap-3 border-t shadow-soft">
-      {/* <AudioTrackHeader
-        playbackRate={playbackRate}
-        onDecreaseRate={() => setPlaybackRate(Math.max(playbackRate - 0.1, 0.5))}
-        onIncreaseRate={() => setPlaybackRate(Math.min(playbackRate + 0.1, 2))}
-      /> */}
-      <div className="border-surface-3 flex min-h-0 flex-1 flex-col rounded-2xl border">
-        {/* Controls - always visible at the top */}
+    <section className="border-surface-3 bg-surface-1 flex h-full flex-col border-t shadow-soft">
+      <div className="border-surface-3 flex h-full flex-col rounded-2xl border">
+        {/* Controls - 항상 상단에 고정 */}
         <AudioTimelineControls
           playhead={playhead}
           duration={duration}
@@ -46,13 +41,16 @@ export function AudioTrackWorkspace({ segments, duration }: AudioTrackWorkspaceP
           formatTime={formatTime}
         />
 
-        {/* Timeline area with sidebar */}
-        <div className="grid min-h-0 flex-1 overflow-y-auto lg:grid-cols-[220px,1fr]">
-          <div className="border-surface-3 sticky left-0 z-10 hidden h-full border-r lg:block">
+        {/* Timeline 영역 - 스크롤 가능 */}
+        <div className="timeline-scroll-container grid flex-1 overflow-auto lg:grid-cols-[220px,1fr]">
+          {/* Sidebar - sticky로 좌측 고정 */}
+          <div className="border-surface-3 bg-surface-1 sticky left-0 z-40 hidden border-r lg:block">
+            {/* Sidebar 콘텐츠 */}
             <AudioTrackSidebar trackRows={trackRows} />
           </div>
 
-          <div className="bg-surface-1 flex min-h-0 flex-1 flex-col overflow-x-auto overflow-y-hidden">
+          {/* Timeline 콘텐츠 */}
+          <div className="bg-surface-1">
             <AudioTimeline
               trackRows={trackRows}
               timelineTicks={timelineTicks}

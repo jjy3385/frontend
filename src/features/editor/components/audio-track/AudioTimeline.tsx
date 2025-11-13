@@ -1,5 +1,5 @@
 import type { PointerEvent as ReactPointerEvent, RefObject } from 'react'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
 import { getTimelineWidth } from '@/features/editor/utils/timeline-scale'
 import { useEditorStore } from '@/shared/store/useEditorStore'
@@ -68,15 +68,14 @@ export function AudioTimeline({
   const contentHeight = trackRows.length * rowHeight
 
   return (
-    <div
-      className="bg-surface-1 relative flex h-full flex-col"
-      style={{ width: `${timelineWidth}px` }}
-    >
-      {/* 재생 위치 표시자 (최상위 레이어) */}
-      <PlayheadIndicator playhead={playhead} duration={duration} scale={scale} />
+    <div className="relative" style={{ width: `${timelineWidth}px` }}>
+      {/* PlayheadIndicator - 절대 위치로 고정 */}
+      <div className="pointer-events-none absolute inset-y-0 z-[31]">
+        <PlayheadIndicator playhead={playhead} duration={duration} scale={scale} />
+      </div>
 
-      {/* 시간 눈금자 - 고정 헤더 */}
-      <div className="sticky top-0 z-20">
+      {/* TimeRuler - 상단 고정 */}
+      <div className="bg-surface-1 sticky top-0 z-30">
         <TimeRuler
           timelineTicks={timelineTicks}
           duration={duration}
@@ -85,33 +84,26 @@ export function AudioTimeline({
         />
       </div>
 
-      {/* 타임라인 콘텐츠 래퍼 - 실제 크기 정의 */}
+      {/* 타임라인 콘텐츠 */}
       <div
         ref={timelineRef}
+        className="bg-surface-1"
         style={{
           width: `${timelineWidth}px`,
-          minHeight: `${contentHeight}px`,
+          height: `${contentHeight}px`,
         }}
       >
-        <div
-          className="relative z-20 select-none"
-          style={{
-            width: `${timelineWidth}px`,
-            minHeight: `${contentHeight}px`,
-          }}
-        >
-          {/* 트랙 행들 */}
-          {trackRows.map((track, index) => (
-            <TrackRowComponent
-              key={track.id}
-              track={track}
-              index={index}
-              duration={duration}
-              scale={scale}
-              waveformData={track.type === 'waveform' ? waveformData : undefined}
-            />
-          ))}
-        </div>
+        {/* 트랙 행들 */}
+        {trackRows.map((track, index) => (
+          <TrackRowComponent
+            key={track.id}
+            track={track}
+            index={index}
+            duration={duration}
+            scale={scale}
+            waveformData={track.type === 'waveform' ? waveformData : undefined}
+          />
+        ))}
       </div>
     </div>
   )

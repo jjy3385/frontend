@@ -214,5 +214,6 @@ export function useAudioTimeline(segments: Segment[], duration: number) {
     formatTime,
     duration,
     rowHeight: ROW_HEIGHT,
+    scale,
   }
 }
