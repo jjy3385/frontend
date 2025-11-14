@@ -27,8 +27,22 @@ export type GoogleAccountsId = {
   prompt: () => void
 }
 
+export type GoogleAccountsOAuth2 = {
+  initCodeClient: (options: {
+    client_id: string
+    scope: string
+    redirect_uri: string
+    ux_mode?: 'popup' | 'redirect'
+    callback: (response: { code?: string; scope?: string }) => void
+    error_callback?: () => void
+  }) => {
+    requestCode: () => void
+  }
+}
+
 export type GoogleAccounts = {
   id: GoogleAccountsId
+  oauth2?: GoogleAccountsOAuth2
 }
 
 export type GoogleAPI = {

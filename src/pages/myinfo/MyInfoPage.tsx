@@ -1,16 +1,19 @@
 import { useEffect, useMemo } from 'react'
 
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient} from '@tanstack/react-query'
 import { Bell, CalendarDays, KeyRound, Mail, PenSquare, Shield, UserRound } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 import { getCurrentUser, type UserOut } from '@/features/auth/api/authApi'
+import { getYoutubeStatus, connectYoutube, disconnectYoutube } from '@/features/auth/api/youtubeApi'
+import type { GoogleAPI } from '@/types/google'
 import { routes } from '@/shared/config/routes'
-import { Badge } from '@/shared/ui/Badge'
 import { useAuthStore } from '@/shared/store/useAuthStore'
+import { Badge } from '@/shared/ui/Badge'
 import { Button } from '@/shared/ui/Button'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/shared/ui/Card'
 import { Spinner } from '@/shared/ui/Spinner'
+import { useUiStore } from '@/shared/store/useUiStore'
 
 const fallbackUser: UserOut = {
   username: '게스트',
@@ -33,12 +36,86 @@ function formatDate(value?: string) {
 export default function MyInfoPage() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
+  const showToast = useUiStore((state) => state.showToast)
 
   const { data, isLoading } = useQuery({
     queryKey: ['auth', 'current-user'],
     queryFn: getCurrentUser,
     staleTime: Infinity,
   })
+
+  const {
+    data: youtubeStatus,
+    isLoading: isYoutubeStatusLoading,
+    isError: isYoutubeStatusError,
+  } = useQuery({
+    queryKey: ['youtube-status'],
+    queryFn: getYoutubeStatus,
+    staleTime: 60_000,
+  })
+
+  const connectMutation = useMutation<void, Error, string>({
+    mutationFn: async (code) => {
+      await connectYoutube(code)
+    },
+    onSuccess: () => {
+      showToast({ title: '연동 완료', description: 'YouTube 채널이 연결되었습니다.' })
+      void queryClient.invalidateQueries({ queryKey: ['youtube-status'] })
+    },
+    onError: (error) => {
+      showToast({
+        title: '연동 실패',
+        description: error?.message ?? '다시 시도해 주세요.',
+        autoDismiss: 4000,
+      })
+    },
+  })
+
+  const disconnectMutation = useMutation<void, Error>({
+    mutationFn: async () => {
+      await disconnectYoutube()
+    },
+    onSuccess: () => {
+      showToast({ title: '연동 해제', description: 'YouTube 연동을 해제했습니다.' })
+      void queryClient.invalidateQueries({ queryKey: ['youtube-status'] })
+    },
+    onError: (error) => {
+      showToast({
+        title: '연동 해제 실패',
+        description: error?.message ?? '다시 시도해 주세요.',
+        autoDismiss: 4000,
+      })
+    },
+  })
+
+const handleConnectClick = () => {
+  const googleClient: GoogleAPI | undefined = window.google
+  const oauth2 = googleClient?.accounts?.oauth2
+  console.log('[youtube-connect] oauth2 ready?', Boolean(oauth2))
+  if (!oauth2) {
+    showToast({ title: 'Google 모듈이 로드되지 않았습니다.' })
+    return
+  }
+
+
+  const client = oauth2.initCodeClient({
+    client_id: import.meta.env.VITE_GOOGLE_YT_CLIENT_ID ?? '',
+    scope: 'https://www.googleapis.com/auth/youtube.upload',
+    ux_mode: 'redirect',
+    redirect_uri: import.meta.env.VITE_GOOGLE_YT_REDIRECT_URI ?? '',
+    callback: ({ code }) => {
+      if (code) {
+        connectMutation.mutate(code)
+      }
+    },
+    error_callback: () => {
+      showToast({ title: '연동이 취소되었습니다.' })
+    },
+  })
+
+  client.requestCode()
+}
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -144,7 +221,33 @@ export default function MyInfoPage() {
               ))}
             </div>
           </Card>
-
+          <Card>
+            <section className="rounded-lg border p-6 space-y-3">
+              <h3 className="text-lg font-semibold">연결된 계정</h3>
+              {isYoutubeStatusLoading ? (
+                <Spinner size="sm" />
+              ) : youtubeStatus?.youtube_channel_id ? (
+                <>
+                  <p className="text-foreground text-sm font-medium">{youtubeStatus.youtube_channel_title}</p>
+                  <p className="text-sm text-muted">연동일: {formatDate(youtubeStatus.youtube_linked_at)}</p>
+                  <Button
+                    variant="outline"
+                    disabled={disconnectMutation.isPending}
+                    onClick={() => disconnectMutation.mutate()}
+                  >
+                    연동 해제
+                  </Button>
+                </>
+              ) : (
+                <Button disabled={connectMutation.isPending} onClick={handleConnectClick}>
+                  YouTube 채널 연동하기
+                </Button>
+              )}
+              {isYoutubeStatusError && (
+                <p className="text-danger text-sm">연동 상태를 불러오지 못했습니다.</p>
+              )}
+            </section>
+          </Card>
           <Card>
             <CardHeader>
               <CardTitle>활동 요약</CardTitle>
