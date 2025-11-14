@@ -52,6 +52,10 @@ const router = createBrowserRouter(
         <Route index element={<MyInfoPage />} />
         <Route path="change-password" element={<ChangedPasswordPage />} />
       </Route>
+      <Route path="myinfo">
+        <Route index element={<MyInfoPage />} />
+        <Route path="change-password" element={<ChangedPasswordPage />} />
+      </Route>
       <Route path="voice-samples" element={<VoiceSamplesPage />} />
       <Route path="editor/:projectId/:languageCode" element={<EditorPage />} />
       <Route path="example" element={<ExampleCrudPage />} />
