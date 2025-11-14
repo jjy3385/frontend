@@ -6,6 +6,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { z } from 'zod'
 
 import { useAuthSuccessHandler } from '@/features/auth/hooks/useAuthMutations'
+import { apiClient } from '@/shared/api/client'
 
 import { routes } from '../../../shared/config/routes'
 import { trackEvent } from '../../../shared/lib/analytics'
@@ -58,15 +59,10 @@ export function LoginForm() {
     trackEvent('login_google_credential_received')
 
     const processLogin = async () => {
-      const response = await fetch('/api/auth/google/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ id_token: credential }),
-      })
-      if (!response.ok) {
-        throw new Error(`Google login failed: ${response.status}`)
-      }
+        await apiClient.post('api/auth/google/login', {
+          json: { id_token: credential },
+        })
+        await handleAuthSuccess()
       await handleAuthSuccess()
     }
 
