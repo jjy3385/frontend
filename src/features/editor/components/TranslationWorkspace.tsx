@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-
 import { ArrowRight } from 'lucide-react'
+import { fetchSuggestion } from '@/features/editor/api/suggestionApi'
+import { SuggestionDialog } from './suggestion/SuggestionDialog'
+import { SuggestionContext } from '@/entities/suggestion/types'
 
 import type { Segment } from '@/entities/segment/types'
 import type { SuggestionContext } from '@/entities/suggestion/types'
@@ -28,6 +30,7 @@ export function TranslationWorkspace({
   sourceLanguage,
   targetLanguage,
 }: TranslationWorkspaceProps) {
+  const [drafts, setDrafts] = useState<Record<string, string>>({})
   const [isAiDialogOpen, setIsAiDialogOpen] = useState(false)
   const [suggestionResult, setSuggestionResult] = useState<string>('')
   const { data: languageData } = useLanguage()
