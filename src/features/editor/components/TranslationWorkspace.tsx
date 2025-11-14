@@ -1,12 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+
 import { ArrowRight } from 'lucide-react'
 import { fetchSuggestion } from '@/features/editor/api/suggestionApi'
 import { SuggestionDialog } from './suggestion/SuggestionDialog'
-import { SuggestionContext } from '@/entities/suggestion/types'
 
 import type { Segment } from '@/entities/segment/types'
-import type { SuggestionContext } from '@/entities/suggestion/types'
-import { fetchSuggestion } from '@/features/editor/api/suggestionApi'
 import { useLanguage } from '@/features/languages/hooks/useLanguage'
 import { apiPost } from '@/shared/api/client'
 import { useSuggestionStore } from '@/shared/store/useSuggestionStore'
@@ -15,7 +13,6 @@ import { useTracksStore } from '@/shared/store/useTracksStore'
 import { Button } from '@/shared/ui/Button'
 
 import { TranslationSegmentCard } from './TranslationSegmentCard'
-import { SuggestionDialog } from './suggestion/SuggestionDialog'
 
 type TranslationWorkspaceProps = {
   projectId: string
