@@ -6,7 +6,7 @@ import {
   RefreshCw,
 } from 'lucide-react'
 
-import type { SuggestionContext } from '@/entities/suggestion/types'
+import { SuggestionContext } from '@/entities/suggestion/types'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/shared/ui/Dialog'
 import { Button } from '@/shared/ui/Button'
 
