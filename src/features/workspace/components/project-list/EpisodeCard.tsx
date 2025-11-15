@@ -215,7 +215,7 @@ export function EpisodeCard({ project, onEdit, onDelete }: EpisodeCardProps) {
             const statusClass = projectTargetStatusClassMap[statusLabel]
             return (
               <span
-                key={t.id}
+                key={t.id ?? `${project.id}-${t.language_code}`}
                 className={`rounded-full px-3 py-1 text-[11px] font-semibold ${statusClass}`}
               >
                 {label} - {t.progress ?? 0}% ({statusLabel})
