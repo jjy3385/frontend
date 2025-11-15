@@ -52,8 +52,7 @@ export function ProjectCreationDialogContent({
             title: draft.title,
             detectAutomatically: draft.detectAutomatically,
             sourceLanguage: draft.sourceLanguage || '',
-            // TODO: language 하드코딩
-            targetLanguages: ['en'],
+            targetLanguages: draft.targetLanguages,
             speakerCount: draft.speakerCount,
           }}
           draft={draft}
