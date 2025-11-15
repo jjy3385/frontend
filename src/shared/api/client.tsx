@@ -114,7 +114,8 @@ export const apiClient: KyInstance = ky.create({
           const requestUrl = error.request.url
           if (
             !requestUrl.includes('/api/auth/refresh') &&
-            !requestUrl.includes('/api/auth/login')
+            !requestUrl.includes('/api/auth/login') &&
+            !requestUrl.includes('/api/users/me') // /me is handled by useAuthRestore
           ) {
             try {
               // refresh token으로 access token 갱신

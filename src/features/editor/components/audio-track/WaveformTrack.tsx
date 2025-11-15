@@ -17,7 +17,11 @@ type WaveformTrackProps = {
  *
  * Memoized to prevent re-renders when playhead changes
  */
-export const WaveformTrack = memo(function WaveformTrack({ waveformData, isLoading, color = '#ec4899' }: WaveformTrackProps) {
+export const WaveformTrack = memo(function WaveformTrack({
+  waveformData,
+  isLoading,
+  color = '#ec4899',
+}: WaveformTrackProps) {
   if (isLoading) {
     return (
       <div className="flex h-full items-center justify-center">
@@ -37,7 +41,7 @@ export const WaveformTrack = memo(function WaveformTrack({ waveformData, isLoadi
       {waveformData.map((bar) => (
         <span
           key={bar.id}
-          className="flex-1 rounded-full"
+          className="flex-1 rounded-full opacity-80"
           style={{ height: `${bar.height}%`, backgroundColor: color }}
         />
       ))}

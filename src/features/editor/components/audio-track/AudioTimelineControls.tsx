@@ -21,8 +21,8 @@ export function AudioTimelineControls({
   // duration,
   formatTime,
   // setPlayhead,
-  togglePlayback,
-  isPlaying,
+  // togglePlayback,
+  // isPlaying,
 }: AudioTimelineControlsProps) {
   const addSpeakerTrack = useTracksStore((state) => state.addSpeakerTrack)
   const { audioPlaybackMode, toggleAudioPlaybackMode } = useEditorStore((state) => ({
@@ -45,8 +45,37 @@ export function AudioTimelineControls({
         </div>
       </Button>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <Button
+      <div className="flex flex-wrap items-center gap-3">
+        {/* Audio Playback Mode Toggle - More prominent */}
+        <div className="border-surface-3 flex items-center rounded-lg border bg-white shadow-sm">
+          <Button
+            type="button"
+            variant={audioPlaybackMode === 'original' ? 'primary' : 'ghost'}
+            size="sm"
+            className={cn(
+              'rounded-r-none border-none px-4 py-1.5 text-xs font-medium transition-colors',
+              audioPlaybackMode === 'original' && 'bg-blue-500 text-white hover:bg-blue-600',
+            )}
+            onClick={() => toggleAudioPlaybackMode()}
+          >
+            Original
+          </Button>
+          <Button
+            type="button"
+            variant={audioPlaybackMode === 'target' ? 'primary' : 'ghost'}
+            size="sm"
+            className={cn(
+              'rounded-l-none border-none px-4 py-1.5 text-xs font-medium transition-colors',
+              audioPlaybackMode === 'target' && 'bg-blue-500 text-white hover:bg-blue-600',
+            )}
+            onClick={() => toggleAudioPlaybackMode()}
+          >
+            Target
+          </Button>
+        </div>
+      </div>
+      <div className="flex items-center justify-between gap-5">
+        {/* <Button
           type="button"
           className="border-none bg-white shadow-none"
           variant="secondary"
@@ -54,26 +83,12 @@ export function AudioTimelineControls({
           onClick={togglePlayback}
         >
           {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
-        </Button>
+        </Button> */}
 
-        {/* Audio Playback Mode Toggle */}
-        <div className="border-surface-3 flex items-center rounded-lg border bg-white">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            className={cn(
-              'w-20 rounded-r-none border-none py-1.5 text-xs font-medium transition-colors',
-            )}
-            onClick={() => toggleAudioPlaybackMode()}
-          >
-            {audioPlaybackMode === 'original' ? 'Traget' : 'Original'}
-          </Button>
+        <div className="flex items-center gap-4">
+          <div className="text-foreground font-mono text-sm">{formatTime(playhead)}</div>
+          <ZoomControl />
         </div>
-      </div>
-      <div className="flex items-center gap-4">
-        <div className="text-foreground font-mono text-sm">{formatTime(playhead)}</div>
-        <ZoomControl />
       </div>
     </div>
   )
