@@ -1,15 +1,19 @@
 import type { MouseEvent as ReactMouseEvent } from 'react'
 import { useCallback, useEffect, useState } from 'react'
 
+import type { Segment } from '@/entities/segment/types'
+import { useEditorStore } from '@/shared/store/useEditorStore'
+
+import { useRegenerateSegmentTTS } from './useAudioGeneration'
+
 type Position = {
   x: number
   y: number
 }
 
 type UseSegmentContextMenuOptions = {
-  segmentId: string
-  onGenerateFixed?: () => void
-  onGenerateDynamic?: () => void
+  segment: Segment
+  voiceSampleId?: string
 }
 
 /**
@@ -20,22 +24,23 @@ type UseSegmentContextMenuOptions = {
  * - Closes when segment changes (different segmentId)
  * - Closes on outside click or escape key
  * - Manages menu position
+ * - Handles audio generation API calls with loading states
  */
-export function useSegmentContextMenu({
-  segmentId,
-  onGenerateFixed,
-  onGenerateDynamic,
-}: UseSegmentContextMenuOptions) {
+export function useSegmentContextMenu({ segment, voiceSampleId }: UseSegmentContextMenuOptions) {
   const [isOpen, setIsOpen] = useState(false)
   const [position, setPosition] = useState<Position>({ x: 0, y: 0 })
   const [activeSegmentId, setActiveSegmentId] = useState<string | null>(null)
 
+  const setSegmentLoading = useEditorStore((state) => state.setSegmentLoading)
+
+  const { mutate: regenerateTTS } = useRegenerateSegmentTTS()
+
   // Close menu when segment changes
   useEffect(() => {
-    if (activeSegmentId !== null && activeSegmentId !== segmentId && isOpen) {
+    if (activeSegmentId !== null && activeSegmentId !== segment.id && isOpen) {
       setIsOpen(false)
     }
-  }, [segmentId, activeSegmentId, isOpen])
+  }, [segment.id, activeSegmentId, isOpen])
 
   const handleContextMenu = useCallback(
     (event: ReactMouseEvent<HTMLDivElement>) => {
@@ -43,10 +48,10 @@ export function useSegmentContextMenu({
       event.stopPropagation()
 
       setPosition({ x: event.clientX, y: event.clientY })
-      setActiveSegmentId(segmentId)
+      setActiveSegmentId(segment.id)
       setIsOpen(true)
     },
-    [segmentId],
+    [segment.id],
   )
 
   const handleClose = useCallback(() => {
@@ -54,14 +59,58 @@ export function useSegmentContextMenu({
   }, [])
 
   const handleGenerateFixed = useCallback(() => {
-    onGenerateFixed?.()
+    // Set loading state
+    setSegmentLoading(segment.id, true)
+
+    // Call API - Fixed mode
+    regenerateTTS(
+      {
+        projectId: segment.project_id,
+        segmentId: segment.id,
+        translatedText: segment.target_text || segment.source_text, // target_text 없으면 source_text 사용
+        start: segment.start,
+        end: segment.end,
+        targetLang: segment.language_code,
+        mod: 'fixed',
+        voiceSampleId,
+      },
+      {
+        onError: () => {
+          // Clear loading state on error
+          setSegmentLoading(segment.id, false)
+        },
+      },
+    )
+
     handleClose()
-  }, [onGenerateFixed, handleClose])
+  }, [segment, voiceSampleId, setSegmentLoading, regenerateTTS, handleClose])
 
   const handleGenerateDynamic = useCallback(() => {
-    onGenerateDynamic?.()
+    // Set loading state
+    setSegmentLoading(segment.id, true)
+
+    // Call API - Dynamic mode
+    regenerateTTS(
+      {
+        projectId: segment.project_id,
+        segmentId: segment.id,
+        translatedText: segment.target_text || segment.source_text, // target_text 없으면 source_text 사용
+        start: segment.start,
+        end: segment.end,
+        targetLang: segment.language_code,
+        mod: 'dynamic',
+        voiceSampleId,
+      },
+      {
+        onError: () => {
+          // Clear loading state on error
+          setSegmentLoading(segment.id, false)
+        },
+      },
+    )
+
     handleClose()
-  }, [onGenerateDynamic, handleClose])
+  }, [segment, voiceSampleId, setSegmentLoading, regenerateTTS, handleClose])
 
   // Close on escape key
   useEffect(() => {

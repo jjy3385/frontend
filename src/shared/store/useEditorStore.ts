@@ -1,7 +1,8 @@
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
 
-type AudioGenerationMode = 'fixed' | 'dynamic'
+export type AudioGenerationMode = 'fixed' | 'dynamic'
+export type AudioPlaybackMode = 'original' | 'target'
 
 type EditorUiState = {
   // Timeline state
@@ -13,12 +14,16 @@ type EditorUiState = {
   isPlaying: boolean
   playbackRate: number
   segmentEnd: number | null // Stop playback at this point (for segment preview)
+  audioPlaybackMode: AudioPlaybackMode // Switch between original and target audio
 
   // Selection state
   activeSegmentId: string | null
 
   // UI modes
   splitMode: boolean
+
+  // Loading states
+  loadingSegments: Set<string> // Segments currently generating audio
 
   // Actions
   setActiveSegment: (id: string | null) => void
@@ -30,14 +35,17 @@ type EditorUiState = {
   setSegmentEnd: (time: number | null) => void
   setScale: (scale: number) => void
   setDuration: (duration: number) => void
-  generateSegmentAudio: (segmentId: string, mode: AudioGenerationMode) => void
+  setSegmentLoading: (segmentId: string, isLoading: boolean) => void
+  isSegmentLoading: (segmentId: string) => boolean
+  setAudioPlaybackMode: (mode: AudioPlaybackMode) => void
+  toggleAudioPlaybackMode: () => void
 }
 
 const MIN_SCALE = 0.35
 const MAX_SCALE = 2
 
 export const useEditorStore = create<EditorUiState>()(
-  devtools((set) => ({
+  devtools((set, get) => ({
     // Initial state
     playhead: 0,
     duration: 0,
@@ -47,6 +55,8 @@ export const useEditorStore = create<EditorUiState>()(
     segmentEnd: null,
     activeSegmentId: null,
     splitMode: false,
+    loadingSegments: new Set(),
+    audioPlaybackMode: 'target',
 
     // Actions
     setActiveSegment: (id) =>
@@ -79,11 +89,36 @@ export const useEditorStore = create<EditorUiState>()(
     setDuration: (duration) =>
       set({ duration }, false, { type: 'editor/setDuration', payload: duration }),
 
-    generateSegmentAudio: (segmentId, mode) => {
-      console.log(`[EditorStore] Generate ${mode} audio for segment:`, segmentId)
-      // TODO: Implement API call for voice generation
-      // - Fixed mode: Use assigned voice sample
-      // - Dynamic mode: Use AI-generated voice cloning
-    },
+    setSegmentLoading: (segmentId, isLoading) =>
+      set(
+        (state) => {
+          const loadingSegments = new Set(state.loadingSegments)
+          if (isLoading) {
+            loadingSegments.add(segmentId)
+          } else {
+            loadingSegments.delete(segmentId)
+          }
+          return { loadingSegments }
+        },
+        false,
+        { type: 'editor/setSegmentLoading', payload: { segmentId, isLoading } },
+      ),
+
+    isSegmentLoading: (segmentId) => get().loadingSegments.has(segmentId),
+
+    setAudioPlaybackMode: (mode) =>
+      set({ audioPlaybackMode: mode }, false, {
+        type: 'editor/setAudioPlaybackMode',
+        payload: mode,
+      }),
+
+    toggleAudioPlaybackMode: () =>
+      set(
+        (state) => ({
+          audioPlaybackMode: state.audioPlaybackMode === 'original' ? 'target' : 'original',
+        }),
+        false,
+        { type: 'editor/toggleAudioPlaybackMode' },
+      ),
   })),
 )
