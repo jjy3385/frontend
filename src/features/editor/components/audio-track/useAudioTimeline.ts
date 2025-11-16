@@ -18,7 +18,7 @@ import type { TrackRow } from './types'
 
 const STATIC_TRACKS: TrackRow[] = [
   { id: 'track-original', label: 'Original', color: '#888', type: 'waveform', size: 'small' },
-  { id: 'track-fx', label: 'Music & FX', color: '#38bdf8', type: 'waveform', size: 'small' },
+  { id: 'track-fx', label: 'Music & FX', color: '#BB86FC', type: 'waveform', size: 'small' },
 ]
 
 const SPEAKER_ROW_HEIGHT = 84
@@ -184,11 +184,35 @@ export function useAudioTimeline(
       }
       return
     }
-    const current =
-      allSegments.find((segment) => playhead >= segment.start && playhead < segment.end) ??
-      (playhead >= allSegments[allSegments.length - 1].end
-        ? allSegments[allSegments.length - 1]
-        : null)
+
+    // 이진 탐색으로 현재 세그먼트 찾기 (O(log n) - 성능 개선)
+    let current = null
+
+    // playhead가 마지막 세그먼트 이후인 경우
+    if (playhead >= allSegments[allSegments.length - 1].end) {
+      current = allSegments[allSegments.length - 1]
+    } else {
+      // 이진 탐색
+      let left = 0
+      let right = allSegments.length - 1
+
+      while (left <= right) {
+        const mid = Math.floor((left + right) / 2)
+        const segment = allSegments[mid]
+
+        if (playhead >= segment.start && playhead < segment.end) {
+          current = segment
+          break
+        }
+
+        if (playhead < segment.start) {
+          right = mid - 1
+        } else {
+          left = mid + 1
+        }
+      }
+    }
+
     const nextId = current?.id ?? null
     if (nextId !== lastSegmentRef.current) {
       lastSegmentRef.current = nextId
@@ -202,10 +226,13 @@ export function useAudioTimeline(
   )
 
   // Resolve S3 key to presigned URL for original audio
-  const { data: originalAudioUrl, isLoading: originalUrlLoading } = usePresignedUrl(originalAudioSrc, {
-    staleTime: 5 * 60 * 1000,
-    enabled: true,
-  })
+  const { data: originalAudioUrl, isLoading: originalUrlLoading } = usePresignedUrl(
+    originalAudioSrc,
+    {
+      staleTime: 5 * 60 * 1000,
+      enabled: true,
+    },
+  )
 
   // Resolve S3 key to presigned URL for background audio (Music & FX)
   const { data: backgroundAudioUrl, isLoading: backgroundUrlLoading } = usePresignedUrl(
@@ -221,7 +248,7 @@ export function useAudioTimeline(
   useSegmentAudioPlayer({
     segments: allSegments,
     playhead,
-    isPlaying: isPlaying && audioPlaybackMode === 'target',
+    isPlaying: isPlaying && audioPlaybackMode !== 'original',
     isScrubbing,
     audioUrls,
     audioObjects, // Pass preloaded Audio objects for instant playback

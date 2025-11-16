@@ -148,6 +148,13 @@ export function StudioVideoPreview({
     const percentage = x / rect.width
     const newTime = percentage * duration
     setPlayhead(newTime)
+    setPlaying(false)
+  }
+
+  const formatTime = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60)
+    const secs = Math.floor(seconds % 60)
+    return `${mins}:${secs.toString().padStart(2, '0')}`
   }
 
   const progress = duration > 0 ? (playhead / duration) * 100 : 0
@@ -160,27 +167,24 @@ export function StudioVideoPreview({
           {duration}s · {playbackRate.toFixed(1)}x
         </span>
       </header> */}
-      <div className="border-surface-3 relative overflow-hidden border bg-black/5">
-        <div className="pb-[56.25%]" />
-        <div className="absolute inset-0 flex items-center justify-center">
-          {videoSrc ? (
-            <video
-              ref={videoRef}
-              controls={false}
-              autoPlay={false}
-              className="h-auto max-h-[32em] min-h-[20em] w-full bg-black"
-              src={videoSrc}
-              preload="metadata"
-              muted
-            >
-              <track kind="captions" />
-            </video>
-          ) : (
-            <div className="text-muted flex h-full items-center justify-center text-sm">
-              비디오를 불러올 수 없습니다
-            </div>
-          )}
-        </div>
+      <div className="border-surface-3 relative flex flex-1 items-center justify-center overflow-hidden border bg-black">
+        {videoSrc ? (
+          <video
+            ref={videoRef}
+            controls={false}
+            autoPlay={false}
+            className="h-full w-full object-contain"
+            src={videoSrc}
+            preload="metadata"
+            muted
+          >
+            <track kind="captions" />
+          </video>
+        ) : (
+          <div className="text-muted flex h-full items-center justify-center text-sm">
+            비디오를 불러올 수 없습니다
+          </div>
+        )}
       </div>
 
       {/* 재생 진행도 프로그레스 바 */}
@@ -199,7 +203,7 @@ export function StudioVideoPreview({
       </div>
 
       {/* 재생 컨트롤 바 */}
-      <div className="border-surface-3 flex items-center justify-center border-t px-4 py-2">
+      <div className="border-surface-3 flex items-center justify-between border-t px-4 py-1">
         <Button
           variant="ghost"
           size="sm"
@@ -207,8 +211,9 @@ export function StudioVideoPreview({
           className="hover:bg-surface-3"
           aria-label={isPlaying ? '일시정지' : '재생'}
         >
-          {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+          {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
         </Button>
+        <div className="text-foreground font-mono text-xs">{formatTime(playhead)}</div>
       </div>
     </section>
   )
