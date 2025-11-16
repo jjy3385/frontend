@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 
 import { uploadFile } from '@/features/projects/api/storageApi'
 import { useCreateProjectMutation } from '@/features/projects/hooks/useProjects'
@@ -16,7 +17,6 @@ import { useUiStore } from '@/shared/store/useUiStore'
 import { useUploadProgressController } from './hooks/useUploadProgressController'
 import type { AutoDubbingSettingsValues } from './steps/AutoDubbingSettingsStep'
 import type { ProjectCreationDraft, SourceSelectionResult } from './types'
-import { toast } from 'sonner'
 
 const createInitialDraft = (): ProjectCreationDraft => ({
   sourceType: 'file',

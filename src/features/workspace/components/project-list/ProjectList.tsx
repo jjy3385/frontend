@@ -1,4 +1,5 @@
 import type { ProjectSummary } from '@/entities/project/types'
+
 import { EpisodeCard } from './EpisodeCard'
 
 type ProjectListProps = {

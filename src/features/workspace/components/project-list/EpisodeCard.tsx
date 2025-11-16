@@ -2,6 +2,7 @@ import { useMemo, type MouseEvent } from 'react'
 
 import { Loader2, MoreVertical } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import ReactCountryFlag from 'react-country-flag'
 
 import type { Language } from '@/entities/language/types'
 import type { ProjectSummary, ProjectTarget } from '@/entities/project/types'
@@ -16,7 +17,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/shared/ui/Dropdown'
-import ReactCountryFlag from 'react-country-flag'
 
 const EMPTY_LANGUAGES: Language[] = []
 const gradients = [
