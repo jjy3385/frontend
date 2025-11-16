@@ -64,7 +64,24 @@ export function usePreloadSegmentAudios(segments: Segment[], enabled = true) {
     // Helper to create and load audio
     const createAndLoadAudio = (segment: Segment, isPriority: boolean) => {
       const url = audioUrls.get(segment.id)
-      if (!url || audioObjects.has(segment.id)) return
+      if (!url) return
+
+      // Check if URL changed - if so, remove old Audio object
+      const existingAudio = audioObjects.get(segment.id)
+      if (existingAudio && existingAudio.src !== url) {
+        console.debug(`[Preload] URL changed for segment ${segment.id}, reloading audio`)
+        existingAudio.pause()
+        existingAudio.src = ''
+        audioObjects.delete(segment.id)
+        setReadyAudioIds((prev) => {
+          const next = new Set(prev)
+          next.delete(segment.id)
+          return next
+        })
+      } else if (existingAudio) {
+        // URL hasn't changed, keep existing Audio object
+        return
+      }
 
       const audio = new Audio(url)
       audio.crossOrigin = 'anonymous'

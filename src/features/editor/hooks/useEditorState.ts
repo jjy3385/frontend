@@ -4,7 +4,7 @@ import type { Glossary } from '../../../entities/glossary/types'
 import type { Segment } from '../../../entities/segment/types'
 import type { VoiceSample } from '../../../entities/voice-sample/types'
 import { apiGet } from '../../../shared/api/client'
-// import { queryKeys } from '../../../shared/config/queryKeys'
+import { queryKeys } from '../../../shared/config/queryKeys'
 
 export type EditorState = {
   projectId: string
@@ -23,10 +23,8 @@ export type EditorState = {
 }
 
 export function useEditorState(projectId: string, languageCode: string) {
-  const editorStateKey = (projectId: string, languageCode: string) =>
-    ['editor', 'state', projectId, languageCode] as const
   return useQuery<EditorState>({
-    queryKey: editorStateKey(projectId, languageCode),
+    queryKey: queryKeys.editor.state(projectId, languageCode),
     queryFn: () => apiGet<EditorState>(`api/projects/${projectId}/languages/${languageCode}`),
     enabled: Boolean(projectId && languageCode),
   })

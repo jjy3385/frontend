@@ -4,7 +4,8 @@ export const queryKeys = {
     detail: (id: string) => ['projects', id] as const,
   },
   editor: {
-    state: (id: string) => ['editor', id] as const,
+    state: (projectId: string, languageCode: string) =>
+      ['editor', 'state', projectId, languageCode] as const,
   },
   segments: {
     list: (projectId: string, languageCode: string) =>
