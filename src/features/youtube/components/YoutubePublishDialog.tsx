@@ -8,13 +8,7 @@ import { Button } from '@/shared/ui/Button'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/shared/ui/Dialog'
 import { Input } from '@/shared/ui/Input'
 import { Label } from '@/shared/ui/Label'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/shared/ui/Select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/Select'
 
 type YoutubePublishDialogProps = {
   open: boolean
@@ -38,9 +32,7 @@ export function YoutubePublishDialog({
   const showToast = useUiStore((state) => state.showToast)
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
-  const [privacyStatus, setPrivacyStatus] = useState<'private' | 'unlisted' | 'public'>(
-    'unlisted',
-  )
+  const [privacyStatus, setPrivacyStatus] = useState<'private' | 'unlisted' | 'public'>('unlisted')
   const [tags, setTags] = useState('Dupilot')
   const publishMutation = useYoutubePublishMutation()
 
@@ -58,10 +50,10 @@ export function YoutubePublishDialog({
   const isSubmitting = Boolean(publishMutation.isPending)
   const isFormValid = title.trim().length > 3
 
-  const defaultChannelLabel = useMemo(() => languageLabel ?? languageCode.toUpperCase(), [
-    languageLabel,
-    languageCode,
-  ])
+  const defaultChannelLabel = useMemo(
+    () => languageLabel ?? languageCode.toUpperCase(),
+    [languageLabel, languageCode],
+  )
 
   if (!asset) {
     return null
@@ -132,7 +124,7 @@ export function YoutubePublishDialog({
               id="youtube-description"
               value={description}
               onChange={(event) => setDescription(event.target.value)}
-              className="border-surface-3 bg-white w-full rounded-lg border p-3 text-sm"
+              className="border-surface-3 w-full rounded-lg border bg-white p-3 text-sm"
               rows={4}
             />
           </div>

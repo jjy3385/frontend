@@ -7,9 +7,9 @@ import type { SuggestionContext } from '@/entities/suggestion/types'
 import { fetchSuggestion } from '@/features/editor/api/suggestionApi'
 import { useLanguage } from '@/features/languages/hooks/useLanguage'
 import { apiPost } from '@/shared/api/client'
+import { useSuggestionStore } from '@/shared/store/useSuggestionStore'
 import { useEditorStore } from '@/shared/store/useEditorStore'
 import { useTracksStore } from '@/shared/store/useTracksStore'
-import { useSuggestionStore } from '@/shared/store/useSuggestionStore'
 import { Button } from '@/shared/ui/Button'
 
 import { TranslationSegmentCard } from './TranslationSegmentCard'
@@ -28,6 +28,7 @@ export function TranslationWorkspace({
   sourceLanguage,
   targetLanguage,
 }: TranslationWorkspaceProps) {
+  const [drafts, setDrafts] = useState<Record<string, string>>({})
   const [isAiDialogOpen, setIsAiDialogOpen] = useState(false)
   const [suggestionResult, setSuggestionResult] = useState<string>('')
   const { data: languageData } = useLanguage()
@@ -254,7 +255,7 @@ export function TranslationWorkspace({
   const handleRequestSuggestion = async (context: SuggestionContext) => {
     if (!activeSegmentId) return
     try {
-      const response = await fetchSuggestion({ segmentId: activeSegmentId, context })
+      const response: string = await fetchSuggestion({ segmentId: activeSegmentId, context })
       const nextPage = segmentSuggestions.length + 1
       addSuggestion(activeSegmentId, {
         id: crypto.randomUUID?.() ?? `${Date.now()}`,

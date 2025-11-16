@@ -1,11 +1,13 @@
 import { useMemo, type MouseEvent } from 'react'
 
-import { MoreVertical } from 'lucide-react'
+import { Loader2, MoreVertical } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import ReactCountryFlag from 'react-country-flag'
 
 import type { Language } from '@/entities/language/types'
 import type { ProjectSummary, ProjectTarget } from '@/entities/project/types'
 import { useLanguage } from '@/features/languages/hooks/useLanguage'
+import { usePipelineProgress } from '@/features/projects/hooks/usePipelineProgress'
 import { env } from '@/shared/config/env'
 import { routes } from '@/shared/config/routes'
 import { formatPercent } from '@/shared/lib/utils'
@@ -15,7 +17,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/shared/ui/Dropdown'
-import { Progress } from '@/shared/ui/Progress'
 
 const EMPTY_LANGUAGES: Language[] = []
 const gradients = [
@@ -24,6 +25,16 @@ const gradients = [
   'from-rose-400 via-orange-400 to-amber-400',
 ]
 const DAY = 1000 * 60 * 60 * 24
+const pipelineTrackStatuses = new Set(['uploading', 'processing', 'uploaded'])
+const languageCountryMap: Record<string, string> = {
+  ko: 'KR',
+  en: 'US',
+  ja: 'JP',
+  zh: 'CN',
+  es: 'ES',
+  fr: 'FR',
+  de: 'DE',
+}
 
 // 영상길이
 const formatDuration = (seconds = 0) => {
@@ -39,6 +50,7 @@ const projectStatusLabelMap: Record<string, '업로드' | '편집중' | '완료'
   uploaded: '업로드',
   editing: '편집중',
   done: '완료',
+  completed: '완료',
   failed: '실패',
 }
 const projectStatusClassMap: Record<'업로드' | '편집중' | '완료' | '실패', string> = {
@@ -101,7 +113,21 @@ export function EpisodeCard({ project, onEdit, onDelete }: EpisodeCardProps) {
   const statusClass = projectStatusClassMap[statusLabel]
   const registeredLabel = formatRegisteredAt(project.createdAt)
   const overallProgress = getProjectProgressFromTargets(project.targets ?? [])
-  const overlayWidth = 100 - Math.min(Math.max(overallProgress, 0), 100)
+  const shouldTrackPipeline = pipelineTrackStatuses.has(project.status ?? '')
+  const pipelineProgress = usePipelineProgress(project.id, shouldTrackPipeline)
+  const backendProgress =
+    typeof project.overall_progress === 'number'
+      ? project.overall_progress
+      : typeof project.overallProgress === 'number'
+        ? project.overallProgress
+        : undefined
+  const liveProgress = pipelineProgress?.progress ?? backendProgress ?? overallProgress
+  const livePercentLabel = formatPercent(liveProgress)
+  const pipelineStatus =
+    pipelineProgress?.status ?? (shouldTrackPipeline ? 'running' : undefined)
+  const isRunning = pipelineStatus === 'running'
+  const isFailed = pipelineStatus === 'failed'
+  const overlayWidth = 100 - Math.min(Math.max(liveProgress, 0), 100)
 
   const handleEditClick = (event: MouseEvent) => {
     event.preventDefault()
@@ -175,11 +201,22 @@ export function EpisodeCard({ project, onEdit, onDelete }: EpisodeCardProps) {
         ) : (
           <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-80`} />
         )}
+
         {/* 어둡게 덮는 오버레이 */}
         <div
           className="absolute inset-y-0 right-0 bg-black/60 transition-[width] duration-700 ease-out"
           style={{ width: `${overlayWidth}%` }}
         />
+        {isRunning ? (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/50">
+            <Loader2 className="h-5 w-5 animate-spin text-white" aria-hidden="true" />
+            <span className="text-xs font-semibold text-white">{livePercentLabel}</span>
+          </div>
+        ) : isFailed ? (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/60">
+            <span className="text-danger text-sm font-semibold">처리 실패</span>
+          </div>
+        ) : null}
         {/* 텍스트 영역 */}
         <div className="absolute inset-0 flex flex-col justify-end p-4 text-white">
           <span
@@ -202,23 +239,26 @@ export function EpisodeCard({ project, onEdit, onDelete }: EpisodeCardProps) {
           </p>
           <p className="text-muted text-xs">{registeredLabel}</p>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="w-full">
-            <Progress value={overallProgress} />
-          </div>
-          <span className="text-muted text-xs font-semibold">{formatPercent(overallProgress)}</span>
-        </div>
         <div className="mt-3 flex flex-wrap gap-2">
           {project.targets?.map((t) => {
-            const label = languageMap[t.language_code] ?? t.language_code
+            const languageCode = t.language_code.toLowerCase()
+            const label = languageMap[languageCode] ?? t.name ?? t.language_code
             const statusLabel = getProjectTargetStatusLabel(t.status)
             const statusClass = projectTargetStatusClassMap[statusLabel]
+            const countryCode =
+              languageCountryMap[languageCode] ?? languageCode.slice(0, 2).toUpperCase()
+
             return (
               <span
                 key={t.id}
                 className={`rounded-full px-3 py-1 text-[11px] font-semibold ${statusClass}`}
               >
-                {label} - {t.progress ?? 0}% ({statusLabel})
+                <ReactCountryFlag
+                  countryCode={countryCode}
+                  svg
+                  title={`${label} ${statusLabel}`}
+                  style={{ width: '1.25em', height: '1.25em' }}
+                />
               </span>
             )
           })}

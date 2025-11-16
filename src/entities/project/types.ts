@@ -4,6 +4,7 @@ export type ProjectStatus =
   | 'uploaded'
   | 'editing'
   | 'done'
+  | 'completed'
   | 'failed'
 
 interface ProjectThumbnail {
@@ -29,6 +30,8 @@ export interface ProjectSummary {
   thumbnail?: ProjectThumbnail
   glosary_id?: string
   created_at: Date
+  overall_progress?: number
+  overallProgress?: number
 }
 
 export type ProjectTargetStatus = 'pending' | 'processing' | 'completed' | 'failed'
@@ -37,6 +40,7 @@ export interface ProjectTarget {
   id: string
   projectId: string
   language_code: string
+  name?: string
   status: ProjectTargetStatus
   progress: number
 }
