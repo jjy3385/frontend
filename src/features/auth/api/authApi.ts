@@ -49,7 +49,13 @@ export async function refreshToken(): Promise<{ message: string }> {
 }
 
 export async function getCurrentUser(): Promise<UserOut> {
-  return apiClient.get('api/users/me').json<UserOut>()
+  // Authentication check endpoint - no retry, fail fast
+  return apiClient
+    .get('api/users/me', {
+      retry: 0, // No retry for auth check
+      timeout: 5000, // Shorter timeout (5s instead of 15s)
+    })
+    .json<UserOut>()
 }
 
 export async function changePassword(payload: ChangePasswordPayload): Promise<{ message: string }> {

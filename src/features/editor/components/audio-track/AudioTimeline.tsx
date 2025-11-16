@@ -18,14 +18,17 @@ type WaveformBar = {
 type AudioTimelineProps = {
   trackRows: TrackRow[]
   timelineTicks: number[]
-  waveformData: WaveformBar[]
-  waveformLoading?: boolean
+  originalWaveformData: WaveformBar[]
+  originalWaveformLoading?: boolean
+  backgroundWaveformData: WaveformBar[]
+  backgroundWaveformLoading?: boolean
   timelineRef: RefObject<HTMLDivElement>
   playheadPercent: number
   onTimelinePointerDown: (event: ReactPointerEvent<HTMLDivElement>) => void
   getTrackRowHeight: (track: TrackRow) => number
   duration: number
   playhead: number
+  readyAudioIds?: Set<string>
 }
 
 /**
@@ -45,14 +48,17 @@ type AudioTimelineProps = {
 export function AudioTimeline({
   trackRows,
   timelineTicks,
-  waveformData,
-  waveformLoading,
+  originalWaveformData,
+  originalWaveformLoading,
+  backgroundWaveformData,
+  backgroundWaveformLoading,
   timelineRef,
   // playheadPercent,
   onTimelinePointerDown,
   getTrackRowHeight,
   duration,
   playhead,
+  readyAudioIds,
 }: AudioTimelineProps) {
   const { scale, setDuration } = useEditorStore((state) => ({
     scale: state.scale,
@@ -137,26 +143,43 @@ export function AudioTimeline({
         }}
       >
         {/* 트랙 행들 */}
-        {trackRows.map((track, index) => (
-          <TrackRowComponent
-            key={track.id}
-            ref={(el) => {
-              if (el && track.type === 'speaker') {
-                trackRefs.current.set(track.id, el)
-              } else {
-                trackRefs.current.delete(track.id)
-              }
-            }}
-            track={track}
-            index={index}
-            duration={duration}
-            scale={scale}
-            height={getTrackRowHeight(track)}
-            waveformData={track.type === 'waveform' ? waveformData : undefined}
-            waveformLoading={track.type === 'waveform' ? waveformLoading : undefined}
-            trackLayouts={trackLayouts}
-          />
-        ))}
+        {trackRows.map((track, index) => {
+          // Determine which waveform data to use based on track id
+          let waveformData: WaveformBar[] | undefined
+          let waveformLoading: boolean | undefined
+
+          if (track.type === 'waveform') {
+            if (track.id === 'track-original') {
+              waveformData = originalWaveformData
+              waveformLoading = originalWaveformLoading
+            } else if (track.id === 'track-fx') {
+              waveformData = backgroundWaveformData
+              waveformLoading = backgroundWaveformLoading
+            }
+          }
+
+          return (
+            <TrackRowComponent
+              key={track.id}
+              ref={(el) => {
+                if (el && track.type === 'speaker') {
+                  trackRefs.current.set(track.id, el)
+                } else {
+                  trackRefs.current.delete(track.id)
+                }
+              }}
+              track={track}
+              index={index}
+              duration={duration}
+              scale={scale}
+              height={getTrackRowHeight(track)}
+              waveformData={waveformData}
+              waveformLoading={waveformLoading}
+              trackLayouts={trackLayouts}
+              readyAudioIds={readyAudioIds}
+            />
+          )
+        })}
       </div>
     </div>
   )

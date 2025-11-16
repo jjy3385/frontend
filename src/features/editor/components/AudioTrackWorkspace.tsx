@@ -1,4 +1,5 @@
 import type { Segment } from '@/entities/segment/types'
+import { Spinner } from '@/shared/ui/Spinner'
 
 import { useEditorHotkeys } from '../hooks/useEditorHotkeys'
 
@@ -11,12 +12,14 @@ type AudioTrackWorkspaceProps = {
   segments: Segment[]
   duration: number
   originalAudioSrc?: string
+  backgroundAudioSrc?: string
 }
 
 export function AudioTrackWorkspace({
   segments,
   duration,
   originalAudioSrc,
+  backgroundAudioSrc,
 }: AudioTrackWorkspaceProps) {
   // Segments are now managed directly in tracks store via useAudioTimeline
 
@@ -25,8 +28,10 @@ export function AudioTrackWorkspace({
     // setPlaybackRate,
     trackRows,
     timelineTicks,
-    waveformData,
-    waveformLoading,
+    originalWaveformData,
+    originalWaveformLoading,
+    backgroundWaveformData,
+    backgroundWaveformLoading,
     timelineRef,
     playheadPercent,
     onTimelinePointerDown,
@@ -37,7 +42,9 @@ export function AudioTrackWorkspace({
     setPlaying,
     togglePlayback,
     formatTime,
-  } = useAudioTimeline(segments, duration, originalAudioSrc)
+    isInitialLoadComplete,
+    readyAudioIds,
+  } = useAudioTimeline(segments, duration, originalAudioSrc, backgroundAudioSrc)
 
   // Register editor hotkeys
   useEditorHotkeys({
@@ -47,9 +54,21 @@ export function AudioTrackWorkspace({
     setPlaying,
     togglePlayback,
   })
+  // Show loading indicator while initial segments are loading
+  if (!isInitialLoadComplete) {
+    return (
+      <section className="border-surface-3 bg-surface-1 flex h-full flex-col border-t">
+        <div className="border-surface-3 flex h-full flex-col items-center justify-center rounded-lg border">
+          <Spinner size="lg" />
+          <p className="text-muted mt-3 text-sm">초기 오디오 세그먼트 로딩 중...</p>
+        </div>
+      </section>
+    )
+  }
+
   return (
-    <section className="border-surface-3 bg-surface-1 flex h-full flex-col border-t shadow-soft">
-      <div className="border-surface-3 flex h-full flex-col rounded-2xl border">
+    <section className="border-surface-3 bg-surface-1 flex h-full flex-col border-t">
+      <div className="border-surface-3 flex h-full flex-col rounded-lg border">
         {/* Controls - 항상 상단에 고정 */}
         <AudioTimelineControls
           playhead={playhead}
@@ -73,14 +92,17 @@ export function AudioTrackWorkspace({
             <AudioTimeline
               trackRows={trackRows}
               timelineTicks={timelineTicks}
-              waveformData={waveformData}
-              waveformLoading={waveformLoading}
+              originalWaveformData={originalWaveformData}
+              originalWaveformLoading={originalWaveformLoading}
+              backgroundWaveformData={backgroundWaveformData}
+              backgroundWaveformLoading={backgroundWaveformLoading}
               timelineRef={timelineRef}
               playheadPercent={playheadPercent}
               onTimelinePointerDown={onTimelinePointerDown}
               getTrackRowHeight={getTrackRowHeight}
               duration={duration}
               playhead={playhead}
+              readyAudioIds={readyAudioIds}
             />
           </div>
         </div>

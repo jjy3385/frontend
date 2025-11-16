@@ -67,7 +67,7 @@ export function useSegmentContextMenu({ segment, voiceSampleId }: UseSegmentCont
       {
         projectId: segment.project_id,
         segmentId: segment.id,
-        translatedText: segment.target_text || segment.source_text, // target_text 없으면 source_text 사용
+        translatedText: segment.target_text ?? '',
         start: segment.start,
         end: segment.end,
         targetLang: segment.language_code,
@@ -94,7 +94,7 @@ export function useSegmentContextMenu({ segment, voiceSampleId }: UseSegmentCont
       {
         projectId: segment.project_id,
         segmentId: segment.id,
-        translatedText: segment.target_text || segment.source_text, // target_text 없으면 source_text 사용
+        translatedText: segment.target_text ?? '',
         start: segment.start,
         end: segment.end,
         targetLang: segment.language_code,

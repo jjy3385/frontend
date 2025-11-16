@@ -18,6 +18,7 @@ export type EditorState = {
     video_source: string
     audio_source?: string
     video_only_source?: string
+    background_audio_source?: string
   }
 }
 

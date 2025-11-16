@@ -18,7 +18,7 @@ import type { TrackRow } from './types'
 
 const STATIC_TRACKS: TrackRow[] = [
   { id: 'track-original', label: 'Original', color: '#888', type: 'waveform', size: 'small' },
-  { id: 'track-fx', label: 'Music & FX', color: '#38bdf8', type: 'muted', size: 'small' },
+  { id: 'track-fx', label: 'Music & FX', color: '#38bdf8', type: 'waveform', size: 'small' },
 ]
 
 const SPEAKER_ROW_HEIGHT = 84
@@ -31,7 +31,12 @@ function getTrackRowHeight(track: TrackRow): number {
   return track.type === 'speaker' ? SPEAKER_ROW_HEIGHT : STATIC_ROW_HEIGHT
 }
 
-export function useAudioTimeline(segments: Segment[], duration: number, originalAudioSrc?: string) {
+export function useAudioTimeline(
+  segments: Segment[],
+  duration: number,
+  originalAudioSrc?: string,
+  backgroundAudioSrc?: string,
+) {
   const timelineRef = useRef<HTMLDivElement>(null)
   const rafRef = useRef<number>()
   const playheadRef = useRef(0)
@@ -84,8 +89,9 @@ export function useAudioTimeline(segments: Segment[], duration: number, original
   // Get all segments from tracks store for audio preloading and playback
   const allSegments = getAllSegments()
 
-  // Preload all segment audio URLs for seamless playback
-  const { audioUrls } = usePreloadSegmentAudios(allSegments)
+  // Preload all segment audio URLs and Audio objects for seamless playback
+  const { audioUrls, audioObjects, readyAudioIds, isInitialLoadComplete } =
+    usePreloadSegmentAudios(allSegments)
 
   const [isScrubbing, setIsScrubbing] = useState(false)
 
@@ -196,10 +202,19 @@ export function useAudioTimeline(segments: Segment[], duration: number, original
   )
 
   // Resolve S3 key to presigned URL for original audio
-  const { data: originalAudioUrl, isLoading: urlLoading } = usePresignedUrl(originalAudioSrc, {
+  const { data: originalAudioUrl, isLoading: originalUrlLoading } = usePresignedUrl(originalAudioSrc, {
     staleTime: 5 * 60 * 1000,
     enabled: true,
   })
+
+  // Resolve S3 key to presigned URL for background audio (Music & FX)
+  const { data: backgroundAudioUrl, isLoading: backgroundUrlLoading } = usePresignedUrl(
+    backgroundAudioSrc,
+    {
+      staleTime: 5 * 60 * 1000,
+      enabled: true,
+    },
+  )
 
   // Audio playback synchronized with playhead
   // Only play segment audio when in 'target' mode
@@ -209,6 +224,8 @@ export function useAudioTimeline(segments: Segment[], duration: number, original
     isPlaying: isPlaying && audioPlaybackMode === 'target',
     isScrubbing,
     audioUrls,
+    audioObjects, // Pass preloaded Audio objects for instant playback
+    readyAudioIds, // Track which segments are fully loaded and ready for playback
   })
 
   // Original audio playback synchronized with playhead
@@ -222,22 +239,42 @@ export function useAudioTimeline(segments: Segment[], duration: number, original
     playbackRate,
   })
 
+  // Background audio (Music & FX) playback synchronized with playhead
+  // Only play background audio when in 'target' mode
+  useOriginalAudioPlayer({
+    audioUrl: backgroundAudioUrl,
+    playhead,
+    isPlaying,
+    isScrubbing,
+    isEnabled: audioPlaybackMode === 'target',
+    playbackRate,
+  })
+
   // Generate waveform from original audio
-  // Use 20 samples per second for dense visual quality with acceptable performance
+  // Use 35 samples per second for dense visual quality with acceptable performance
   const targetSamples = useMemo(() => Math.max(Math.floor(duration) * 35, 48), [duration])
   const {
-    data: realWaveformData,
-    isLoading: waveformGenerating,
-    error: waveformError,
+    data: originalWaveformData,
+    isLoading: originalWaveformGenerating,
+    error: originalWaveformError,
   } = useAudioWaveform(originalAudioUrl, !!originalAudioUrl, targetSamples)
 
-  // Combined loading state: URL resolution + waveform generation
-  const waveformLoading = urlLoading || waveformGenerating
+  // Generate waveform from background audio (Music & FX)
+  const {
+    data: backgroundWaveformData,
+    isLoading: backgroundWaveformGenerating,
+    error: backgroundWaveformError,
+  } = useAudioWaveform(backgroundAudioUrl, !!backgroundAudioUrl, targetSamples)
 
-  const waveformData = useMemo(() => {
-    if (realWaveformData) {
+  // Combined loading states: URL resolution + waveform generation
+  const originalWaveformLoading = originalUrlLoading || originalWaveformGenerating
+  const backgroundWaveformLoading = backgroundUrlLoading || backgroundWaveformGenerating
+
+  // Process original waveform data
+  const originalWaveformBars = useMemo(() => {
+    if (originalWaveformData) {
       // Convert amplitude data (0-1) to height percentage (0-100)
-      return realWaveformData.map((amplitude, index) => ({
+      return originalWaveformData.map((amplitude, index) => ({
         id: index,
         height: amplitude * 350,
       }))
@@ -248,7 +285,24 @@ export function useAudioTimeline(segments: Segment[], duration: number, original
       id: index,
       height: 30 + Math.random() * 60,
     }))
-  }, [realWaveformData, targetSamples])
+  }, [originalWaveformData, targetSamples])
+
+  // Process background waveform data
+  const backgroundWaveformBars = useMemo(() => {
+    if (backgroundWaveformData) {
+      // Convert amplitude data (0-1) to height percentage (0-100)
+      return backgroundWaveformData.map((amplitude, index) => ({
+        id: index,
+        height: amplitude * 350,
+      }))
+    }
+    // Fallback: random data while loading or on error
+    const bars = targetSamples
+    return Array.from({ length: bars }, (_, index) => ({
+      id: index,
+      height: 30 + Math.random() * 60,
+    }))
+  }, [backgroundWaveformData, targetSamples])
 
   const timelineTicks = useMemo(() => {
     if (duration === 0) return [0]
@@ -290,14 +344,19 @@ export function useAudioTimeline(segments: Segment[], duration: number, original
     togglePlayback,
     trackRows,
     timelineTicks,
-    waveformData,
-    waveformLoading,
-    waveformError,
+    originalWaveformData: originalWaveformBars,
+    originalWaveformLoading,
+    originalWaveformError,
+    backgroundWaveformData: backgroundWaveformBars,
+    backgroundWaveformLoading,
+    backgroundWaveformError,
     playheadPercent,
     onTimelinePointerDown,
     formatTime,
     duration,
     getTrackRowHeight,
     scale,
+    isInitialLoadComplete, // Audio loading state for initial segments
+    readyAudioIds, // Track which segments are ready for playback
   }
 }

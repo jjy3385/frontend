@@ -2,10 +2,12 @@ import { useParams } from 'react-router-dom'
 
 import { AudioTrackWorkspace } from '@/features/editor/components/AudioTrackWorkspace'
 import { StudioVideoPreview } from '@/features/editor/components/StudioVideoPreview'
+import { SummaryWorkspace } from '@/features/editor/components/SummaryWorkspace'
 import { TranslationWorkspace } from '@/features/editor/components/TranslationWorkspace'
 import { useAudioGenerationEvents } from '@/features/editor/hooks/useAudioGenerationEvents'
 import { useEditorState } from '@/features/editor/hooks/useEditorState'
 import { Spinner } from '@/shared/ui/Spinner'
+import { TabsContent, TabsList, TabsRoot, TabsTrigger } from '@/shared/ui/Tabs'
 
 export default function EditorPage() {
   const { projectId = '', languageCode = '' } = useParams<{
@@ -34,16 +36,8 @@ export default function EditorPage() {
     <div className="bg-surface-1 flex h-screen flex-col">
       {/* <EditorToolbar /> */}
 
-      <div className="flex min-h-0 flex-1 flex-col gap-2">
-        <div className="flex min-h-0 flex-1 gap-2">
-          <div className="w-1/2 overflow-y-auto">
-            <TranslationWorkspace
-              projectId={projectId}
-              segments={data.segments}
-              sourceLanguage={sourceLanguage}
-              targetLanguage={targetLanguage}
-            />
-          </div>
+      <div className="flex min-h-0 flex-1 flex-col gap-1">
+        <div className="flex min-h-0 flex-1 gap-1">
           <div className="flex-1 items-stretch">
             <StudioVideoPreview
               activeLanguage={targetLanguage}
@@ -52,13 +46,52 @@ export default function EditorPage() {
               videoSource={data.playback.video_source}
             />
           </div>
+
+          <div className="w-1/3">
+            <TabsRoot defaultValue="summary" className="flex h-full flex-col">
+              <div className="border-surface-3 border-b px-3">
+                <TabsList className="h-auto gap-0 rounded-none border-0 bg-transparent p-0">
+                  <TabsTrigger
+                    value="summary"
+                    className="border-primary data-[state=active]:border-b-2 data-[state=active]:bg-transparent rounded-none px-4 py-2 text-xs font-semibold"
+                  >
+                    요약
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="translation"
+                    className="border-primary data-[state=active]:border-b-2 data-[state=active]:bg-transparent rounded-none px-4 py-2 text-xs font-semibold"
+                  >
+                    번역
+                  </TabsTrigger>
+                </TabsList>
+              </div>
+
+              <TabsContent value="summary" className="mt-0 flex-1 overflow-y-auto">
+                <SummaryWorkspace
+                  segments={data.segments}
+                  sourceLanguage={sourceLanguage}
+                  targetLanguage={targetLanguage}
+                />
+              </TabsContent>
+
+              <TabsContent value="translation" className="mt-0 flex-1 overflow-y-auto">
+                <TranslationWorkspace
+                  projectId={projectId}
+                  segments={data.segments}
+                  sourceLanguage={sourceLanguage}
+                  targetLanguage={targetLanguage}
+                />
+              </TabsContent>
+            </TabsRoot>
+          </div>
         </div>
 
-        <div className="z-10 h-[400px] min-h-0">
+        <div className="z-10 h-[480px] min-h-0">
           <AudioTrackWorkspace
             segments={data.segments}
             duration={data.playback.duration}
             originalAudioSrc={data.playback.audio_source}
+            backgroundAudioSrc={data.playback.background_audio_source}
           />
         </div>
       </div>
