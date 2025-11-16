@@ -58,6 +58,7 @@ export function useSegmentUpdateListener({
     source.addEventListener('stage', (event) => {
       try {
         const parsed = JSON.parse(event.data as string) as unknown
+        console.log(parsed)
 
         if (!isSegmentUpdateEvent(parsed)) {
           return
@@ -132,4 +133,3 @@ export function useSegmentUpdateListener({
     }
   }, [enabled, projectId, languageCode, updateSegment, showToast])
 }
-

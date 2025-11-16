@@ -29,11 +29,7 @@ type AudioGenerationEvent = {
  * @param languageCode - 언어 코드
  * @param enabled - SSE 연결 활성화 여부 (default: true)
  */
-export function useAudioGenerationEvents(
-  projectId: string,
-  languageCode: string,
-  enabled = true,
-) {
+export function useAudioGenerationEvents(projectId: string, languageCode: string, enabled = true) {
   const queryClient = useQueryClient()
   const setSegmentLoading = useEditorStore((state) => state.setSegmentLoading)
 

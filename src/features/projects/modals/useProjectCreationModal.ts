@@ -16,6 +16,7 @@ import { useUiStore } from '@/shared/store/useUiStore'
 import { useUploadProgressController } from './hooks/useUploadProgressController'
 import type { AutoDubbingSettingsValues } from './steps/AutoDubbingSettingsStep'
 import type { ProjectCreationDraft, SourceSelectionResult } from './types'
+import { toast } from 'sonner'
 
 const createInitialDraft = (): ProjectCreationDraft => ({
   sourceType: 'file',
@@ -98,6 +99,12 @@ export function useProjectCreationModal() {
 
       updateProgress('done', 100)
       finishCreation()
+
+      showToast({
+        id: 'upload-completed',
+        title: '프로젝트 업로드 완료',
+        autoDismiss: 2500,
+      })
     } catch (error) {
       console.error('Failed to upload file', error)
       handleProgressError('파일 업로드에 실패했습니다. 잠시 후 다시 시도해주세요.')
@@ -160,7 +167,6 @@ export function useProjectCreationModal() {
       {
         onSuccess(project) {
           const projectId = project.project_id
-
           if (nextDraft.sourceType === 'file') {
             if (!nextDraft.file) return
             void handleFileUpload(projectId, nextDraft.file)
