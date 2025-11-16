@@ -123,7 +123,10 @@ export function EpisodeCard({ project, onEdit, onDelete }: EpisodeCardProps) {
         : undefined
   const liveProgress = pipelineProgress?.progress ?? backendProgress ?? overallProgress
   const livePercentLabel = formatPercent(liveProgress)
-  const pipelineStatus = pipelineProgress?.status
+  const pipelineStatus =
+    pipelineProgress?.status ?? (shouldTrackPipeline ? 'running' : undefined)
+  const isRunning = pipelineStatus === 'running'
+  const isFailed = pipelineStatus === 'failed'
   const overlayWidth = 100 - Math.min(Math.max(liveProgress, 0), 100)
 
   const handleEditClick = (event: MouseEvent) => {
@@ -204,12 +207,12 @@ export function EpisodeCard({ project, onEdit, onDelete }: EpisodeCardProps) {
           className="absolute inset-y-0 right-0 bg-black/60 transition-[width] duration-700 ease-out"
           style={{ width: `${overlayWidth}%` }}
         />
-        {pipelineStatus === 'running' ? (
+        {isRunning ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/50">
             <Loader2 className="h-5 w-5 animate-spin text-white" aria-hidden="true" />
-            <span className="text-white text-xs font-semibold">{livePercentLabel}</span>
+            <span className="text-xs font-semibold text-white">{livePercentLabel}</span>
           </div>
-        ) : pipelineStatus === 'failed' ? (
+        ) : isFailed ? (
           <div className="absolute inset-0 flex items-center justify-center bg-black/60">
             <span className="text-danger text-sm font-semibold">처리 실패</span>
           </div>
