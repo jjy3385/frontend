@@ -2,10 +2,12 @@ import { useEffect } from 'react'
 
 import { useQueryClient } from '@tanstack/react-query'
 
-import type { Segment } from '@/entities/segment/types'
-import { queryKeys } from '@/shared/config/queryKeys'
 import { env } from '@/shared/config/env'
+import { queryKeys } from '@/shared/config/queryKeys'
 import { useEditorStore } from '@/shared/store/useEditorStore'
+import { useTracksStore } from '@/shared/store/useTracksStore'
+
+import type { EditorState } from './useEditorState'
 
 type AudioGenerationEvent = {
   segmentId: string
@@ -32,6 +34,7 @@ type AudioGenerationEvent = {
 export function useAudioGenerationEvents(projectId: string, languageCode: string, enabled = true) {
   const queryClient = useQueryClient()
   const setSegmentLoading = useEditorStore((state) => state.setSegmentLoading)
+  const updateSegment = useTracksStore((state) => state.updateSegment)
 
   useEffect(() => {
     if (!enabled || !projectId || !languageCode) return
@@ -55,28 +58,48 @@ export function useAudioGenerationEvents(projectId: string, languageCode: string
 
         console.log('[SSE] Audio generation completed:', { segmentId, audioS3Key, audioDuration })
 
-        // 세그먼트 리스트에서 해당 세그먼트만 업데이트 (네트워크 요청 없음!)
+        // EditorState에서 해당 세그먼트만 업데이트 (네트워크 요청 없음!)
         // S3 키가 변경되면 usePreloadSegmentAudios가 새 키를 감지하고 자동으로 presigned URL을 fetch함
-        queryClient.setQueryData<Segment[]>(
-          queryKeys.segments.list(projectId, languageCode),
-          (oldSegments) => {
-            if (!oldSegments) return oldSegments
+        queryClient.setQueryData<EditorState>(
+          queryKeys.editor.state(projectId, languageCode),
+          (oldState) => {
+            if (!oldState) return oldState
 
-            return oldSegments.map((seg) => {
-              if (seg.id === segmentId) {
-                // Dynamic duration인 경우 오디오 길이에 맞게 세그먼트 end 시간 업데이트
-                const newEnd = audioDuration !== undefined ? seg.start + audioDuration : seg.end
+            return {
+              ...oldState,
+              segments: oldState.segments.map((seg) => {
+                if (seg.id === segmentId) {
+                  // Dynamic duration인 경우 오디오 길이에 맞게 세그먼트 end 시간 업데이트
+                  const newEnd = audioDuration !== undefined ? seg.start + audioDuration : seg.end
+                  console.log('[SSE] Updating segment end:', seg.end, '->', newEnd)
 
-                return {
-                  ...seg,
-                  segment_audio_url: audioS3Key, // 새 S3 키로 교체
-                  end: newEnd, // Dynamic인 경우 새로운 길이로 업데이트
+                  return {
+                    ...seg,
+                    segment_audio_url: audioS3Key, // 새 S3 키로 교체
+                    end: newEnd, // Dynamic인 경우 새로운 길이로 업데이트
+                  }
                 }
-              }
-              return seg
-            })
+                return seg
+              }),
+            }
           },
         )
+
+        // TracksStore도 동기화하여 화면에 즉시 반영
+        const updates: Record<string, unknown> = {
+          segment_audio_url: audioS3Key,
+        }
+        if (audioDuration !== undefined) {
+          // Dynamic duration인 경우 end 시간도 업데이트
+          const currentSegment = queryClient.getQueryData<EditorState>(
+            queryKeys.editor.state(projectId, languageCode),
+          )
+          const segment = currentSegment?.segments.find((s) => s.id === segmentId)
+          if (segment) {
+            updates.end = segment.start + audioDuration
+          }
+        }
+        updateSegment(segmentId, updates)
 
         // 로딩 상태 해제
         setSegmentLoading(segmentId, false)
@@ -122,5 +145,5 @@ export function useAudioGenerationEvents(projectId: string, languageCode: string
       console.log('[SSE] Closing audio generation events connection')
       eventSource.close()
     }
-  }, [projectId, languageCode, enabled, queryClient, setSegmentLoading])
+  }, [projectId, languageCode, enabled, queryClient, setSegmentLoading, updateSegment])
 }

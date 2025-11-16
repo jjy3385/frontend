@@ -8,7 +8,7 @@ import type { Segment } from '@/entities/segment/types'
 import { useLanguage } from '@/features/languages/hooks/useLanguage'
 import { apiPost } from '@/shared/api/client'
 import { useEditorStore } from '@/shared/store/useEditorStore'
-import { useSegmentsStore } from '@/shared/store/useSegmentsStore'
+import { useTracksStore } from '@/shared/store/useTracksStore'
 import { useSuggestionStore } from '@/shared/store/useSuggestionStore'
 import { Button } from '@/shared/ui/Button'
 
@@ -39,13 +39,8 @@ export function TranslationWorkspace({
       activeSegmentId: state.activeSegmentId,
     }),
   )
-  const {
-    segments: storeSegments,
-    setSegments,
-    updateSegment,
-  } = useSegmentsStore((state) => ({
-    segments: state.segments,
-    setSegments: state.setSegments,
+  const { getAllSegments, updateSegment } = useTracksStore((state) => ({
+    getAllSegments: state.getAllSegments,
     updateSegment: state.updateSegment,
   }))
 
@@ -57,10 +52,8 @@ export function TranslationWorkspace({
     }, {})
   }, [languageData])
 
-  // segments가 변경되면 store에 반영
-  useEffect(() => {
-    setSegments(segments)
-  }, [segments, setSegments])
+  // Get all segments from tracks store
+  const storeSegments = getAllSegments()
 
   const handleChange = (segmentId: string, value: string) => {
     updateSegment(segmentId, { target_text: value })
@@ -308,9 +301,9 @@ export function TranslationWorkspace({
 
   return (
     <>
-      <section className="border-surface-3 bg-surface-1 flex h-full flex-col rounded-3xl border p-3 shadow-soft">
-        <header className="border-surface-3 flex flex-wrap items-center justify-between gap-3 border-b pb-3">
-          <div className="text-muted flex items-center gap-2 text-sm font-medium">
+      <section className="flex h-full flex-col p-2">
+        <header className="flex flex-wrap items-center justify-between gap-2 pb-2">
+          <div className="text-muted flex items-center gap-2 text-xs font-medium">
             <span>{sourceLanguage}</span>
             <ArrowRight className="h-4 w-4" />
             <span>{languageNameMap[targetLanguage]}</span>
@@ -320,6 +313,7 @@ export function TranslationWorkspace({
               type="button"
               variant="secondary"
               size="sm"
+              className="h-7 py-2"
               onClick={() => {
                 setSuggestionResult(currentActiveSegment?.target_text ?? '')
                 setIsAiDialogOpen(true)
@@ -327,12 +321,9 @@ export function TranslationWorkspace({
             >
               AI 제안 받기
             </Button>
-            <Button type="button" variant="primary" size="sm">
-              번역 저장
-            </Button>
           </div>
         </header>
-        <div className="mt-4 flex-1 space-y-4 overflow-y-auto pr-2">
+        <div className="mt-2 flex-1 space-y-2 overflow-y-auto pr-2">
           {displaySegments.map((segment, index) => {
             const isActive = activeSegmentId === segment.id
             const isTranslating = translatingSegments.has(segment.id)

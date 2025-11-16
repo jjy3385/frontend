@@ -19,6 +19,7 @@ type TrackRowProps = {
   waveformData?: Array<{ id: number; height: number }>
   waveformLoading?: boolean
   trackLayouts?: TrackLayout[]
+  readyAudioIds?: Set<string>
 }
 
 /**
@@ -34,32 +35,63 @@ type TrackRowProps = {
  */
 export const TrackRow = memo(
   forwardRef<HTMLDivElement, TrackRowProps>(function TrackRow(
-    { track, index, duration, scale, height, waveformData, waveformLoading, trackLayouts },
+    {
+      track,
+      index,
+      duration,
+      scale,
+      height,
+      waveformData,
+      waveformLoading,
+      trackLayouts,
+      readyAudioIds,
+    },
     ref,
   ) {
-    // Darker background for waveform tracks
-    const backgroundColor =
-      track.type === 'waveform'
-        ? '#e6e6e6'
-        : index % 2 === 0
-          ? 'rgba(15,23,42,0.02)'
-          : 'transparent'
+    // Different styles for each track type
+    const getTrackStyle = () => {
+      if (track.type === 'waveform') {
+        // Original track: neutral gray gradient
+        if (track.id === 'track-original') {
+          return {
+            background: 'linear-gradient(to bottom, #e5e7eb 0%, #d1d5db 100%)',
+            className: 'rounded-lg shadow-inner',
+          }
+        }
+        // Music & FX track: violet gradient (Material Design)
+        if (track.id === 'track-fx') {
+          return {
+            background: 'linear-gradient(to bottom, #ede7f6 0%, #d1c4e9 100%)',
+            className: 'rounded-lg shadow-inner',
+          }
+        }
+      }
+      // Speaker tracks: alternating subtle violet background
+      return {
+        background: index % 2 === 0 ? 'rgba(101,0,238,0.02)' : 'transparent',
+        className: '',
+      }
+    }
+
+    const trackStyle = getTrackStyle()
 
     return (
       <div
         ref={ref}
-        className="border-surface-3 relative overflow-visible border-b px-4 py-3"
+        className={`relative overflow-visible border-b ${trackStyle.className} ${track.type === 'waveform' ? 'px-2 py-2' : 'px-4 py-3'}`}
         style={{
-          backgroundColor,
+          background: trackStyle.background,
           height: `${height}px`,
         }}
       >
         {track.type === 'waveform' && waveformData ? (
-          <WaveformTrack
-            waveformData={waveformData}
-            isLoading={waveformLoading}
-            color={track.color}
-          />
+          <div className="h-full rounded-md bg-white/25 px-2 shadow-sm backdrop-blur-sm">
+            <WaveformTrack
+              waveformData={waveformData}
+              isLoading={waveformLoading}
+              color={track.color}
+            />
+          </div>
         ) : track.type === 'speaker' ? (
           <>
             {track.segments.map((segment) => (
@@ -72,6 +104,7 @@ export const TrackRow = memo(
                 currentTrackId={track.id}
                 trackLayouts={trackLayouts}
                 voiceSampleId={track.voiceSampleId}
+                isAudioReady={readyAudioIds?.has(segment.id) ?? true}
               />
             ))}
           </>

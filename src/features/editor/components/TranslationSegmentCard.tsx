@@ -37,7 +37,7 @@ export function TranslationSegmentCard({
   return (
     <article
       ref={cardRef}
-      className={`bg-surface-2 hover:border-primary/40 border-surface-3 space-y-3 rounded-2xl border p-4 shadow-inner transition ${
+      className={`space-y-3 transition ${
         isActive ? 'border-primary bg-primary/5 shadow-primary/20' : ''
       }`}
     >
@@ -45,11 +45,11 @@ export function TranslationSegmentCard({
         <span>{String(index + 1).padStart(2, '0')}</span>
         <span>{segment.speaker_tag}</span>
       </div>
-      <div className="grid gap-4 lg:grid-cols-[1fr_auto_1fr]">
+      <div className="grid gap-1 lg:grid-cols-[1fr_auto_1fr]">
         {/* 왼쪽 패널: 원문 */}
         <div className="flex flex-col gap-3">
           <textarea
-            className="bg-surface-1 text-foreground border-primary/40 focus-visible:outline-hidden focus-visible:ring-primary h-32 w-full resize-none rounded-2xl border p-3 text-sm shadow-inner focus-visible:ring-2"
+            className="bg-surface-1 text-foreground border-primary/40 focus-visible:outline-hidden focus-visible:ring-primary h-32 w-full resize-none rounded-md border p-3 text-sm focus-visible:ring-2"
             value={sourceText}
             onClick={onSegmentClick}
             onChange={(event) => onSourceChange(event.target.value)}
@@ -76,7 +76,7 @@ export function TranslationSegmentCard({
         <div className="flex flex-col gap-3">
           <div className="relative">
             <textarea
-              className="bg-surface-1 text-foreground border-primary/40 focus-visible:outline-hidden focus-visible:ring-primary h-32 w-full resize-none rounded-2xl border p-3 text-sm shadow-inner focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50"
+              className="bg-surface-1 text-foreground border-primary/40 focus-visible:outline-hidden focus-visible:ring-primary h-32 w-full resize-none rounded-md border p-3 text-sm focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50"
               value={targetText}
               onClick={onSegmentClick}
               onChange={(event) => onTargetChange(event.target.value)}

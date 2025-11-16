@@ -1,11 +1,13 @@
 import { useEffect, useRef } from 'react'
 
 import { useQuery } from '@tanstack/react-query'
+import { Pause, Play } from 'lucide-react'
 import { shallow } from 'zustand/shallow'
 
 import { apiGet } from '@/shared/api/client'
 import { queryKeys } from '@/shared/config/queryKeys'
 import { useEditorStore } from '@/shared/store/useEditorStore'
+import { Button } from '@/shared/ui/Button'
 
 type StudioVideoPreviewProps = {
   activeLanguage: string
@@ -136,39 +138,82 @@ export function StudioVideoPreview({
     video.playbackRate = playbackRate
   }, [playbackRate])
 
+  const togglePlayPause = () => {
+    setPlaying(!isPlaying)
+  }
+
+  const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect()
+    const x = e.clientX - rect.left
+    const percentage = x / rect.width
+    const newTime = percentage * duration
+    setPlayhead(newTime)
+    setPlaying(false)
+  }
+
+  const formatTime = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60)
+    const secs = Math.floor(seconds % 60)
+    return `${mins}:${secs.toString().padStart(2, '0')}`
+  }
+
+  const progress = duration > 0 ? (playhead / duration) * 100 : 0
+
   return (
-    <section className="border-surface-3 bg-surface-1 flex h-full flex-col gap-3 rounded-3xl border p-4 shadow-soft">
-      <header className="flex items-center justify-between text-sm">
+    <section className="border-surface-3 bg-surface-1 flex h-full flex-col shadow-soft">
+      {/* <header className="flex items-center justify-between text-sm">
         <span className="text-muted font-medium">{activeLanguage} 영상</span>
         <span className="text-muted">
           {duration}s · {playbackRate.toFixed(1)}x
         </span>
-      </header>
-      <div className="border-surface-3 relative overflow-hidden rounded-2xl border bg-black/5">
-        <div className="pb-[56.25%]" />
-        <div className="absolute inset-0 flex items-center justify-center">
-          {/* <Button variant="secondary" size="lg">
-            <Play className="h-5 w-5" />
-            재생
-          </Button> */}
-          {videoSrc ? (
-            <video
-              ref={videoRef}
-              controls={false}
-              autoPlay={false}
-              className="h-auto max-h-[32em] min-h-[20em] w-full bg-black"
-              src={videoSrc}
-              preload="metadata"
-              muted
-            >
-              <track kind="captions" />
-            </video>
-          ) : (
-            <div className="text-muted flex h-full items-center justify-center text-sm">
-              비디오를 불러올 수 없습니다
-            </div>
-          )}
-        </div>
+      </header> */}
+      <div className="border-surface-3 relative flex flex-1 items-center justify-center overflow-hidden border bg-black">
+        {videoSrc ? (
+          <video
+            ref={videoRef}
+            controls={false}
+            autoPlay={false}
+            className="h-full w-full object-contain"
+            src={videoSrc}
+            preload="metadata"
+            muted
+          >
+            <track kind="captions" />
+          </video>
+        ) : (
+          <div className="text-muted flex h-full items-center justify-center text-sm">
+            비디오를 불러올 수 없습니다
+          </div>
+        )}
+      </div>
+
+      {/* 재생 진행도 프로그레스 바 */}
+      <div
+        className="bg-surface-3 relative h-1 w-full cursor-pointer"
+        onClick={handleProgressClick}
+        role="progressbar"
+        aria-valuenow={playhead}
+        aria-valuemin={0}
+        aria-valuemax={duration}
+      >
+        <div
+          className="bg-primary absolute left-0 top-0 h-full transition-all duration-100"
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+
+      {/* 재생 컨트롤 바 */}
+      <div className="border-surface-3 flex items-center justify-between border-t px-4 py-1">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={togglePlayPause}
+          className="hover:bg-surface-3"
+          aria-label={isPlaying ? '일시정지' : '재생'}
+        >
+          {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+        </Button>
+        <div className="text-foreground font-mono text-xs">{formatTime(playhead)}</div>
       </div>
     </section>
   )

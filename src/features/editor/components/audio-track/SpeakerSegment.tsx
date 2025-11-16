@@ -28,6 +28,7 @@ type SpeakerSegmentProps = {
   currentTrackId: string
   trackLayouts?: TrackLayout[]
   voiceSampleId?: string
+  isAudioReady?: boolean
 }
 
 export function SpeakerSegment({
@@ -38,6 +39,7 @@ export function SpeakerSegment({
   currentTrackId,
   trackLayouts,
   voiceSampleId,
+  isAudioReady = true,
 }: SpeakerSegmentProps) {
   const isSegmentLoading = useEditorStore((state) => state.isSegmentLoading)
   const startPx = timeToPixel(segment.start, duration, scale)
@@ -109,9 +111,10 @@ export function SpeakerSegment({
         onContextMenu={handleContextMenu}
         className={cn(
           'group absolute top-3 z-10 flex h-[60px] items-center justify-between rounded-2xl border px-3 text-xs font-semibold',
-          (isLoading || isGenerating) && 'opacity-60',
+          (isLoading || isGenerating || !isAudioReady) && 'opacity-60',
           isDragging && 'cursor-grabbing opacity-60 shadow-lg',
           !isDragging && 'cursor-grab transition-opacity',
+          !isAudioReady && 'border-dashed',
         )}
         style={{
           left: `${startPx}px`,
@@ -134,8 +137,8 @@ export function SpeakerSegment({
         />
 
         {/* Waveform visualization */}
-        {!isVisible ? null : isLoading || isGenerating ? ( // 뷰포트 밖: 플레이스홀더 (아무것도 표시 안함)
-          // 로딩 중 또는 오디오 생성 중: 스피너
+        {!isVisible ? null : isLoading || isGenerating || !isAudioReady ? ( // 뷰포트 밖: 플레이스홀더 (아무것도 표시 안함)
+          // 로딩 중 또는 오디오 생성 중 또는 오디오 준비 안됨: 스피너
           <SegmentLoadingSpinner color={color} size="sm" />
         ) : waveformData ? (
           // 로드 완료: 파형 표시
