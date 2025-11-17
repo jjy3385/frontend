@@ -55,10 +55,15 @@ const stageLabelMap: Record<string, string> = {
 }
 
 const progressMessageMap: Record<number, string> = {
-  1: '번역 중',
-  10: '번역 중',
+  1: '전처리 중',
+  10: '전처리 중',
   20: '텍스트 추출 중',
   21: '텍스트 추출 중',
+  35: '텍스트 추출 중',
+  36: '번역 중',
+  70: '번역 중',
+  71: '번역 중',
+  100: '번역 중',
 }
 
 const LOOP_MIN_PROGRESS = 1
@@ -183,15 +188,14 @@ export function usePipelineProgress(
             payload.status === 'completed' ||
             (progressValue ?? 0) >= 100 ||
             Boolean(completedByStages))
+
         const status: 'running' | 'completed' | 'failed' = isFailed
           ? 'failed'
           : isCompleted
             ? 'completed'
             : 'running'
         const nextProgress =
-          status === 'completed'
-            ? 100
-            : Math.min(Math.max(progressValue ?? 0, 0), 100)
+          status === 'completed' ? 100 : Math.min(Math.max(progressValue ?? 0, 0), 100)
 
         setProgressItem({
           progress: nextProgress,
@@ -271,9 +275,7 @@ export function usePipelineProgress(
   }
 
   const computedProgress =
-    progressItem.status === 'running'
-      ? loopProgress
-      : progressItem.progress ?? loopProgress
+    progressItem.status === 'running' ? loopProgress : (progressItem.progress ?? loopProgress)
 
   return {
     ...progressItem,
