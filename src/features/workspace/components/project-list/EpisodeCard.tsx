@@ -1,6 +1,6 @@
 import { useMemo, type MouseEvent } from 'react'
 
-import { Loader2, MoreVertical } from 'lucide-react'
+import { MoreVertical } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import ReactCountryFlag from 'react-country-flag'
 
@@ -34,6 +34,22 @@ const languageCountryMap: Record<string, string> = {
   es: 'ES',
   fr: 'FR',
   de: 'DE',
+}
+const stageLabelMap: Record<string, string> = {
+  upload: '전처리 중',
+  vad: '전처리 중',
+  stt: 'STT 진행 중',
+  mt: '번역 중',
+  rag: '대본 생성 중',
+  voice_mapping: '화자 매핑 중',
+  tts: 'TTS 진행 중',
+  packaging: '결과 마무리 중',
+  outputs: '결과 저장 중',
+  sync_started: '결과 동기화 중',
+  sync_completed: '결과 동기화 완료',
+  mux_started: '비디오 합성 중',
+  mux_completed: '비디오 합성 완료',
+  done: '처리 완료',
 }
 
 // 영상길이
@@ -100,6 +116,23 @@ export function getProjectProgressFromTargets(targets: ProjectTarget[] = []) {
   return Math.round(sum / targets.length)
 }
 
+const parseProgressValue = (value: unknown) => {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value
+  }
+  if (typeof value === 'string') {
+    const parsed = Number(value)
+    if (!Number.isNaN(parsed)) {
+      return parsed
+    }
+  }
+  return undefined
+}
+
+const clampProgress = (value: number) => Math.min(Math.max(value, 0), 100)
+const PROGRESS_CIRCLE_RADIUS = 28
+const PROGRESS_CIRCLE_CIRCUMFERENCE = 2 * Math.PI * PROGRESS_CIRCLE_RADIUS
+
 type EpisodeCardProps = {
   project: ProjectSummary
   onEdit?: (project: ProjectSummary) => void
@@ -112,24 +145,32 @@ export function EpisodeCard({ project, onEdit, onDelete }: EpisodeCardProps) {
   const statusLabel = getProjectStatusLabel(project.status)
   const statusClass = projectStatusClassMap[statusLabel]
   const registeredLabel = formatRegisteredAt(project.createdAt)
-  const overallProgress = getProjectProgressFromTargets(project.targets ?? [])
   const shouldTrackPipeline = pipelineTrackStatuses.has(project.status ?? '')
   const pipelineProgress = usePipelineProgress(project.id, shouldTrackPipeline)
+  const overallProgress = getProjectProgressFromTargets(project.targets ?? [])
   const rawOverallProgressSnake: unknown = project.overall_progress
   const rawOverallProgressCamel: unknown = project.overallProgress
   const backendProgress =
-    typeof rawOverallProgressSnake === 'number'
-      ? rawOverallProgressSnake
-      : typeof rawOverallProgressCamel === 'number'
-        ? rawOverallProgressCamel
-        : undefined
-  const liveProgress = pipelineProgress?.progress ?? backendProgress ?? overallProgress
-  const livePercentLabel = formatPercent(liveProgress)
-  const pipelineStatus =
-    pipelineProgress?.status ?? (shouldTrackPipeline ? 'running' : undefined)
+    parseProgressValue(rawOverallProgressSnake) ?? parseProgressValue(rawOverallProgressCamel)
+  const pipelineProgressValue = pipelineProgress?.progress
+  const liveProgressRaw = pipelineProgressValue ?? backendProgress ?? overallProgress
+  const liveProgress = Number.isFinite(liveProgressRaw) ? liveProgressRaw : 0
+  const normalizedProgress = clampProgress(liveProgress)
+  const overlayWidth = 100 - normalizedProgress
+  const progressCircleOffset =
+    PROGRESS_CIRCLE_CIRCUMFERENCE - (normalizedProgress / 100) * PROGRESS_CIRCLE_CIRCUMFERENCE
+  const livePercentLabel = formatPercent(normalizedProgress)
+  const fallbackPipelineStatus =
+    project.status === 'failed' ? 'failed' : shouldTrackPipeline ? 'running' : undefined
+  const pipelineStatus = pipelineProgress?.status ?? fallbackPipelineStatus
+  const pipelineStage = pipelineProgress?.stage ?? project.current_stage
+  const stageKey = pipelineStage?.toLowerCase()
+  const stageLabel =
+    pipelineProgress?.message ||
+    (stageKey && stageLabelMap[stageKey]) ||
+    (pipelineStatus === 'running' ? '처리 중' : undefined)
   const isRunning = pipelineStatus === 'running'
   const isFailed = pipelineStatus === 'failed'
-  const overlayWidth = 100 - Math.min(Math.max(liveProgress, 0), 100)
 
   const handleEditClick = (event: MouseEvent) => {
     event.preventDefault()
@@ -153,10 +194,7 @@ export function EpisodeCard({ project, onEdit, onDelete }: EpisodeCardProps) {
     })
     return map
   }, [languageItems])
-  const sourceLangLabel = languageMap[project.source_language] ?? project.source_language
-  const targetLangLabels =
-    project.targets?.map((target) => languageMap[target.language_code] ?? target.language_code) ??
-    []
+
   const thumbnaileUrl =
     project.thumbnail?.kind === 's3'
       ? `https://${env.awsS3Bucket}.s3.${env.awsRegion}.amazonaws.com/${project.thumbnail.key}`
@@ -169,7 +207,7 @@ export function EpisodeCard({ project, onEdit, onDelete }: EpisodeCardProps) {
     >
       <div className="relative aspect-video overflow-hidden">
         {showActions && (
-          <div className="absolute right-3 top-3 z-10 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 pointer-events-none group-hover:pointer-events-auto group-focus-within:pointer-events-auto">
+          <div className="pointer-events-none absolute right-3 top-3 z-10 opacity-0 transition-opacity group-focus-within:pointer-events-auto group-focus-within:opacity-100 group-hover:pointer-events-auto group-hover:opacity-100">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
@@ -195,7 +233,6 @@ export function EpisodeCard({ project, onEdit, onDelete }: EpisodeCardProps) {
             </DropdownMenu>
           </div>
         )}
-
         {project.thumbnail ? (
           <img
             src={thumbnaileUrl}
@@ -205,22 +242,54 @@ export function EpisodeCard({ project, onEdit, onDelete }: EpisodeCardProps) {
         ) : (
           <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-80`} />
         )}
-
-        {/* 어둡게 덮는 오버레이 */}
         <div
           className="absolute inset-y-0 right-0 bg-black/60 transition-[width] duration-700 ease-out"
           style={{ width: `${overlayWidth}%` }}
         />
+        {/* 상태별 오버레이 */}
         {isRunning ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/50">
-            <Loader2 className="h-5 w-5 animate-spin text-white" aria-hidden="true" />
-            <span className="text-xs font-semibold text-white">{livePercentLabel}</span>
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/55">
+            <div className="relative h-16 w-16">
+              <svg
+                className="h-full w-full -rotate-90"
+                viewBox="0 0 64 64"
+                role="img"
+                aria-hidden="true"
+              >
+                <circle
+                  className="text-white/25"
+                  stroke="currentColor"
+                  strokeWidth="6"
+                  fill="transparent"
+                  r={PROGRESS_CIRCLE_RADIUS}
+                  cx="32"
+                  cy="32"
+                />
+                <circle
+                  className="text-primary"
+                  stroke="currentColor"
+                  strokeWidth="6"
+                  strokeLinecap="round"
+                  fill="transparent"
+                  r={PROGRESS_CIRCLE_RADIUS}
+                  cx="32"
+                  cy="32"
+                  strokeDasharray={PROGRESS_CIRCLE_CIRCUMFERENCE}
+                  strokeDashoffset={progressCircleOffset}
+                />
+              </svg>
+              <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-white">
+                {livePercentLabel}
+              </span>
+            </div>
+            {stageLabel ? (
+              <p className="text-[11px] font-medium text-white">{stageLabel}</p>
+            ) : null}
           </div>
         ) : isFailed ? (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/60">
-            <span className="text-danger text-sm font-semibold">처리 실패</span>
-          </div>
+          <div className="absolute inset-0 bg-black/60" />
         ) : null}
+
         {/* 텍스트 영역 */}
         <div className="absolute inset-0 flex flex-col justify-end p-4 text-white">
           <span

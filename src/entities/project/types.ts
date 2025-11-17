@@ -31,6 +31,7 @@ export interface ProjectSummary {
   glosary_id?: string
   created_at: Date
   overall_progress?: number
+  current_stage?: string
   overallProgress?: number
 }
 
