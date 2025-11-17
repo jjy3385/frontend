@@ -44,7 +44,7 @@ const formatDuration = (seconds = 0) => {
 }
 
 // 상태
-const projectStatusLabelMap: Record<string, '업로드' | '편집중' | '완료' | '실패'> = {
+export const projectStatusLabelMap: Record<string, '업로드' | '편집중' | '완료' | '실패'> = {
   uploading: '업로드',
   processing: '업로드',
   uploaded: '업로드',
@@ -54,12 +54,12 @@ const projectStatusLabelMap: Record<string, '업로드' | '편집중' | '완료'
   failed: '실패',
 }
 const projectStatusClassMap: Record<'업로드' | '편집중' | '완료' | '실패', string> = {
-  업로드: 'bg-yellow-600/90 text-white',
-  편집중: 'bg-blue-600/90 text-white',
-  완료: 'bg-emerald-600/90 text-white',
-  실패: 'bg-rose-600/90 text-white',
+  업로드: 'bg-amber-200 text-amber-900',
+  편집중: 'bg-sky-200 text-sky-900',
+  완료: 'bg-emerald-200 text-emerald-900',
+  실패: 'bg-rose-200 text-rose-900',
 }
-function getProjectStatusLabel(status?: string) {
+export function getProjectStatusLabel(status?: string) {
   return projectStatusLabelMap[status ?? ''] ?? '업로드'
 }
 const projectTargetStatusLabelMap: Record<string, '업로드' | '처리중' | '완료' | '실패'> = {
@@ -72,10 +72,10 @@ function getProjectTargetStatusLabel(status?: string) {
   return projectTargetStatusLabelMap[status ?? ''] ?? '업로드'
 }
 const projectTargetStatusClassMap: Record<'업로드' | '처리중' | '완료' | '실패', string> = {
-  업로드: 'bg-yellow-600/90 text-white',
-  처리중: 'bg-blue-600/90 text-white',
-  완료: 'bg-emerald-600/90 text-white',
-  실패: 'bg-rose-600/90 text-white',
+  업로드: 'bg-amber-200 text-amber-900',
+  처리중: 'bg-sky-200 text-sky-900',
+  완료: 'bg-emerald-200 text-emerald-900',
+  실패: 'bg-rose-200 text-rose-900',
 }
 
 // 등록일
@@ -115,11 +115,13 @@ export function EpisodeCard({ project, onEdit, onDelete }: EpisodeCardProps) {
   const overallProgress = getProjectProgressFromTargets(project.targets ?? [])
   const shouldTrackPipeline = pipelineTrackStatuses.has(project.status ?? '')
   const pipelineProgress = usePipelineProgress(project.id, shouldTrackPipeline)
+  const rawOverallProgressSnake: unknown = project.overall_progress
+  const rawOverallProgressCamel: unknown = project.overallProgress
   const backendProgress =
-    typeof project.overall_progress === 'number'
-      ? project.overall_progress
-      : typeof project.overallProgress === 'number'
-        ? project.overallProgress
+    typeof rawOverallProgressSnake === 'number'
+      ? rawOverallProgressSnake
+      : typeof rawOverallProgressCamel === 'number'
+        ? rawOverallProgressCamel
         : undefined
   const liveProgress = pipelineProgress?.progress ?? backendProgress ?? overallProgress
   const livePercentLabel = formatPercent(liveProgress)
@@ -163,33 +165,35 @@ export function EpisodeCard({ project, onEdit, onDelete }: EpisodeCardProps) {
   return (
     <Link
       to={routes.projectDetail(project.id)}
-      className="focus-visible:outline-hidden block overflow-hidden rounded-3xl border shadow-soft transition hover:-translate-y-0.5 hover:shadow-xl"
+      className="focus-visible:outline-hidden group block overflow-hidden rounded-3xl border shadow-soft transition hover:-translate-y-0.5 hover:shadow-xl"
     >
       <div className="relative aspect-video overflow-hidden">
         {showActions && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                type="button"
-                aria-label="에피소드 작업"
-                className="focus-visible:outline-hidden focus-visible:ring-primary/40 absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white/85 text-gray-900 shadow hover:bg-white focus-visible:ring-2"
-                onClick={(event) => {
-                  event.preventDefault()
-                  event.stopPropagation()
-                }}
-              >
-                <MoreVertical className="h-4 w-4" />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {onEdit && <DropdownMenuItem onClick={handleEditClick}>수정</DropdownMenuItem>}
-              {onDelete && (
-                <DropdownMenuItem className="text-danger" onClick={handleDeleteClick}>
-                  삭제
-                </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="absolute right-3 top-3 z-10 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 pointer-events-none group-hover:pointer-events-auto group-focus-within:pointer-events-auto">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  aria-label="에피소드 작업"
+                  className="focus-visible:outline-hidden focus-visible:ring-primary/40 flex h-8 w-8 items-center justify-center rounded-full bg-white/85 text-gray-900 shadow hover:bg-white focus-visible:ring-2"
+                  onClick={(event) => {
+                    event.preventDefault()
+                    event.stopPropagation()
+                  }}
+                >
+                  <MoreVertical className="h-4 w-4" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {onEdit && <DropdownMenuItem onClick={handleEditClick}>수정</DropdownMenuItem>}
+                {onDelete && (
+                  <DropdownMenuItem className="text-danger" onClick={handleDeleteClick}>
+                    삭제
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         )}
 
         {project.thumbnail ? (
@@ -234,9 +238,6 @@ export function EpisodeCard({ project, onEdit, onDelete }: EpisodeCardProps) {
       <div className="space-y-2 p-4">
         <div className="space-y-1">
           <p className="line-clamp-1 text-lg font-semibold">{project.title}</p>
-          <p className="text-muted text-xs">
-            사용 언어: {sourceLangLabel} → {(targetLangLabels ?? []).join(', ')}
-          </p>
           <p className="text-muted text-xs">{registeredLabel}</p>
         </div>
         <div className="mt-3 flex flex-wrap gap-2">
@@ -250,7 +251,7 @@ export function EpisodeCard({ project, onEdit, onDelete }: EpisodeCardProps) {
 
             return (
               <span
-                key={t.id}
+                key={t.id ?? `${t.projectId}-${languageCode}`}
                 className={`rounded-full px-3 py-1 text-[11px] font-semibold ${statusClass}`}
               >
                 <ReactCountryFlag
