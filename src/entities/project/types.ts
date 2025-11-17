@@ -7,6 +7,22 @@ export type ProjectStatus =
   | 'completed'
   | 'failed'
 
+export type PipelineStage =
+  | 'upload'
+  | 'vad'
+  | 'stt'
+  | 'mt'
+  | 'rag'
+  | 'voice_mapping'
+  | 'tts'
+  | 'packaging'
+  | 'outputs'
+  | 'sync_started'
+  | 'sync_completed'
+  | 'mux_started'
+  | 'mux_completed'
+  | 'done'
+
 interface ProjectThumbnail {
   kind: 's3' | 'external'
   key: string
@@ -31,6 +47,7 @@ export interface ProjectSummary {
   glosary_id?: string
   created_at: Date
   overall_progress?: number
+  current_stage?: PipelineStage
   overallProgress?: number
 }
 

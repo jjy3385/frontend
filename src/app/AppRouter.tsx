@@ -20,6 +20,8 @@ const ProjectsListPage = lazy(() => import('../pages/projects/ProjectsListPage')
 const ProjectDetailPage = lazy(() => import('../pages/projects/ProjectDetailPage'))
 const EditorPage = lazy(() => import('../pages/editor/EditorPage'))
 const VoiceSamplesPage = lazy(() => import('../pages/voice-samples/VoiceSamplesPage'))
+const VoiceCloningPage = lazy(() => import('../pages/voice-cloning/VoiceCloningPage'))
+const VoiceLibraryPage = lazy(() => import('../pages/voice-library/VoiceLibraryPage'))
 const MyInfoPage = lazy(() => import('../pages/myinfo/MyInfoPage'))
 const ChangedPasswordPage = lazy(() => import('../pages/myinfo/ChangedPasswordPage'))
 const YoutubeCallbackPage = lazy(() => import('../pages/oauth/YoutubeCallbackPage'))
@@ -42,6 +44,8 @@ const router = createBrowserRouter(
           <Route path=":id" element={<ProjectDetailPage />} />
         </Route>
         <Route path="voice-samples" element={<VoiceSamplesPage />} />
+        <Route path="voice-cloning" element={<VoiceCloningPage />} />
+        <Route path="voice-library" element={<VoiceLibraryPage />} />
         <Route path="myinfo">
           <Route index element={<MyInfoPage />} />
           <Route path="change-password" element={<ChangedPasswordPage />} />
@@ -55,6 +59,8 @@ const router = createBrowserRouter(
         <Route path=":projectId/:languageCode" element={<EditorPage />} />
       </Route>
       <Route path="voice-samples" element={<VoiceSamplesPage />} />
+      <Route path="voice-cloning" element={<VoiceCloningPage />} />
+      <Route path="voice-library" element={<VoiceLibraryPage />} />
       <Route path="editor/:projectId/:languageCode" element={<EditorPage />} />
       <Route path="example" element={<ExampleCrudPage />} />
       <Route path="example/modal" element={<ModalExamplePage />} />
