@@ -255,7 +255,7 @@ export function TranslationWorkspace({
   const handleRequestSuggestion = async (context: SuggestionContext) => {
     if (!activeSegmentId) return
     try {
-      const response: string = await fetchSuggestion({ segmentId: activeSegmentId, context })
+      const response = await fetchSuggestion({ segmentId: activeSegmentId, context })
       const nextPage = segmentSuggestions.length + 1
       addSuggestion(activeSegmentId, {
         id: crypto.randomUUID?.() ?? `${Date.now()}`,
