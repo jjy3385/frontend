@@ -25,6 +25,7 @@ type PipelineEventPayload = {
   stages?: PipelineStage[]
   message?: string
   error?: string
+  process?: string
 }
 
 const pipelineStages = [
@@ -66,10 +67,8 @@ const progressMessageMap: Record<number, string> = {
   100: '번역 중',
 }
 
-const LOOP_MIN_PROGRESS = 1
-const LOOP_MAX_PROGRESS = 100
-const LOOP_INTERVAL_MS = 800
-const loopProgressCache = new Map<string, number>()
+const DEFAULT_PROGRESS = 0
+const progressCache = new Map<string, number>()
 
 const getProgressStageMessage = (progress?: number) => {
   if (progress == null) return undefined
@@ -117,33 +116,49 @@ export function usePipelineProgress(
   projectId?: string,
   enabled = true,
 ): PipelineProgressItem | undefined {
-  const [progressItem, setProgressItem] = useState<PipelineProgressItem>()
-  const [loopProgress, setLoopProgress] = useState(() => {
-    if (projectId) {
-      return loopProgressCache.get(projectId) ?? LOOP_MIN_PROGRESS
-    }
-    return LOOP_MIN_PROGRESS
-  })
-  const loopProgressRef = useRef(loopProgress)
+  const initialCachedProgress = projectId ? progressCache.get(projectId) : undefined
+  const [progressItem, setProgressItem] = useState<PipelineProgressItem | undefined>(() =>
+    initialCachedProgress !== undefined
+      ? {
+          progress: initialCachedProgress,
+          stage: undefined,
+          message: undefined,
+          status: 'running',
+        }
+      : undefined,
+  )
+  const lastProgressRef = useRef(initialCachedProgress ?? DEFAULT_PROGRESS)
 
   useEffect(() => {
-    loopProgressRef.current = loopProgress
-  }, [loopProgress])
+    if (typeof progressItem?.progress === 'number' && Number.isFinite(progressItem.progress)) {
+      lastProgressRef.current = progressItem.progress
+    }
+  }, [progressItem?.progress])
 
   useEffect(() => {
     if (!projectId) {
-      loopProgressRef.current = LOOP_MIN_PROGRESS
-      setLoopProgress(LOOP_MIN_PROGRESS)
+      lastProgressRef.current = DEFAULT_PROGRESS
+      setProgressItem(undefined)
       return
     }
-    const cachedProgress = loopProgressCache.get(projectId) ?? LOOP_MIN_PROGRESS
-    loopProgressRef.current = cachedProgress
-    setLoopProgress(cachedProgress)
+    const cachedProgress = progressCache.get(projectId)
+    lastProgressRef.current = cachedProgress ?? DEFAULT_PROGRESS
+    if (cachedProgress === undefined) {
+      setProgressItem(undefined)
+      return
+    }
+    setProgressItem({
+      progress: cachedProgress,
+      stage: undefined,
+      message: undefined,
+      status: 'running',
+    })
   }, [projectId])
 
   useEffect(() => {
     if (!projectId || !enabled) {
       setProgressItem(undefined)
+      lastProgressRef.current = DEFAULT_PROGRESS
       return
     }
 
@@ -153,9 +168,6 @@ export function usePipelineProgress(
     const handleEvent = (event: MessageEvent) => {
       try {
         const payload = JSON.parse(event.data as string) as PipelineEventPayload
-        if (import.meta.env.DEV) {
-          console.debug('[Pipeline SSE]', projectId, payload)
-        }
         const normalizedEventProgress = normalizeProgress(payload.progress)
         const stageKey = (payload.current_stage ?? payload.stage ?? '').toLowerCase()
         const failureStage =
@@ -169,9 +181,14 @@ export function usePipelineProgress(
           normalizedEventProgress !== undefined
             ? normalizedEventProgress
             : computeOverallProgress(payload)
-        const progressValue = isFailed ? loopProgressRef.current : baseProgress
+        const safeBaseProgress =
+          typeof baseProgress === 'number' && Number.isFinite(baseProgress)
+            ? baseProgress
+            : lastProgressRef.current
+        const progressValue = isFailed ? lastProgressRef.current : safeBaseProgress
         const progressMessage = getProgressStageMessage(normalizedEventProgress)
         const baseMessage =
+          payload.process ??
           progressMessage ??
           payload.message ??
           stageLabelMap[failureStage ?? stageKey] ??
@@ -195,8 +212,11 @@ export function usePipelineProgress(
             ? 'completed'
             : 'running'
         const nextProgress =
-          status === 'completed' ? 100 : Math.min(Math.max(progressValue ?? 0, 0), 100)
+          status === 'completed'
+            ? 100
+            : Math.min(Math.max(progressValue ?? DEFAULT_PROGRESS, 0), 100)
 
+        lastProgressRef.current = nextProgress
         setProgressItem({
           progress: nextProgress,
           stage: stageKey || undefined,
@@ -205,7 +225,7 @@ export function usePipelineProgress(
         })
 
         if (projectId) {
-          loopProgressCache.set(projectId, nextProgress)
+          progressCache.set(projectId, nextProgress)
         }
 
         if (isFailed || isCompleted) {
@@ -216,8 +236,61 @@ export function usePipelineProgress(
       }
     }
 
+    const handleProcessEvent = (event: MessageEvent) => {
+      try {
+        const payload = JSON.parse(event.data as string) as PipelineEventPayload
+        if (import.meta.env.DEV) {
+          console.debug('[Pipeline SSE:process]', projectId, payload)
+        }
+
+        const normalizedProcessProgress = normalizeProgress(payload.progress)
+        const stageKey = (payload.current_stage ?? payload.stage ?? '').toLowerCase()
+        const baseMessage =
+          payload.process ??
+          payload.message ??
+          getProgressStageMessage(normalizedProcessProgress) ??
+          stageLabelMap[stageKey] ??
+          (stageKey || '처리 중')
+
+        if (normalizedProcessProgress === undefined && !payload.process && !payload.message) {
+          return
+        }
+
+        setProgressItem((prev) => {
+          if (prev && prev.status !== 'running') {
+            return prev
+          }
+
+          const resolvedStage = stageKey || prev?.stage
+          const previousProgress =
+            typeof prev?.progress === 'number' && Number.isFinite(prev.progress)
+              ? prev.progress
+              : lastProgressRef.current
+          const resolvedProgress =
+            normalizedProcessProgress !== undefined
+              ? Math.min(Math.max(normalizedProcessProgress, 0), 100)
+              : previousProgress
+
+          lastProgressRef.current = resolvedProgress
+          if (projectId) {
+            progressCache.set(projectId, resolvedProgress)
+          }
+
+          return {
+            progress: resolvedProgress,
+            stage: resolvedStage,
+            message: baseMessage,
+            status: 'running',
+          }
+        })
+      } catch (error) {
+        console.error('Failed to parse pipeline SSE process payload', error)
+      }
+    }
+
     source.addEventListener('stage', handleEvent)
     source.addEventListener('message', handleEvent)
+    source.addEventListener('process', handleProcessEvent)
 
     source.onerror = (error) => {
       source.close()
@@ -227,58 +300,28 @@ export function usePipelineProgress(
     return () => {
       source.removeEventListener('stage', handleEvent)
       source.removeEventListener('message', handleEvent)
+      source.removeEventListener('process', handleProcessEvent)
       source.close()
       setProgressItem(undefined)
     }
   }, [enabled, projectId])
 
-  useEffect(() => {
-    if (!enabled) {
-      loopProgressRef.current = LOOP_MIN_PROGRESS
-      setLoopProgress(LOOP_MIN_PROGRESS)
-      return
-    }
-
-    if (progressItem?.status && progressItem.status !== 'running') {
-      const settledProgress =
-        progressItem.progress ??
-        (progressItem.status === 'completed' ? LOOP_MAX_PROGRESS : loopProgressRef.current)
-      loopProgressRef.current = settledProgress
-      setLoopProgress(settledProgress)
-      return
-    }
-
-    const intervalId = window.setInterval(() => {
-      setLoopProgress((prev) => {
-        const next = prev >= LOOP_MAX_PROGRESS ? LOOP_MIN_PROGRESS : prev + 1
-        loopProgressRef.current = next
-        return next
-      })
-    }, LOOP_INTERVAL_MS)
-
-    return () => {
-      window.clearInterval(intervalId)
-    }
-  }, [enabled, progressItem?.progress, progressItem?.status, projectId])
-
   if (!enabled) {
     return undefined
   }
 
-  if (!progressItem) {
+  if (progressItem) {
+    return progressItem
+  }
+
+  if (projectId) {
     return {
-      progress: loopProgress,
+      progress: progressCache.get(projectId) ?? DEFAULT_PROGRESS,
       stage: undefined,
       message: undefined,
       status: 'running',
     }
   }
 
-  const computedProgress =
-    progressItem.status === 'running' ? loopProgress : (progressItem.progress ?? loopProgress)
-
-  return {
-    ...progressItem,
-    progress: computedProgress,
-  }
+  return undefined
 }
