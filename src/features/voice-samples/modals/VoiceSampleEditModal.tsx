@@ -13,9 +13,15 @@ type VoiceSampleEditModalProps = {
   open: boolean
   onOpenChange: (open: boolean) => void
   sample: VoiceSample | null
+  onSuccess?: (sample: VoiceSample) => void
 }
 
-export function VoiceSampleEditModal({ open, onOpenChange, sample }: VoiceSampleEditModalProps) {
+export function VoiceSampleEditModal({
+  open,
+  onOpenChange,
+  sample,
+  onSuccess,
+}: VoiceSampleEditModalProps) {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [isPublic, setIsPublic] = useState(false)
@@ -39,7 +45,7 @@ export function VoiceSampleEditModal({ open, onOpenChange, sample }: VoiceSample
     }
 
     try {
-      await updateMutation.mutateAsync({
+      const updated = await updateMutation.mutateAsync({
         id: sample.id,
         payload: {
           name: name.trim(),
@@ -47,6 +53,7 @@ export function VoiceSampleEditModal({ open, onOpenChange, sample }: VoiceSample
           isPublic,
         },
       })
+      onSuccess?.(updated)
       onOpenChange(false)
     } catch (error) {
       console.error('음성 샘플 수정 실패:', error)

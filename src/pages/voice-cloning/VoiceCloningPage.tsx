@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import type { DragEvent } from 'react'
 
 import { useNavigate } from 'react-router-dom'
 
@@ -16,6 +17,7 @@ export default function VoiceCloningPage() {
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const [removeNoise, setRemoveNoise] = useState(true)
   const [micError, setMicError] = useState<string | null>(null)
+  const [uploadError, setUploadError] = useState<string | null>(null)
 
   const [recordingState, setRecordingState] = useState<
     'idle' | 'recording' | 'converting' | 'ready'
@@ -30,6 +32,7 @@ export default function VoiceCloningPage() {
   const timerRef = useRef<number | null>(null)
 
   const navigate = useNavigate()
+  const [isDragOver, setIsDragOver] = useState(false)
 
   const supportsRecording =
     typeof window !== 'undefined' &&
@@ -138,6 +141,7 @@ export default function VoiceCloningPage() {
             const url = URL.createObjectURL(wavBlob)
             setPreviewUrl(url)
             setSelectedFile(wavFile)
+            setMode('record')
             setRecordingState('ready')
             setStep('review')
           })
@@ -178,20 +182,62 @@ export default function VoiceCloningPage() {
     }
   }, [])
 
-  const handleUploadSelect = (file: File | undefined) => {
-    if (!file) return
-    setMode('upload')
-    setSelectedFile(file)
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl)
-    }
-    setPreviewUrl(URL.createObjectURL(file))
-    setStep('details')
-  }
+  const isAudioFile = useCallback((file: File) => {
+    const allowedExtensions = ['.wav', '.mp3', '.m4a', '.aac', '.flac', '.ogg']
+    const lowerName = file.name.toLowerCase()
+    return (
+      file.type.startsWith('audio/') || allowedExtensions.some((ext) => lowerName.endsWith(ext))
+    )
+  }, [])
 
-  const handleUseRecordedSample = () => {
+  const handleUploadSelect = useCallback(
+    (file: File | undefined) => {
+      if (!file) return
+      if (!isAudioFile(file)) {
+        setUploadError('오디오 형식의 파일만 업로드할 수 있습니다.')
+        return
+      }
+      setUploadError(null)
+      setMode('upload')
+      setSelectedFile(file)
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl)
+      }
+      setPreviewUrl(URL.createObjectURL(file))
+      setStep('review')
+    },
+    [isAudioFile, previewUrl],
+  )
+
+  const handleDropUpload = useCallback(
+    (event: DragEvent<HTMLDivElement>) => {
+      event.preventDefault()
+      setIsDragOver(false)
+      const file = event.dataTransfer?.files?.[0]
+      if (file) {
+        handleUploadSelect(file)
+      }
+    },
+    [handleUploadSelect],
+  )
+
+  const handleDragOver = useCallback((event: DragEvent<HTMLDivElement>) => {
+    if (event.dataTransfer.types.includes('Files')) {
+      event.preventDefault()
+      setIsDragOver(true)
+    }
+  }, [])
+
+  const handleDragLeave = useCallback((event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault()
+    const related = event.relatedTarget as Node | null
+    if (!related || !event.currentTarget.contains(related)) {
+      setIsDragOver(false)
+    }
+  }, [])
+
+  const handleProceedWithSample = () => {
     if (!selectedFile) return
-    setMode('record')
     setStep('details')
   }
 
@@ -214,7 +260,15 @@ export default function VoiceCloningPage() {
     switch (step) {
       case 'choose':
         return (
-          <div className="border-surface-3 bg-surface-1/60 rounded-3xl border border-dashed p-10 text-center">
+          <div
+            className={`rounded-3xl border border-dashed p-10 text-center transition ${
+              isDragOver ? 'border-primary bg-primary/5 shadow-lg' : 'border-primary/60 bg-surface-1/60'
+            }`}
+            style={{ cursor: 'copy' }}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDropUpload}
+          >
             <div className="space-y-4">
               <div className="text-3xl">+</div>
               <h2 className="text-xl font-semibold">Instant Voice Cloning</h2>
@@ -222,6 +276,7 @@ export default function VoiceCloningPage() {
                 10~60초 길이의 음성 샘플을 업로드하거나 직접 녹음하여 목소리의 톤과 스타일을 학습시켜
                 보세요.
               </p>
+              <p className="text-muted text-xs">파일을 끌어와 놓거나 업로드 버튼으로 선택하세요.</p>
               <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
                 <Button
                   type="button"
@@ -241,6 +296,7 @@ export default function VoiceCloningPage() {
                 accept="audio/wav,audio/mpeg,audio/mp3"
                 onChange={(e) => handleUploadSelect(e.target.files?.[0])}
               />
+              {uploadError ? <p className="text-danger text-sm">{uploadError}</p> : null}
             </div>
           </div>
         )
@@ -292,6 +348,13 @@ export default function VoiceCloningPage() {
         return (
           <div className="rounded-3xl border border-surface-3 bg-surface-1 p-8 text-center">
             <p className="text-muted text-sm">녹음 중...</p>
+            <div className="mt-4 rounded-2xl bg-surface-2 px-6 py-4 text-left">
+              <p className="text-muted text-xs font-semibold tracking-[0.3em] uppercase">읽어주세요</p>
+              <p className="text-foreground mt-3 text-base font-medium leading-relaxed">
+                “안녕하세요! 지금 저는 제 목소리를 샘플링하고 있습니다. 잠시 뒤 이 목소리가 텍스트를 자동으로
+                읽어주게 될 거예요.”
+              </p>
+            </div>
             <p className="text-4xl font-bold mt-4">{formattedTime}</p>
             <div className="mt-6 flex justify-center gap-4">
               <Button type="button" variant="danger" onClick={handleStopRecording}>
@@ -324,11 +387,7 @@ export default function VoiceCloningPage() {
               녹음 길이: {recordedDuration}s (최소 10초 이상이어야 합니다)
             </div>
             <div className="mt-6 flex justify-end">
-              <Button
-                type="button"
-                onClick={handleUseRecordedSample}
-                // disabled={!selectedFile || recordedDuration < 10}
-              >
+              <Button type="button" onClick={handleProceedWithSample}>
                 샘플 사용하기
               </Button>
             </div>
@@ -345,7 +404,7 @@ export default function VoiceCloningPage() {
                 initialFile={selectedFile}
                 hideFileUpload={mode === 'record'}
                 onCancel={handleResetAll}
-                onSuccess={() => navigate(routes.voiceSamples)}
+                onSuccess={() => navigate(routes.voiceLibrary)}
               />
             ) : (
               <p className="text-muted text-sm">사용할 샘플이 없습니다.</p>
