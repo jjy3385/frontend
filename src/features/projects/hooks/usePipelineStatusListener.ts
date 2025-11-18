@@ -129,12 +129,14 @@ export function PipelineStatusListener({ project }: { project: ProjectSummary })
   const track = shouldTrack(project.status)
   const showToast = useUiStore((state) => state.showToast)
   const lastStatusRef = useRef<PipelineStageStatus>()
+  const trackable = pipelineTrackStatuses.has(project.status ?? '')
 
   useEffect(() => {
-    if (!track) {
+    if (!track || !trackable) {
       lastStatusRef.current = undefined
       return
     }
+
     const source = new EventSource(`${env.apiBaseUrl}/api/pipeline/${project.id}/events`)
     const maybeNotify = (item: PipelineProgressItem) => {
       if (lastStatusRef.current !== 'completed' && item.status === 'completed') {
@@ -182,6 +184,6 @@ export function PipelineStatusListener({ project }: { project: ProjectSummary })
       source.close()
       usePipelineStore.getState().clear(project.id)
     }
-  }, [project.id, project.title, showToast, track])
+  }, [project.id, project.title, showToast, track, trackable])
   return null
 }
