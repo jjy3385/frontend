@@ -18,7 +18,7 @@ export function VoiceSampleCreationModal({ open, onOpenChange }: VoiceSampleCrea
         <div className="mb-4 flex items-center justify-between">
           <DialogTitle>음성샘플 만들기</DialogTitle>
         </div>
-        <VoiceSampleForm enableRecording={false} onCancel={handleClose} onSuccess={handleClose} />
+        <VoiceSampleForm onCancel={handleClose} onSuccess={handleClose} />
       </DialogContent>
     </Dialog>
   )
