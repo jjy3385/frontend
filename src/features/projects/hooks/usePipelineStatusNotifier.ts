@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react'
-import { usePipelineProgress } from './usePipelineProgress'
+
 import { useUiStore } from '@/shared/store/useUiStore'
+
+import { usePipelineProgress } from './usePipelineProgress'
 
 export function usePipelineStatusNotifier(
   projectId: string | undefined,
@@ -19,11 +21,11 @@ export function usePipelineStatusNotifier(
       showToast({
         id: `pipeline-completed-${projectId}`,
         title: '영상 처리가 완료',
-        description: `${projectTitle} 처리가 완료되었습니다.`,
+        description: `${projectTitle ?? '프로젝트'}의 파이프라인 처리가 완료되었습니다.`,
         autoDismiss: 4000,
       })
     }
 
     prevStatus.current = current
-  }, [pipelineProgress?.status, projectId, showToast])
+  }, [pipelineProgress?.status, projectId, projectTitle, showToast])
 }
