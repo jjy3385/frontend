@@ -35,22 +35,6 @@ const languageCountryMap: Record<string, string> = {
   fr: 'FR',
   de: 'DE',
 }
-const stageLabelMap: Record<string, string> = {
-  upload: '전처리 중',
-  vad: '전처리 중',
-  stt: 'STT 진행 중',
-  mt: '번역 중',
-  rag: '대본 생성 중',
-  voice_mapping: '화자 매핑 중',
-  tts: 'TTS 진행 중',
-  packaging: '결과 마무리 중',
-  outputs: '결과 저장 중',
-  sync_started: '결과 동기화 중',
-  sync_completed: '결과 동기화 완료',
-  mux_started: '비디오 합성 중',
-  mux_completed: '비디오 합성 완료',
-  done: '처리 완료',
-}
 
 // 영상길이
 const formatDuration = (seconds = 0) => {
@@ -159,12 +143,6 @@ export function EpisodeCard({ project, onEdit, onDelete }: EpisodeCardProps) {
   const fallbackPipelineStatus =
     project.status === 'failed' ? 'failed' : shouldTrackPipeline ? 'running' : undefined
   const pipelineStatus = pipelineProgress?.status ?? fallbackPipelineStatus
-  const pipelineStage = pipelineProgress?.stage ?? project.current_stage
-  const stageKey = pipelineStage?.toLowerCase()
-  const stageLabel =
-    pipelineProgress?.message ||
-    (stageKey && stageLabelMap[stageKey]) ||
-    (pipelineStatus === 'running' ? '처리 중' : undefined)
   const isRunning = pipelineStatus === 'running'
   const isFailed = pipelineStatus === 'failed'
 
@@ -248,11 +226,7 @@ export function EpisodeCard({ project, onEdit, onDelete }: EpisodeCardProps) {
         />
         {/* 상태별 오버레이 */}
         {isRunning ? (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/45 px-4 text-center">
-            <div className="rounded-full bg-black/50 px-3 py-1 text-xs font-semibold text-white">
-              {stageLabel ?? livePercentLabel}
-            </div>
-          </div>
+          <div className="absolute inset-0 bg-black/45" />
         ) : isFailed ? (
           <div className="absolute inset-0 bg-black/60" />
         ) : null}
