@@ -72,7 +72,7 @@ export function AppHeader() {
   //   : []
 
   return (
-    <header className="bg-[#F1F5F9]/95 sticky top-0 z-40 backdrop-blur">
+    <header className="bg-[#E2E8F0]/95 sticky top-0 z-40 backdrop-blur">
       <div className={`mx-auto flex ${containerWidthClass} items-center justify-between gap-6 px-6 py-4`}>
         <Link
           to={routes.home}

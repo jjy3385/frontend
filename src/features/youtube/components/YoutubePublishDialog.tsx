@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import type { AssetEntry } from '@/entities/asset/types'
 import type { YoutubePublishResponse } from '@/features/youtube/api/youtubeApi'
-import { useYoutubePublishMutation } from '@/features/youtube/hooks/useYoutubeIntegration'
+import { useYoutubePublishMutation, useYoutubeStatus } from '@/features/youtube/hooks/useYoutubeIntegration'
 import { useUiStore } from '@/shared/store/useUiStore'
 import { Button } from '@/shared/ui/Button'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/shared/ui/Dialog'
@@ -35,34 +35,44 @@ export function YoutubePublishDialog({
   const [privacyStatus, setPrivacyStatus] = useState<'private' | 'unlisted' | 'public'>('unlisted')
   const [tags, setTags] = useState('Dupilot')
   const publishMutation = useYoutubePublishMutation()
+  const { data: youtubeStatus } = useYoutubeStatus()
 
   useEffect(() => {
     if (!asset || !open) return
-    const languageText = languageLabel ?? languageCode.toUpperCase()
-    setTitle(`${projectTitle} (${languageText})`)
-    setDescription(
-      `Dupilot에서 자동 생성한 ${languageText} 더빙 영상입니다.\n원본 프로젝트: ${projectTitle}`,
-    )
-    setTags(`Dupilot,${languageCode}`)
+    setTitle(projectTitle)
+    setDescription(`Dupilot에서 자동 생성한 더빙 영상입니다.\n원본 프로젝트: ${projectTitle}`)
+    setTags('Dupilot')
     setPrivacyStatus('unlisted')
   }, [asset, open, projectTitle, languageCode, languageLabel])
 
   const isSubmitting = Boolean(publishMutation.isPending)
-  const isFormValid = title.trim().length > 3
-
-  const defaultChannelLabel = useMemo(
-    () => languageLabel ?? languageCode.toUpperCase(),
-    [languageLabel, languageCode],
-  )
+  const isFormValid = title.trim().length > 0
 
   if (!asset) {
     return null
   }
 
-  const handleSuccess = ({ videoId }: YoutubePublishResponse) => {
+  const handleSuccess = ({ videoId, channelId }: YoutubePublishResponse) => {
+    const resolvedChannelId = channelId ?? youtubeStatus?.channelId
+    const studioUrl = resolvedChannelId
+      ? `https://studio.youtube.com/channel/${resolvedChannelId}/videos/upload`
+      : 'https://studio.youtube.com/'
     showToast({
       title: '유튜브 업로드 완료',
-      description: `영상 ID: ${videoId}`,
+      description: (
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-xs text-muted-foreground">영상 ID: {videoId}</span>
+          <button
+            type="button"
+            className="bg-primary text-primary-foreground rounded-full px-3 py-1 text-xs font-semibold hover:bg-primary/90"
+            onClick={() => {
+              window.open(studioUrl, '_blank', 'noopener,noreferrer')
+            }}
+          >
+            Studio 열기
+          </button>
+        </div>
+      ),
     })
     onOpenChange(false)
   }
@@ -104,9 +114,7 @@ export function YoutubePublishDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogTitle>YouTube로 업로드</DialogTitle>
-        <DialogDescription>
-          선택한 더빙 영상을 연동된 YouTube 채널({defaultChannelLabel})로 바로 업로드합니다.
-        </DialogDescription>
+        <DialogDescription>선택한 더빙 영상을 연동된 YouTube 채널로 바로 업로드합니다.</DialogDescription>
         <form className="mt-4 space-y-4" onSubmit={handleSubmit}>
           <div className="space-y-2">
             <Label htmlFor="youtube-title">영상 제목</Label>

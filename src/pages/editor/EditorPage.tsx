@@ -1,5 +1,6 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
+import { Upload } from 'lucide-react'
 import { useParams } from 'react-router-dom'
 
 import { AudioTrackWorkspace } from '@/features/editor/components/AudioTrackWorkspace'
@@ -12,8 +13,10 @@ import { useAudioGenerationEvents } from '@/features/editor/hooks/useAudioGenera
 import { useEditorState } from '@/features/editor/hooks/useEditorState'
 import { useSaveSegments } from '@/features/editor/hooks/useSaveSegments'
 import { useMux } from '@/features/editor/hooks/useMux'
+import { ExportDialog } from '@/features/projects/modals/ExportDialog'
 import { useEditorStore } from '@/shared/store/useEditorStore'
 import { Breadcrumbs } from '@/shared/ui/Breadcrumbs'
+import { Button } from '@/shared/ui/Button'
 import { Spinner } from '@/shared/ui/Spinner'
 import { TabsContent, TabsList, TabsRoot, TabsTrigger } from '@/shared/ui/Tabs'
 
@@ -22,6 +25,7 @@ export default function EditorPage() {
     projectId: string
     languageCode: string
   }>()
+  const [isExportOpen, setIsExportOpen] = useState(false)
   const { data, isLoading } = useEditorState(projectId, languageCode)
   const setAudioPlaybackMode = useEditorStore((state) => state.setAudioPlaybackMode)
   // Mux 핸들러 - 나중에 버튼 추가 시 사용 예정
@@ -78,7 +82,13 @@ export default function EditorPage() {
           </div>
           <div className="flex items-center gap-4">
             <SaveIndicator status={saveStatus} hasChanges={hasChanges} />
-            <LanguageSelector projectId={projectId} currentLanguageCode={languageCode} />
+            <div className="flex items-center gap-3">
+              <Button type="button" onClick={() => setIsExportOpen(true)} className="h-9">
+                <Upload className="mr-2 h-4 w-4" />
+                Export
+              </Button>
+              <LanguageSelector projectId={projectId} currentLanguageCode={languageCode} />
+            </div>
           </div>
         </div>
         <div className="flex min-h-0 flex-1 gap-2">
@@ -142,6 +152,13 @@ export default function EditorPage() {
           />
         </div>
       </div>
+
+      <ExportDialog
+        open={isExportOpen}
+        onOpenChange={setIsExportOpen}
+        projectId={projectId}
+        languageCode={languageCode}
+      />
     </div>
   )
 }
