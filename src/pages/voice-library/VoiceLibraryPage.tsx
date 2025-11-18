@@ -11,6 +11,7 @@ import { useDeleteVoiceSample } from '@/features/voice-samples/hooks/useVoiceSam
 import { VoiceSampleEditModal } from '@/features/voice-samples/modals/VoiceSampleEditModal'
 import { env } from '@/shared/config/env'
 import { routes } from '@/shared/config/routes'
+import { cn } from '@/shared/lib/utils'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,6 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/shared/ui/Select'
+import { Spinner } from '@/shared/ui/Spinner'
 
 type LibraryTab = 'library' | 'mine' | 'favorites'
 
@@ -76,6 +78,7 @@ export default function VoiceLibraryPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const deleteVoiceSample = useDeleteVoiceSample()
+  const processingSourcesRef = useRef<Map<string, EventSource>>(new Map())
 
   const queryKey = useMemo(() => ['voice-library', tab, search] as const, [tab, search])
   const voiceQuery = useQuery<
@@ -127,10 +130,16 @@ export default function VoiceLibraryPage() {
   }, [cleanupAudio])
 
   useEffect(() => {
+    const sources = processingSourcesRef.current
     return () => {
       stopPlayback()
+      sources.forEach((source) => {
+        source.close()
+      })
+      sources.clear()
     }
   }, [stopPlayback])
+
 
   const resolveSampleAudioUrl = useCallback(async (sample: VoiceSample) => {
     const storageSegment = '/storage/media/'
@@ -224,9 +233,73 @@ export default function VoiceLibraryPage() {
     }
     return samples
   }, [samples, sort])
+
+  useEffect(() => {
+    const pendingSamples = sortedSamples.filter(
+      (sample): sample is VoiceSample & { id: string } =>
+        Boolean(sample.id) && !sample.audio_sample_url,
+    )
+    const pendingIds = new Set(pendingSamples.map((sample) => sample.id))
+    const sources = processingSourcesRef.current
+
+    pendingSamples.forEach((sample) => {
+      const sampleId = sample.id
+      if (!sampleId || sources.has(sampleId)) return
+
+      const source = new EventSource(`${env.apiBaseUrl}/api/voice-samples/${sampleId}/stream`)
+
+      source.addEventListener('message', (event) => {
+        try {
+          const eventData = typeof event.data === 'string' ? event.data : String(event.data)
+          const data = JSON.parse(eventData) as {
+            sample_id?: string
+            audio_sample_url?: string | null
+            has_audio_sample?: boolean
+            error?: string
+          }
+
+          if (data.has_audio_sample && data.audio_sample_url) {
+            source.close()
+            sources.delete(sampleId)
+            void queryClient.invalidateQueries({ queryKey: ['voice-library'], exact: false })
+          } else if (data.error) {
+            source.close()
+            sources.delete(sampleId)
+          }
+        } catch (error) {
+          console.error('Failed to parse voice sample SSE data:', error)
+        }
+      })
+
+      source.onerror = (error) => {
+        console.error('Voice sample SSE connection error:', error)
+        source.close()
+        sources.delete(sampleId)
+      }
+
+      sources.set(sampleId, source)
+    })
+
+    sources.forEach((source, sampleId) => {
+      if (!pendingIds.has(sampleId)) {
+        source.close()
+        sources.delete(sampleId)
+      }
+    })
+
+    return () => {
+      pendingIds.forEach((sampleId) => {
+        const source = sources.get(sampleId)
+        if (source) {
+          source.close()
+          sources.delete(sampleId)
+        }
+      })
+    }
+  }, [queryClient, sortedSamples])
   const gridColumnsClass = isMyTab
-    ? 'grid-cols-[minmax(0,2.5fr)_minmax(0,1.1fr)_minmax(0,0.9fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)]'
-    : 'grid-cols-[minmax(0,2.7fr)_minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)]'
+    ? 'grid-cols-[minmax(0,2.4fr)_minmax(0,1.1fr)_minmax(0,0.9fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.9fr)]'
+    : 'grid-cols-[minmax(0,2.6fr)_minmax(0,1.1fr)_minmax(0,0.9fr)_minmax(0,1fr)_minmax(0,1fr)]'
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 px-6 py-8">
@@ -380,6 +453,7 @@ function VoiceLibraryRow({
       ? sample.avatarImageUrl
       : DEFAULT_AVATAR,
   )
+  const isProcessing = !sample.audio_sample_url
 
   useEffect(() => {
     let active = true
@@ -402,25 +476,34 @@ function VoiceLibraryRow({
 
   return (
     <li className={`grid ${gridClassName} items-center gap-4 py-4 text-sm`}>
-      <div className="group flex items-center gap-3 overflow-hidden">
-        <div className="relative h-12 w-12 flex-shrink-0">
+      <div className="flex items-center gap-3 overflow-hidden">
+        <div className="group relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-full bg-surface-2">
           <img
             src={resolvedAvatar}
             onError={(event) => {
               event.currentTarget.src = DEFAULT_AVATAR
             }}
             alt={sample.name}
-            className="h-12 w-12 rounded-full object-cover"
+            className="h-12 w-12 object-cover"
           />
-          {sample.audio_sample_url || sample.file_path_wav || sample.previewUrl ? (
+          {isProcessing ? (
+            <>
+              <div className="absolute inset-0 rounded-full bg-black/70" />
+              <div className="absolute inset-0 flex items-center justify-center rounded-full">
+                <Spinner size="sm" />
+              </div>
+            </>
+          ) : null}
+          {!isProcessing && sample.audio_sample_url ? (
             <button
               type="button"
-              onClick={() => {
-                onPlay(sample)
-              }}
               className={`absolute inset-0 flex items-center justify-center rounded-full text-white transition ${
                 isPlaying ? 'bg-primary/80 opacity-100' : 'bg-black/70 opacity-0 group-hover:opacity-100'
               }`}
+              onClick={(event) => {
+                event.stopPropagation()
+                onPlay(sample)
+              }}
             >
               {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
             </button>

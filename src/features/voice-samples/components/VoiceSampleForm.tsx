@@ -2,14 +2,17 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { useQueryClient } from '@tanstack/react-query'
 import { HTTPError } from 'ky'
+import ReactCountryFlag from 'react-country-flag'
 
 import { env } from '@/shared/config/env'
 import { queryKeys } from '@/shared/config/queryKeys'
+import { useLanguage } from '@/features/languages/hooks/useLanguage'
 import { routes } from '@/shared/config/routes'
 import { useUiStore } from '@/shared/store/useUiStore'
 import { Button } from '@/shared/ui/Button'
 import { Input } from '@/shared/ui/Input'
 import { Label } from '@/shared/ui/Label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/Select'
 
 import { useFinishUploadMutation, usePrepareUploadMutation } from '../hooks/useVoiceSampleStorage'
 import {
@@ -19,6 +22,25 @@ import {
 
 const DEFAULT_AVATAR =
   'https://ui-avatars.com/api/?name=Voice&background=EEF2FF&color=1E1B4B&size=128'
+
+const languageCountryMap: Record<string, string> = {
+  ko: 'KR',
+  en: 'US',
+  ja: 'JP',
+  zh: 'CN',
+  es: 'ES',
+  fr: 'FR',
+  de: 'DE',
+  it: 'IT',
+  pt: 'PT',
+  ru: 'RU',
+}
+
+const getCountryCode = (code?: string) => {
+  if (!code) return 'US'
+  const normalized = code.toLowerCase()
+  return languageCountryMap[normalized] ?? normalized.slice(0, 2).toUpperCase()
+}
 
 type VoiceSampleFormProps = {
   initialFile?: File | null
@@ -34,7 +56,7 @@ export function VoiceSampleForm({
   onSuccess,
 }: VoiceSampleFormProps) {
   const [name, setName] = useState('')
-  const [country, setCountry] = useState('ko')
+  const [languageCode, setLanguageCode] = useState('ko')
   const [gender, setGender] = useState('any')
   const [audioFile, setAudioFile] = useState<File | null>(initialFile)
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
@@ -50,6 +72,27 @@ export function VoiceSampleForm({
   const finishUploadMutation = useFinishUploadMutation()
   const queryClient = useQueryClient()
   const showToast = useUiStore((state) => state.showToast)
+  const { data: languageResponse, isLoading: languagesLoading } = useLanguage()
+  const languageOptions = useMemo(() => languageResponse ?? [], [languageResponse])
+
+  useEffect(() => {
+    if (languageOptions.length === 0) return
+    const exists = languageOptions.some((lang) => lang.language_code === languageCode)
+    if (!exists) {
+      setLanguageCode(languageOptions[0].language_code)
+    }
+  }, [languageOptions, languageCode])
+
+  const selectedLanguage = languageOptions.find((lang) => lang.language_code === languageCode)
+  const selectedCountryCode = getCountryCode(selectedLanguage?.language_code)
+  const selectedFlagIcon = selectedLanguage ? (
+    <ReactCountryFlag
+      countryCode={selectedCountryCode}
+      svg
+      style={{ width: '1.25em', height: '1.25em' }}
+      title={selectedLanguage.name_ko}
+    />
+  ) : null
 
   useEffect(() => {
     setAudioFile(initialFile)
@@ -67,8 +110,6 @@ export function VoiceSampleForm({
     }
   }, [avatarFile])
 
-  const selectedFileName = useMemo(() => audioFile?.name ?? '선택된 파일이 없습니다', [audioFile])
-
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
@@ -85,7 +126,7 @@ export function VoiceSampleForm({
       const { upload_url, fields, object_key } = await prepareUploadMutation.mutateAsync({
         filename: audioFile.name,
         content_type: audioFile.type || 'audio/mpeg',
-        country,
+        country: languageCode,
       })
 
       setUploadStage('uploading')
@@ -106,7 +147,7 @@ export function VoiceSampleForm({
         description: notes.trim() || undefined,
         is_public: true,
         object_key,
-        country,
+        country: languageCode,
         gender,
       })
 
@@ -244,7 +285,7 @@ export function VoiceSampleForm({
 
   const resetForm = () => {
     setName('')
-    setCountry('ko')
+    setLanguageCode('ko')
     setGender('any')
     setAvatarFile(null)
     setAvatarPreview(null)
@@ -269,7 +310,7 @@ export function VoiceSampleForm({
           id="name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="AI 성우 이름"
+          placeholder="성우 이름"
           required
           disabled={isUploading}
         />
@@ -296,38 +337,58 @@ export function VoiceSampleForm({
               disabled={isUploading}
             />
             <div className="rounded-xl border border-dashed border-surface-4 p-4 text-center">
-              <p className="text-sm font-medium">{selectedFileName}</p>
-              {audioFile ? (
-                <p className="text-xs text-muted">{(audioFile.size / 1024 / 1024).toFixed(2)} MB</p>
-              ) : (
-                <p className="text-xs text-muted">10~60초 길이의 음성 파일을 업로드해주세요.</p>
-              )}
+              <p className="text-xs text-muted">
+                {audioFile
+                  ? '파일이 선택되었습니다. 필요 시 다른 파일로 교체할 수 있습니다.'
+                  : '10~60초 길이의 음성 파일을 업로드해주세요.'}
+              </p>
             </div>
           </div>
         </div>
-      ) : (
-        <div className="space-y-2">
-          <Label>선택된 녹음 파일</Label>
-          <div className="rounded-xl border border-dashed border-surface-4 p-4 text-sm">
-            {selectedFileName}
-          </div>
-        </div>
-      )}
+      ) : null}
 
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="country">국적</Label>
-          <select
-            id="country"
-            value={country}
-            onChange={(e) => setCountry(e.target.value)}
-            className="focus-visible:outline-hidden w-full rounded-xl border border-surface-4 bg-surface-1 px-4 py-3 text-sm text-foreground focus-visible:ring-accent"
-            disabled={isUploading}
+          <Label htmlFor="voice-language">언어</Label>
+          <Select
+            value={languageCode}
+            onValueChange={(value) => setLanguageCode(value)}
+            disabled={isUploading || languageOptions.length === 0 || languagesLoading}
           >
-            <option value="ko">한국어</option>
-            <option value="en">English</option>
-            <option value="ja">日本語</option>
-          </select>
+            <SelectTrigger>
+              <div className="flex w-full items-center gap-2">
+                {selectedFlagIcon}
+                <SelectValue
+                  placeholder={languagesLoading ? '언어를 불러오는 중...' : '언어를 선택하세요'}
+                />
+              </div>
+            </SelectTrigger>
+            <SelectContent>
+              {languageOptions.length === 0 ? (
+                <SelectItem value="__empty" disabled>
+                  {languagesLoading ? '언어를 불러오는 중...' : '등록된 언어가 없습니다.'}
+                </SelectItem>
+              ) : (
+                languageOptions.map((language) => {
+                  const code = language.language_code
+                  const flagCode = getCountryCode(code)
+                  return (
+                    <SelectItem key={code} value={code}>
+                      <span className="flex items-center gap-2">
+                        <ReactCountryFlag
+                          countryCode={flagCode}
+                          svg
+                          style={{ width: '1.25em', height: '1.25em' }}
+                          title={language.name_ko}
+                        />
+                        {language.name_ko}
+                      </span>
+                    </SelectItem>
+                  )
+                })
+              )}
+            </SelectContent>
+          </Select>
         </div>
         <div className="space-y-2">
           <Label htmlFor="gender">성별</Label>
