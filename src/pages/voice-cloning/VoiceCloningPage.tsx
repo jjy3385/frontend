@@ -30,6 +30,7 @@ export default function VoiceCloningPage() {
   const audioContextRef = useRef<AudioContext | null>(null)
   const recordedChunksRef = useRef<BlobPart[]>([])
   const timerRef = useRef<number | null>(null)
+  const reviewAudioRef = useRef<HTMLAudioElement | null>(null)
 
   const navigate = useNavigate()
   const [isDragOver, setIsDragOver] = useState(false)
@@ -76,6 +77,29 @@ export default function VoiceCloningPage() {
       }
     }
   }, [previewUrl, resetRecording])
+
+  useEffect(() => {
+    const handleSpaceToggle = (event: KeyboardEvent) => {
+      if (step !== 'review') return
+      if (event.code !== 'Space' && event.key !== ' ') return
+      const targetTag = (event.target as HTMLElement | null)?.tagName
+      if (targetTag && ['INPUT', 'TEXTAREA', 'SELECT'].includes(targetTag)) {
+        return
+      }
+      const audio = reviewAudioRef.current
+      if (!audio) return
+      event.preventDefault()
+      if (audio.paused) {
+        void audio.play()
+      } else {
+        audio.pause()
+      }
+    }
+    window.addEventListener('keydown', handleSpaceToggle)
+    return () => {
+      window.removeEventListener('keydown', handleSpaceToggle)
+    }
+  }, [step])
 
   const createProcessedStream = useCallback((stream: MediaStream): MediaStream => {
     const audioContext = new AudioContext()
@@ -275,7 +299,7 @@ export default function VoiceCloningPage() {
           >
             <div className="space-y-4">
               <div className="text-3xl">+</div>
-              <h2 className="text-xl font-semibold">Instant Voice Cloning</h2>
+              <h2 className="pri text-xl font-semibold">Instant Voice Cloning</h2>
               <p className="text-sm text-muted">
                 10~60초 길이의 음성 샘플을 업로드하거나 직접 녹음하여 목소리의 톤과 스타일을
                 학습시켜 보세요.
@@ -352,7 +376,7 @@ export default function VoiceCloningPage() {
         )
       case 'recording':
         return (
-          <div className="rounded-3xl border border-surface-3 bg-surface-1 p-8 text-center">
+          <div className="rounded-3xl border border-surface-3 bg-surface-1 p-8 text-center shadow-soft">
             <p className="text-sm text-muted">녹음 중...</p>
             <div className="mt-4 rounded-2xl bg-surface-2 px-6 py-4 text-left">
               <p className="text-xs font-semibold uppercase tracking-[0.3em] text-muted">
@@ -376,7 +400,7 @@ export default function VoiceCloningPage() {
         )
       case 'review':
         return (
-          <div className="rounded-3xl border border-surface-3 bg-surface-1 p-8">
+          <div className="rounded-3xl border border-surface-3 bg-surface-1 p-8 shadow-soft">
             <button
               type="button"
               className="mb-4 text-sm text-primary"
@@ -393,7 +417,7 @@ export default function VoiceCloningPage() {
             ) : (
               previewUrl && (
                 <div className="space-y-2">
-                  <audio controls className="w-full" src={previewUrl} />
+                  <audio ref={reviewAudioRef} controls className="w-full" src={previewUrl} />
                 </div>
               )
             )}
@@ -416,7 +440,7 @@ export default function VoiceCloningPage() {
             {selectedFile ? (
               <VoiceSampleForm
                 initialFile={selectedFile}
-                hideFileUpload={mode === 'record'}
+                hideFileUpload
                 onCancel={handleResetAll}
                 onSuccess={() => navigate(routes.voiceLibrary)}
               />
@@ -430,19 +454,7 @@ export default function VoiceCloningPage() {
     }
   }
 
-  return (
-    <div className="mx-auto max-w-7xl space-y-6 px-6 py-8">
-      <div className="space-y-2 text-center">
-        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary">
-          Voice cloning
-        </p>
-        <p className="text-sm text-muted">
-          1분 이내의 샘플을 업로드하거나 직접 녹음하면, 해당 목소리로 TTS를 생성할 수 있습니다.
-        </p>
-      </div>
-      {renderStep()}
-    </div>
-  )
+  return <div className="mx-auto max-w-4xl space-y-6 px-6 py-8">{renderStep()}</div>
 }
 
 async function convertBlobToWav(blob: Blob, targetSampleRate = 16_000): Promise<Blob> {
