@@ -153,7 +153,9 @@ export default function VoiceCloningPage() {
       recorder.onstop = () => {
         const finalDuration = recordingSeconds
         setRecordedDuration(finalDuration)
-        const blob = new Blob(recordedChunksRef.current, { type: options?.mimeType ?? 'audio/webm' })
+        const blob = new Blob(recordedChunksRef.current, {
+          type: options?.mimeType ?? 'audio/webm',
+        })
         const baseName = `voice-recording-${new Date().toISOString().replace(/[:.]/g, '-')}`
         setRecordingState('converting')
         void convertBlobToWav(blob, 16_000)
@@ -286,7 +288,9 @@ export default function VoiceCloningPage() {
         return (
           <div
             className={`rounded-3xl border border-dashed p-10 text-center transition ${
-              isDragOver ? 'border-primary bg-primary/5 shadow-lg' : 'border-primary/60 bg-surface-1/60'
+              isDragOver
+                ? 'border-primary bg-primary/5 shadow-lg'
+                : 'border-primary/60 bg-surface-1/60'
             }`}
             style={{ cursor: 'copy' }}
             onDragOver={handleDragOver}
@@ -295,12 +299,12 @@ export default function VoiceCloningPage() {
           >
             <div className="space-y-4">
               <div className="text-3xl">+</div>
-              <h2 className="text-xl font-semibold pri">Instant Voice Cloning</h2>
-              <p className="text-muted text-sm">
-                10~60초 길이의 음성 샘플을 업로드하거나 직접 녹음하여 목소리의 톤과 스타일을 학습시켜
-                보세요.
+              <h2 className="pri text-xl font-semibold">Instant Voice Cloning</h2>
+              <p className="text-sm text-muted">
+                10~60초 길이의 음성 샘플을 업로드하거나 직접 녹음하여 목소리의 톤과 스타일을
+                학습시켜 보세요.
               </p>
-              <p className="text-muted text-xs">파일을 끌어와 놓거나 업로드 버튼으로 선택하세요.</p>
+              <p className="text-xs text-muted">파일을 끌어와 놓거나 업로드 버튼으로 선택하세요.</p>
               <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
                 <Button
                   type="button"
@@ -320,7 +324,7 @@ export default function VoiceCloningPage() {
                 accept="audio/wav,audio/mpeg,audio/mp3"
                 onChange={(e) => handleUploadSelect(e.target.files?.[0])}
               />
-              {uploadError ? <p className="text-danger text-sm">{uploadError}</p> : null}
+              {uploadError ? <p className="text-sm text-danger">{uploadError}</p> : null}
             </div>
           </div>
         )
@@ -333,21 +337,23 @@ export default function VoiceCloningPage() {
               </button>
               <div>기본 마이크</div>
             </div>
-            <p className="text-muted text-xs font-semibold tracking-[0.3em]">읽어주세요</p>
-            <p className="text-foreground mt-3 text-lg font-medium">
-              “안녕하세요! 지금 저는 제 목소리를 샘플링하고 있습니다. 잠시 뒤 이 목소리가 텍스트를 자동으로
-              읽어주게 될 거예요.”
+            <p className="text-xs font-semibold tracking-[0.3em] text-muted">읽어주세요</p>
+            <p className="mt-3 text-lg font-medium text-foreground">
+              “안녕하세요! 지금 저는 제 목소리를 샘플링하고 있습니다. 잠시 뒤 이 목소리가 텍스트를
+              자동으로 읽어주게 될 거예요.”
             </p>
             <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center">
               <button
                 type="button"
                 onClick={() => setRemoveNoise((prev) => !prev)}
-                className="text-sm text-muted flex items-center gap-2 rounded-full border border-surface-3 px-4 py-2"
+                className="flex items-center gap-2 rounded-full border border-surface-3 px-4 py-2 text-sm text-muted"
               >
                 AI 노이즈 제거
                 <span
                   className={`inline-flex h-4 w-8 items-center rounded-full px-1 text-[10px] font-semibold ${
-                    removeNoise ? 'bg-primary text-white justify-end' : 'bg-surface-3 justify-start text-muted'
+                    removeNoise
+                      ? 'justify-end bg-primary text-white'
+                      : 'justify-start bg-surface-3 text-muted'
                   }`}
                 >
                   {removeNoise ? 'ON' : 'OFF'}
@@ -365,21 +371,23 @@ export default function VoiceCloningPage() {
                 녹음 시작
               </Button>
             </div>
-            {micError ? <p className="text-danger mt-4 text-sm">{micError}</p> : null}
+            {micError ? <p className="mt-4 text-sm text-danger">{micError}</p> : null}
           </div>
         )
       case 'recording':
         return (
-          <div className="rounded-3xl border border-surface-3 bg-surface-1 p-8 shadow-soft text-center">
-            <p className="text-muted text-sm">녹음 중...</p>
+          <div className="rounded-3xl border border-surface-3 bg-surface-1 p-8 text-center shadow-soft">
+            <p className="text-sm text-muted">녹음 중...</p>
             <div className="mt-4 rounded-2xl bg-surface-2 px-6 py-4 text-left">
-              <p className="text-muted text-xs font-semibold tracking-[0.3em] uppercase">읽어주세요</p>
-              <p className="text-foreground mt-3 text-base font-medium leading-relaxed">
-                “안녕하세요! 지금 저는 제 목소리를 샘플링하고 있습니다. 잠시 뒤 이 목소리가 텍스트를 자동으로
-                읽어주게 될 거예요.”
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-muted">
+                읽어주세요
+              </p>
+              <p className="mt-3 text-base font-medium leading-relaxed text-foreground">
+                “안녕하세요! 지금 저는 제 목소리를 샘플링하고 있습니다. 잠시 뒤 이 목소리가 텍스트를
+                자동으로 읽어주게 될 거예요.”
               </p>
             </div>
-            <p className="text-4xl font-bold mt-4">{formattedTime}</p>
+            <p className="mt-4 text-4xl font-bold">{formattedTime}</p>
             <div className="mt-6 flex justify-center gap-4">
               <Button type="button" variant="danger" onClick={handleStopRecording}>
                 녹음 종료
@@ -393,13 +401,19 @@ export default function VoiceCloningPage() {
       case 'review':
         return (
           <div className="rounded-3xl border border-surface-3 bg-surface-1 p-8 shadow-soft">
-            <button type="button" className="text-primary text-sm mb-4" onClick={() => setStep('record-intro')}>
+            <button
+              type="button"
+              className="mb-4 text-sm text-primary"
+              onClick={() => setStep('record-intro')}
+            >
               ← 다시 녹음하기
             </button>
             <h3 className="text-lg font-semibold">선택한 샘플</h3>
-            <p className="text-muted text-sm mb-4">샘플을 재생해보고 품질이 괜찮다면 다음 단계로 이동하세요.</p>
+            <p className="mb-4 text-sm text-muted">
+              샘플을 재생해보고 품질이 괜찮다면 다음 단계로 이동하세요.
+            </p>
             {recordingState === 'converting' ? (
-              <p className="text-muted text-sm">파일 처리 중...</p>
+              <p className="text-sm text-muted">파일 처리 중...</p>
             ) : (
               previewUrl && (
                 <div className="space-y-2">
@@ -420,7 +434,7 @@ export default function VoiceCloningPage() {
       case 'details':
         return (
           <div className="rounded-3xl border border-surface-3 bg-surface-1 p-6 shadow-soft">
-            <button type="button" className="text-primary text-sm mb-4" onClick={handleResetAll}>
+            <button type="button" className="mb-4 text-sm text-primary" onClick={handleResetAll}>
               ← 처음으로
             </button>
             {selectedFile ? (
@@ -431,7 +445,7 @@ export default function VoiceCloningPage() {
                 onSuccess={() => navigate(routes.voiceLibrary)}
               />
             ) : (
-              <p className="text-muted text-sm">사용할 샘플이 없습니다.</p>
+              <p className="text-sm text-muted">사용할 샘플이 없습니다.</p>
             )}
           </div>
         )
@@ -440,11 +454,7 @@ export default function VoiceCloningPage() {
     }
   }
 
-  return (
-    <div className="mx-auto max-w-4xl space-y-6 px-6 py-8">
-      {renderStep()}
-    </div>
-  )
+  return <div className="mx-auto max-w-4xl space-y-6 px-6 py-8">{renderStep()}</div>
 }
 
 async function convertBlobToWav(blob: Blob, targetSampleRate = 16_000): Promise<Blob> {

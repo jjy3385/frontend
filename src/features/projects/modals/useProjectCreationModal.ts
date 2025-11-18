@@ -169,7 +169,6 @@ export function useProjectCreationModal() {
       {
         onSuccess(project) {
           const projectId = project.project_id
-          startTrackingProject(projectId)
           if (nextDraft.sourceType === 'file') {
             if (!nextDraft.file) return
             void handleFileUpload(projectId, nextDraft.file)

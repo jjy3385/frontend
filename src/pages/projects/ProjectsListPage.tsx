@@ -59,14 +59,14 @@ export default function ProjectsListPage() {
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-6 py-12">
       <header className="space-y-4">
-        <h1 className="text-foreground text-3xl font-semibold">에피소드 목록</h1>
-        <p className="text-muted text-sm">
+        <h1 className="text-3xl font-semibold text-foreground">에피소드 목록</h1>
+        <p className="text-sm text-muted">
           생성된 프로젝트 목록과 더빙 진행 상황을 조회합니다. 검색과 정렬은 현 상태를 유지하며 상세
           페이지로 이동합니다.
         </p>
         <div className="flex gap-3">
           <div className="relative flex-1">
-            <Search className="text-muted pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
             <Input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
@@ -96,7 +96,7 @@ export default function ProjectsListPage() {
             >
               진행률
             </Button>
-            <span className="bg-surface-2 text-muted ml-auto hidden items-center gap-2 rounded-full px-3 py-1 text-xs md:inline-flex">
+            <span className="ml-auto hidden items-center gap-2 rounded-full bg-surface-2 px-3 py-1 text-xs text-muted md:inline-flex">
               <SlidersHorizontal className="h-3.5 w-3.5" />
               정렬 기준: {sortKey}
             </span>
@@ -114,16 +114,18 @@ export default function ProjectsListPage() {
         </TabsList>
         <TabsContent value={activeTab} className="mt-6">
           {isLoading ? (
-            <div className="border-surface-3 bg-surface-1 flex items-center justify-center rounded-3xl border py-10">
+            <div className="flex items-center justify-center rounded-3xl border border-surface-3 bg-surface-1 py-10">
               <Spinner />
-              <span className="text-muted ml-3 text-sm">목록을 불러오는 중…</span>
+              <span className="ml-3 text-sm text-muted">목록을 불러오는 중…</span>
             </div>
           ) : (
-            <ProjectList
-              projects={projects}
-              onEditProject={handleEditProject}
-              onDeleteProject={handleDeleteProject}
-            />
+            <>
+              <ProjectList
+                projects={projects}
+                onEditProject={handleEditProject}
+                onDeleteProject={handleDeleteProject}
+              />
+            </>
           )}
         </TabsContent>
       </TabsRoot>

@@ -3,13 +3,12 @@ import { useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
 import { useLanguage } from '@/features/languages/hooks/useLanguage'
-
-import { useProject } from '../../features/projects/hooks/useProjects'
-import { routes } from '../../shared/config/routes'
-import { trackEvent } from '../../shared/lib/analytics'
-import { useAuthStore } from '../../shared/store/useAuthStore'
-import { Button } from '../../shared/ui/Button'
-import { Spinner } from '../../shared/ui/Spinner'
+import { useProject } from '@/features/projects/hooks/useProjects'
+import { routes } from '@/shared/config/routes'
+import { trackEvent } from '@/shared/lib/analytics'
+import { useAuthStore } from '@/shared/store/useAuthStore'
+import { Button } from '@/shared/ui/Button'
+import { Spinner } from '@/shared/ui/Spinner'
 
 import { ProjectLanguagePanel } from './components/ProjectLanguagePanel'
 import { ProjectStudioPanel } from './components/ProjectStudioPanel'
@@ -42,8 +41,8 @@ export default function ProjectDetailPage() {
   if (!project) {
     return (
       <div className="mx-auto flex w-full max-w-5xl flex-col items-center gap-3 px-6 py-16 text-center">
-        <p className="text-foreground text-lg font-semibold">프로젝트를 찾을 수 없습니다.</p>
-        <p className="text-muted text-sm">목록으로 돌아가 다시 시도하세요.</p>
+        <p className="text-lg font-semibold text-foreground">프로젝트를 찾을 수 없습니다.</p>
+        <p className="text-sm text-muted">목록으로 돌아가 다시 시도하세요.</p>
         <Button asChild>
           <Link to={routes.projects}>프로젝트 목록으로</Link>
         </Button>
@@ -82,13 +81,13 @@ export default function ProjectDetailPage() {
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-6 py-12">
       <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <p className="text-muted text-xs font-semibold uppercase tracking-wider">프로젝트 상세</p>
-          <h1 className="text-foreground mt-1 text-3xl font-semibold">{project.title}</h1>
-          <p className="text-muted mt-2 text-sm">
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted">프로젝트 상세</p>
+          <h1 className="mt-1 text-3xl font-semibold text-foreground">{project.title}</h1>
+          <p className="mt-2 text-sm text-muted">
             {sourceLanguageLabel} → {targetLanguageLabels.join(', ')} | 화자 {project.speaker_count}
             명
           </p>
-          <p className="text-muted text-xs">
+          <p className="text-xs text-muted">
             생성일 {new Date(project.created_at).toLocaleString()}
           </p>
         </div>

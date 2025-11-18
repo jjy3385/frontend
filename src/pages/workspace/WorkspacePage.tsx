@@ -9,7 +9,6 @@ import { UploadCard } from '@/features/workspace/components/upload-card/UploadCa
 import { routes } from '@/shared/config/routes'
 import { useAuthStore } from '@/shared/store/useAuthStore'
 import { useUiStore } from '@/shared/store/useUiStore'
-import { usePipelineStatusNotifier } from '@/features/projects/hooks/usePipelineStatusNotifier'
 import { Spinner } from '@/shared/ui/Spinner'
 
 const stepMap = {
@@ -18,12 +17,6 @@ const stepMap = {
 } as const
 
 // type WorkspaceSection = 'projects' | 'voice-samples' | 'glossary' | 'guide' | 'support'
-
-export function PipelineStatusListener({ project }: { project: ProjectSummary }) {
-  const shouldTrack = new Set(['uploading', 'processing', 'uploaded']).has(project.status ?? '')
-  usePipelineStatusNotifier(project.id, shouldTrack, project.title)
-  return null
-}
 
 export default function WorkspacePage() {
   const { data: projects = [], isLoading } = useProjects()
@@ -136,9 +129,6 @@ export default function WorkspacePage() {
             </div>
           ) : (
             <>
-              {projects.map((project) => (
-                <PipelineStatusListener key={project.id} project={project} />
-              ))}
               <ProjectList
                 projects={filteredProjects}
                 onEditProject={handleEditProject}

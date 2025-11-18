@@ -7,7 +7,7 @@ import ReactCountryFlag from 'react-country-flag'
 import type { Language } from '@/entities/language/types'
 import type { ProjectSummary, ProjectTarget } from '@/entities/project/types'
 import { useLanguage } from '@/features/languages/hooks/useLanguage'
-import { usePipelineProgress } from '@/features/projects/hooks/usePipelineProgress'
+import { usePipelineStore } from '@/features/projects/hooks/usePipelineStore'
 import { env } from '@/shared/config/env'
 import { routes } from '@/shared/config/routes'
 import { formatPercent } from '@/shared/lib/utils'
@@ -34,22 +34,6 @@ const languageCountryMap: Record<string, string> = {
   es: 'ES',
   fr: 'FR',
   de: 'DE',
-}
-const stageLabelMap: Record<string, string> = {
-  upload: '전처리 중',
-  vad: '전처리 중',
-  stt: 'STT 진행 중',
-  mt: '번역 중',
-  rag: '대본 생성 중',
-  voice_mapping: '화자 매핑 중',
-  tts: 'TTS 진행 중',
-  packaging: '결과 마무리 중',
-  outputs: '결과 저장 중',
-  sync_started: '결과 동기화 중',
-  sync_completed: '결과 동기화 완료',
-  mux_started: '비디오 합성 중',
-  mux_completed: '비디오 합성 완료',
-  done: '처리 완료',
 }
 
 // 영상길이
@@ -130,8 +114,6 @@ const parseProgressValue = (value: unknown) => {
 }
 
 const clampProgress = (value: number) => Math.min(Math.max(value, 0), 100)
-const PROGRESS_CIRCLE_RADIUS = 28
-const PROGRESS_CIRCLE_CIRCUMFERENCE = 2 * Math.PI * PROGRESS_CIRCLE_RADIUS
 
 type EpisodeCardProps = {
   project: ProjectSummary
@@ -145,8 +127,7 @@ export function EpisodeCard({ project, onEdit, onDelete }: EpisodeCardProps) {
   const statusLabel = getProjectStatusLabel(project.status)
   const statusClass = projectStatusClassMap[statusLabel]
   const registeredLabel = formatRegisteredAt(project.createdAt)
-  const shouldTrackPipeline = pipelineTrackStatuses.has(project.status ?? '')
-  const pipelineProgress = usePipelineProgress(project.id, shouldTrackPipeline)
+  const pipelineProgress = usePipelineStore((state) => state.items[project.id])
   const overallProgress = getProjectProgressFromTargets(project.targets ?? [])
   const rawOverallProgressSnake: unknown = project.overall_progress
   const rawOverallProgressCamel: unknown = project.overallProgress
@@ -157,18 +138,11 @@ export function EpisodeCard({ project, onEdit, onDelete }: EpisodeCardProps) {
   const liveProgress = Number.isFinite(liveProgressRaw) ? liveProgressRaw : 0
   const normalizedProgress = clampProgress(liveProgress)
   const overlayWidth = 100 - normalizedProgress
-  const progressCircleOffset =
-    PROGRESS_CIRCLE_CIRCUMFERENCE - (normalizedProgress / 100) * PROGRESS_CIRCLE_CIRCUMFERENCE
   const livePercentLabel = formatPercent(normalizedProgress)
+  const shouldTrackPipeline = pipelineTrackStatuses.has(project.status ?? '')
   const fallbackPipelineStatus =
     project.status === 'failed' ? 'failed' : shouldTrackPipeline ? 'running' : undefined
   const pipelineStatus = pipelineProgress?.status ?? fallbackPipelineStatus
-  const pipelineStage = pipelineProgress?.stage ?? project.current_stage
-  const stageKey = pipelineStage?.toLowerCase()
-  const stageLabel =
-    pipelineProgress?.message ||
-    (stageKey && stageLabelMap[stageKey]) ||
-    (pipelineStatus === 'running' ? '처리 중' : undefined)
   const isRunning = pipelineStatus === 'running'
   const isFailed = pipelineStatus === 'failed'
 
@@ -252,42 +226,7 @@ export function EpisodeCard({ project, onEdit, onDelete }: EpisodeCardProps) {
         />
         {/* 상태별 오버레이 */}
         {isRunning ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/55">
-            <div className="relative h-16 w-16">
-              <svg
-                className="h-full w-full -rotate-90"
-                viewBox="0 0 64 64"
-                role="img"
-                aria-hidden="true"
-              >
-                <circle
-                  className="text-white/25"
-                  stroke="currentColor"
-                  strokeWidth="6"
-                  fill="transparent"
-                  r={PROGRESS_CIRCLE_RADIUS}
-                  cx="32"
-                  cy="32"
-                />
-                <circle
-                  className="text-primary"
-                  stroke="currentColor"
-                  strokeWidth="6"
-                  strokeLinecap="round"
-                  fill="transparent"
-                  r={PROGRESS_CIRCLE_RADIUS}
-                  cx="32"
-                  cy="32"
-                  strokeDasharray={PROGRESS_CIRCLE_CIRCUMFERENCE}
-                  strokeDashoffset={progressCircleOffset}
-                />
-              </svg>
-              <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-white">
-                {livePercentLabel}
-              </span>
-            </div>
-            {stageLabel ? <p className="text-[11px] font-medium text-white">{stageLabel}</p> : null}
-          </div>
+          <div className="absolute inset-0 bg-black/45" />
         ) : isFailed ? (
           <div className="absolute inset-0 bg-black/60" />
         ) : null}
