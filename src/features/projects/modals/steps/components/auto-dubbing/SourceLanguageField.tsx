@@ -6,7 +6,9 @@ import { ValidationMessage } from '@/shared/ui/ValidationMessage'
 
 type SourceLanguageFieldProps = {
   detectAutomatically: boolean
+  replaceVoiceSamples: boolean
   onDetectChange: (checked: boolean) => void
+  onReplaceVoiceSamplesChange: (checked: boolean) => void
   languages: Language[]
   sourceLanguage: string
   onSourceLanguageChange: (value: string) => void
@@ -15,7 +17,9 @@ type SourceLanguageFieldProps = {
 
 export function SourceLanguageField({
   detectAutomatically,
+  replaceVoiceSamples,
   onDetectChange,
+  onReplaceVoiceSamplesChange,
   languages,
   sourceLanguage,
   onSourceLanguageChange,
@@ -23,12 +27,21 @@ export function SourceLanguageField({
 }: SourceLanguageFieldProps) {
   return (
     <div className="space-y-1">
-      <div className="flex items-center gap-3">
-        <Checkbox
-          checked={detectAutomatically}
-          onCheckedChange={(checked) => onDetectChange(Boolean(checked))}
-        />
-        <span className="text-muted text-sm">원어 자동 인식 사용</span>
+      <div className="flex flex-wrap items-center gap-6">
+        <label className="flex cursor-pointer items-center gap-2 text-sm text-muted">
+          <Checkbox
+            checked={detectAutomatically}
+            onCheckedChange={(checked) => onDetectChange(Boolean(checked))}
+          />
+          원어 자동 인식 사용
+        </label>
+        <label className="flex cursor-pointer items-center gap-2 text-sm text-muted">
+          <Checkbox
+            checked={replaceVoiceSamples}
+            onCheckedChange={(checked) => onReplaceVoiceSamplesChange(Boolean(checked))}
+          />
+          음성샘플 자동 추천
+        </label>
       </div>
       {!detectAutomatically ? (
         <div className="space-y-2">

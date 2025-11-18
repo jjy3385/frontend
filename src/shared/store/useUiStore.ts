@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react'
+
 import { toast } from 'sonner'
 import { create } from 'zustand'
 import { devtools } from 'zustand/middleware'
@@ -5,7 +7,7 @@ import { devtools } from 'zustand/middleware'
 type ToastPayload = {
   id?: string
   title?: string
-  description?: string
+  description?: ReactNode
   actionLabel?: string
   onAction?: () => void
   autoDismiss?: number

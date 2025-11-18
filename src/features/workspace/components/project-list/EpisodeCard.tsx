@@ -196,13 +196,17 @@ export function EpisodeCard({ project, onEdit, onDelete }: EpisodeCardProps) {
   }, [languageItems])
 
   const thumbnaileUrl =
-    project.thumbnail?.kind === 's3'
+    project.thumbnail?.kind === 's3' && project.thumbnail?.key
       ? `https://${env.awsS3Bucket}.s3.${env.awsRegion}.amazonaws.com/${project.thumbnail.key}`
       : project.thumbnail?.url
+  const primaryTargetLanguage = project.targets?.[0]?.language_code
+  const episodeLink = primaryTargetLanguage
+    ? routes.editor(project.id, primaryTargetLanguage)
+    : routes.projectDetail(project.id)
 
   return (
     <Link
-      to={routes.projectDetail(project.id)}
+      to={episodeLink}
       className="focus-visible:outline-hidden group block overflow-hidden rounded-3xl border shadow-soft transition hover:-translate-y-0.5 hover:shadow-xl"
     >
       <div className="relative aspect-video overflow-hidden">

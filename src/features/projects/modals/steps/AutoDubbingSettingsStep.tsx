@@ -24,6 +24,7 @@ export const autoDubbingSettingsSchema = z
   .object({
     title: z.string().min(2, '제목은 2자 이상이어야 합니다.'),
     detectAutomatically: z.boolean(),
+    replaceVoiceSamples: z.boolean(),
     // 빈 문자열도 통과시킴
     sourceLanguage: z.string().min(1, '언어를 선택해주세요').or(z.literal('')),
     targetLanguages: z.array(z.string()).min(1, '타겟 언어를 최소 1개 선택하세요.'),
@@ -65,6 +66,7 @@ export function AutoDubbingSettingsStep({
   } = form
 
   const detectAutomatically = watch('detectAutomatically')
+  const replaceVoiceSamples = watch('replaceVoiceSamples')
   const sourceLanguage = watch('sourceLanguage')
   const speakerCount = watch('speakerCount')
   const watchedTargetLanguages = watch('targetLanguages')
@@ -113,6 +115,10 @@ export function AutoDubbingSettingsStep({
     setValue('detectAutomatically', checked, { shouldDirty: true })
   }
 
+  const handleReplaceVoiceSamplesChange = (checked: boolean) => {
+    setValue('replaceVoiceSamples', checked, { shouldDirty: true })
+  }
+
   const handleSourceLanguageChange = (value: string) => {
     setValue('sourceLanguage', value, { shouldDirty: true })
   }
@@ -156,7 +162,9 @@ export function AutoDubbingSettingsStep({
       <TitleField registration={register('title')} error={errors.title?.message} />
       <SourceLanguageField
         detectAutomatically={detectAutomatically}
+        replaceVoiceSamples={replaceVoiceSamples}
         onDetectChange={handleDetectChange}
+        onReplaceVoiceSamplesChange={handleReplaceVoiceSamplesChange}
         languages={languageItems}
         sourceLanguage={sourceLanguage}
         onSourceLanguageChange={handleSourceLanguageChange}

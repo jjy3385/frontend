@@ -22,6 +22,7 @@ const createInitialDraft = (): ProjectCreationDraft => ({
   sourceType: 'file',
   title: '',
   detectAutomatically: true,
+  replaceVoiceSamples: true,
   sourceLanguage: '',
   targetLanguages: [],
   speakerCount: 2,
@@ -155,6 +156,7 @@ export function useProjectCreationModal() {
       ...draft,
       title: values.title,
       detectAutomatically: values.detectAutomatically,
+      replaceVoiceSamples: values.replaceVoiceSamples,
       sourceLanguage: values.sourceLanguage,
       targetLanguages: values.targetLanguages,
       speakerCount: values.speakerCount,
@@ -167,7 +169,6 @@ export function useProjectCreationModal() {
       {
         onSuccess(project) {
           const projectId = project.project_id
-          startTrackingProject(projectId)
           if (nextDraft.sourceType === 'file') {
             if (!nextDraft.file) return
             void handleFileUpload(projectId, nextDraft.file)

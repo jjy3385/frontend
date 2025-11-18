@@ -37,7 +37,7 @@ export function AppSidebar() {
   )
 
   return (
-    <aside className="bg-[#F1F5F9] hidden w-64 shrink-0 flex-col px-5 py-8 shadow-sm lg:flex">
+    <aside className="bg-[#E2E8F0] hidden w-64 shrink-0 flex-col px-5 py-8 shadow-sm lg:flex">
       <div className="flex flex-1 flex-col gap-8">
         <div>
           <p className="text-muted text-xs font-semibold uppercase tracking-[0.3em]">Explore</p>
