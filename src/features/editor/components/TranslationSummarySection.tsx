@@ -3,7 +3,7 @@
  * 모든 세그먼트의 번역 내용을 표시하고 편집 가능
  */
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 
 import { MoreVertical, Sparkles } from 'lucide-react'
 
@@ -38,12 +38,19 @@ export function TranslationSummarySection({
     activeSegmentId: state.activeSegmentId,
     setActiveSegment: state.setActiveSegment,
   }))
-  const { getAllSegments, updateSegment } = useTracksStore((state) => ({
-    getAllSegments: state.getAllSegments,
+  const { tracks, updateSegment } = useTracksStore((state) => ({
+    tracks: state.tracks,
     updateSegment: state.updateSegment,
   }))
 
-  const allSegments = getAllSegments()
+  // 모든 트랙의 세그먼트를 시간 순으로 정렬 (tracks가 변경될 때만 재계산)
+  const allSegments = useMemo(() => {
+    return tracks
+      .filter((track) => track.type === 'speaker')
+      .flatMap((track) => track.segments)
+      .sort((a, b) => a.start - b.start)
+  }, [tracks])
+
   const segmentRefs = useRef<Record<string, HTMLDivElement | null>>({})
 
   const [translatingSegments, setTranslatingSegments] = useState<Set<string>>(new Set())
@@ -199,7 +206,7 @@ export function TranslationSummarySection({
                 <div className="flex-1">
                   {/* 원본 텍스트 */}
                   <input
-                    className="text-foreground mb-0.5 w-full border-0 bg-transparent px-0 py-0 text-xs focus:outline-none"
+                    className="mb-0.5 w-full border-0 bg-transparent px-0 py-0 text-xs text-foreground focus:outline-none"
                     value={segment.source_text || ''}
                     onChange={(e) => handleSourceChange(segment.id, e.target.value)}
                     placeholder="원문 없음"
@@ -207,16 +214,16 @@ export function TranslationSummarySection({
 
                   {/* 번역 텍스트 */}
                   <div className="relative flex items-center gap-1">
-                    <span className="text-muted text-xs">→</span>
+                    <span className="text-xs text-muted">→</span>
                     <input
-                      className="text-primary flex-1 border-0 bg-transparent px-0 py-0 text-xs font-medium focus:outline-none disabled:opacity-50"
+                      className="flex-1 border-0 bg-transparent px-0 py-0 text-xs font-medium text-primary focus:outline-none disabled:opacity-50"
                       value={segment.target_text || ''}
                       onChange={(e) => handleTargetChange(segment.id, e.target.value)}
                       placeholder={isTranslating ? '번역 중...' : '번역 없음'}
                       disabled={isTranslating}
                     />
                     {isTranslating && (
-                      <div className="border-primary h-3 w-3 animate-spin rounded-full border-2 border-t-transparent" />
+                      <div className="h-3 w-3 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                     )}
                   </div>
                 </div>
@@ -239,12 +246,12 @@ export function TranslationSummarySection({
                     >
                       {isTranslating ? '번역 중...' : '번역하기'}
                     </DropdownMenuItem>
-                    <DropdownMenuItem
+                    {/* <DropdownMenuItem
                       onClick={() => void handleGenerateAudio(segment.id)}
                       disabled={isGeneratingAudio || !segment.target_text?.trim()}
                     >
                       {isGeneratingAudio ? '생성 중...' : '오디오 생성'}
-                    </DropdownMenuItem>
+                    </DropdownMenuItem> */}
                     <DropdownMenuSeparator />
 
                     <DropdownMenuItem
