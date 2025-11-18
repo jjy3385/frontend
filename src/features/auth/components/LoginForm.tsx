@@ -90,7 +90,19 @@ export function LoginForm() {
       client_id: clientId,
       callback: handleGoogleCredentialResponse,
     })
-    googleClient.accounts.id.renderButton(target, { theme: 'outline', size: 'large' })
+    googleClient.accounts.id.renderButton(target, {
+      theme: 'outline',
+      size: 'large',
+      type: 'standard',
+      text: 'signin_with',
+      shape: 'rectangular',
+    })
+    const renderedButton = target.firstElementChild as HTMLElement | null
+    if (renderedButton) {
+      renderedButton.style.width = '100%'
+      renderedButton.style.maxWidth = '100%'
+      renderedButton.style.minWidth = '100%'
+    }
   }, [handleGoogleCredentialResponse])
 
   return (
