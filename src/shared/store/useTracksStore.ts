@@ -33,6 +33,8 @@ type TracksState = {
   updateSegmentPosition: (segmentId: string, start: number, end: number) => void
   updateSegmentSize: (segmentId: string, start: number, end: number, originalDuration: number) => void
   moveSegmentToTrack: (segmentId: string, targetTrackId: string) => void
+  replaceSegment: (segmentId: string, newSegments: Segment[]) => void
+  replaceMultipleSegments: (segmentIds: string[], newSegment: Segment) => void
   getAllSegments: () => Segment[]
 }
 
@@ -69,10 +71,21 @@ export const useTracksStore = create<TracksState>()(
           return max
         }, 0)
 
+      // 각 트랙의 segments를 start 시간 기준으로 정렬
+      const sortedTracks = tracks.map((track) => {
+        if (track.type === 'speaker') {
+          return {
+            ...track,
+            segments: [...track.segments].sort((a, b) => a.start - b.start),
+          }
+        }
+        return track
+      })
+
       set(
         {
-          tracks: [...tracks],
-          originalTracks: [...tracks],
+          tracks: sortedTracks,
+          originalTracks: sortedTracks,
           nextSpeakerNumber: maxSpeakerNumber + 1,
         },
         false,
@@ -256,6 +269,52 @@ export const useTracksStore = create<TracksState>()(
         },
         false,
         { type: 'tracks/moveSegmentToTrack', payload: { segmentId, targetTrackId } },
+      ),
+
+    replaceSegment: (segmentId, newSegments) =>
+      set(
+        (state) => ({
+          tracks: state.tracks.map((track) => {
+            if (track.type !== 'speaker') return track
+
+            // Check if this track contains the segment to replace
+            const hasSegment = track.segments.some((s) => s.id === segmentId)
+            if (!hasSegment) return track
+
+            // Replace the segment with new segments
+            return {
+              ...track,
+              segments: track.segments
+                .flatMap((segment) => (segment.id === segmentId ? newSegments : [segment]))
+                .sort((a, b) => a.start - b.start),
+            }
+          }),
+        }),
+        false,
+        { type: 'tracks/replaceSegment', payload: { segmentId, newSegments } },
+      ),
+
+    replaceMultipleSegments: (segmentIds, newSegment) =>
+      set(
+        (state) => ({
+          tracks: state.tracks.map((track) => {
+            if (track.type !== 'speaker') return track
+
+            // Check if this track contains any of the segments to replace
+            const hasAnySegment = track.segments.some((s) => segmentIds.includes(s.id))
+            if (!hasAnySegment) return track
+
+            // Remove all segments to be merged and add the new merged segment
+            const filteredSegments = track.segments.filter((s) => !segmentIds.includes(s.id))
+
+            return {
+              ...track,
+              segments: [...filteredSegments, newSegment].sort((a, b) => a.start - b.start),
+            }
+          }),
+        }),
+        false,
+        { type: 'tracks/replaceMultipleSegments', payload: { segmentIds, newSegment } },
       ),
 
     getAllSegments: () => {
