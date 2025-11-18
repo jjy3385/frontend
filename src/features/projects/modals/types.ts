@@ -12,6 +12,7 @@ export type ProjectCreationDraft = {
   fileSize?: number
   title: string
   detectAutomatically: boolean
+  replaceVoiceSamples: boolean
   sourceLanguage: string
   targetLanguages: string[]
   speakerCount: number

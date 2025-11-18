@@ -82,6 +82,7 @@ export interface ProjectPayload {
   fileSize?: number
   speakerCount: number
   detectAutomatically: boolean
+  replaceVoiceSamples: boolean
   sourceLanguage?: string | null
   targetLanguages: string[]
 }

@@ -51,6 +51,7 @@ export function ProjectCreationDialogContent({
           initialValues={{
             title: draft.title,
             detectAutomatically: draft.detectAutomatically,
+            replaceVoiceSamples: draft.replaceVoiceSamples,
             sourceLanguage: draft.sourceLanguage || '',
             // TODO: language 하드코딩
             targetLanguages: ['en'],
