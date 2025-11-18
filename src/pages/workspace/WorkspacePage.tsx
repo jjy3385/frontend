@@ -4,7 +4,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import type { ProjectSummary } from '@/entities/project/types'
 import { useProjects, useDeleteProjectMutation } from '@/features/projects/hooks/useProjects'
-import { PipelineStatusListener } from '@/features/projects/hooks/usePipelineStatusListener'
 import { ProjectList } from '@/features/workspace/components/project-list/ProjectList'
 import { UploadCard } from '@/features/workspace/components/upload-card/UploadCard'
 import { routes } from '@/shared/config/routes'
@@ -130,9 +129,6 @@ export default function WorkspacePage() {
             </div>
           ) : (
             <>
-              {projects.map((project) => (
-                <PipelineStatusListener key={project.id} project={project} />
-              ))}
               <ProjectList
                 projects={filteredProjects}
                 onEditProject={handleEditProject}

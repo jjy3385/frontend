@@ -80,7 +80,6 @@ export default function ProjectDetailPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-6 py-12">
-      <PipelineStatusListener project={project} />
       <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider text-muted">프로젝트 상세</p>
