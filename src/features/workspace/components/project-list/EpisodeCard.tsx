@@ -7,7 +7,7 @@ import ReactCountryFlag from 'react-country-flag'
 import type { Language } from '@/entities/language/types'
 import type { ProjectSummary, ProjectTarget } from '@/entities/project/types'
 import { useLanguage } from '@/features/languages/hooks/useLanguage'
-import { usePipelineProgress } from '@/features/projects/hooks/usePipelineProgress'
+import { usePipelineStore } from '@/features/projects/hooks/usePipelineStore'
 import { env } from '@/shared/config/env'
 import { routes } from '@/shared/config/routes'
 import { formatPercent } from '@/shared/lib/utils'
@@ -145,8 +145,7 @@ export function EpisodeCard({ project, onEdit, onDelete }: EpisodeCardProps) {
   const statusLabel = getProjectStatusLabel(project.status)
   const statusClass = projectStatusClassMap[statusLabel]
   const registeredLabel = formatRegisteredAt(project.createdAt)
-  const shouldTrackPipeline = pipelineTrackStatuses.has(project.status ?? '')
-  const pipelineProgress = usePipelineProgress(project.id, shouldTrackPipeline)
+  const pipelineProgress = usePipelineStore((state) => state.items[project.id])
   const overallProgress = getProjectProgressFromTargets(project.targets ?? [])
   const rawOverallProgressSnake: unknown = project.overall_progress
   const rawOverallProgressCamel: unknown = project.overallProgress
@@ -160,6 +159,7 @@ export function EpisodeCard({ project, onEdit, onDelete }: EpisodeCardProps) {
   const progressCircleOffset =
     PROGRESS_CIRCLE_CIRCUMFERENCE - (normalizedProgress / 100) * PROGRESS_CIRCLE_CIRCUMFERENCE
   const livePercentLabel = formatPercent(normalizedProgress)
+  const shouldTrackPipeline = pipelineTrackStatuses.has(project.status ?? '')
   const fallbackPipelineStatus =
     project.status === 'failed' ? 'failed' : shouldTrackPipeline ? 'running' : undefined
   const pipelineStatus = pipelineProgress?.status ?? fallbackPipelineStatus
