@@ -4,12 +4,12 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import type { ProjectSummary } from '@/entities/project/types'
 import { useProjects, useDeleteProjectMutation } from '@/features/projects/hooks/useProjects'
+import { PipelineStatusListener } from '@/features/projects/hooks/usePipelineStatusListener'
 import { ProjectList } from '@/features/workspace/components/project-list/ProjectList'
 import { UploadCard } from '@/features/workspace/components/upload-card/UploadCard'
 import { routes } from '@/shared/config/routes'
 import { useAuthStore } from '@/shared/store/useAuthStore'
 import { useUiStore } from '@/shared/store/useUiStore'
-import { usePipelineStatusNotifier } from '@/features/projects/hooks/usePipelineStatusNotifier'
 import { Spinner } from '@/shared/ui/Spinner'
 
 const stepMap = {
@@ -18,12 +18,6 @@ const stepMap = {
 } as const
 
 // type WorkspaceSection = 'projects' | 'voice-samples' | 'glossary' | 'guide' | 'support'
-
-export function PipelineStatusListener({ project }: { project: ProjectSummary }) {
-  const shouldTrack = new Set(['uploading', 'processing', 'uploaded']).has(project.status ?? '')
-  usePipelineStatusNotifier(project.id, shouldTrack, project.title)
-  return null
-}
 
 export default function WorkspacePage() {
   const { data: projects = [], isLoading } = useProjects()

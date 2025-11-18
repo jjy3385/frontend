@@ -13,7 +13,6 @@ import { Button } from '../../shared/ui/Button'
 import { Input } from '../../shared/ui/Input'
 import { Spinner } from '../../shared/ui/Spinner'
 import { TabsContent, TabsList, TabsRoot, TabsTrigger } from '../../shared/ui/Tabs'
-import { PipelineStatusListener } from '@/features/projects/hooks/usePipelineStatusListener'
 
 const tabs = [
   { value: 'assigned', label: '할당됨' },
@@ -121,9 +120,6 @@ export default function ProjectsListPage() {
             </div>
           ) : (
             <>
-              {projects.map((project: ProjectSummary) => (
-                <PipelineStatusListener key={project.id} project={project} />
-              ))}
               <ProjectList
                 projects={projects}
                 onEditProject={handleEditProject}

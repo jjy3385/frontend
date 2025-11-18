@@ -1,8 +1,10 @@
-import { useEffect } from 'react'
-import { usePipelineStore } from './usePipelineStore'
+import { useEffect, useRef } from 'react'
+
 import type { ProjectStatus, ProjectSummary } from '@/entities/project/types'
 import { env } from '@/shared/config/env'
-// import { usePipelineStatusNotifier } from '@/features/projects/hooks/usePipelineStatusNotifier'
+import { useUiStore } from '@/shared/store/useUiStore'
+
+import { usePipelineStore } from './usePipelineStore'
 
 const pipelineTrackStatuses = new Set<ProjectStatus>(['uploading', 'processing', 'uploaded'])
 const shouldTrack = (status?: ProjectStatus) =>
@@ -40,27 +42,6 @@ const stageLabelMap: Record<string, string> = {
   mux_started: '비디오 합성 중',
   mux_completed: '비디오 합성 완료',
   done: '처리가 완료되었습니다.',
-}
-
-const progressMessageMap: Record<number, string> = {
-  1: '전처리 중',
-  10: '전처리 중',
-  20: '텍스트 추출 중',
-  21: '텍스트 추출 중',
-  35: '텍스트 추출 중',
-  36: '번역 중',
-  70: '번역 중',
-  71: '번역 중',
-  100: '번역 중',
-}
-
-const DEFAULT_PROGRESS = 0
-const progressCache = new Map<string, number>()
-
-const getProgressStageMessage = (progress?: number) => {
-  if (progress == null) return undefined
-  const rounded = Math.round(progress)
-  return progressMessageMap[rounded]
 }
 
 const normalizeProgress = (value?: number | string) => {
@@ -138,21 +119,62 @@ const transformToProgressItem = (payload: PipelineEventPayload): PipelineProgres
 
 export function PipelineStatusListener({ project }: { project: ProjectSummary }) {
   const track = shouldTrack(project.status)
+  const showToast = useUiStore((state) => state.showToast)
+  const lastStatusRef = useRef<PipelineStageStatus>()
+
   useEffect(() => {
-    if (!track) return
+    if (!track) {
+      lastStatusRef.current = undefined
+      return
+    }
     const source = new EventSource(`${env.apiBaseUrl}/api/pipeline/${project.id}/events`)
+    const maybeNotify = (item: PipelineProgressItem) => {
+      if (lastStatusRef.current !== 'completed' && item.status === 'completed') {
+        showToast({
+          id: `pipeline-completed-${project.id}`,
+          title: '영상 처리가 완료되었습니다.',
+          description: `${project.title ?? '프로젝트'}의 파이프라인 처리가 끝났어요.`,
+          autoDismiss: 4000,
+        })
+      }
+      lastStatusRef.current = item.status
+    }
     const handleEvent = (event: MessageEvent<string>) => {
       const payload = JSON.parse(event.data) as PipelineEventPayload
       const item = transformToProgressItem(payload)
       usePipelineStore.getState().upsert(project.id, item)
+      maybeNotify(item)
     }
     source.addEventListener('stage', handleEvent)
     source.addEventListener('message', handleEvent)
+    const handleProcess = (event: MessageEvent<string>) => {
+      const payload = JSON.parse(event.data) as PipelineEventPayload
+      const stageKey = (payload.current_stage ?? payload.stage ?? '').toLowerCase()
+      const prev = usePipelineStore.getState().items[project.id]
+      const normalizedProcessProgress = normalizeProgress(payload.progress)
+      const resolvedProgress =
+        normalizedProcessProgress ?? prev?.progress ?? 0
+      const item: PipelineProgressItem = {
+        progress: Math.min(Math.max(resolvedProgress, 0), 100),
+        stage: stageKey || prev?.stage,
+        message:
+          payload.process ??
+          payload.message ??
+          stageLabelMap[stageKey] ??
+          (stageKey || prev?.message || '처리 중'),
+        status: 'running',
+      }
+      usePipelineStore.getState().upsert(project.id, item)
+      maybeNotify(item)
+    }
+    source.addEventListener('process', handleProcess)
     return () => {
+      source.removeEventListener('stage', handleEvent)
+      source.removeEventListener('message', handleEvent)
+      source.removeEventListener('process', handleProcess)
       source.close()
       usePipelineStore.getState().clear(project.id)
     }
-  }, [project.id, track])
-  // usePipelineStatusNotifier(project.id, track, project.title)
+  }, [project.id, project.title, showToast, track])
   return null
 }
