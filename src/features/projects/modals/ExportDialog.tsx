@@ -154,7 +154,9 @@ export function ExportDialog({ open, onOpenChange, projectId, languageCode }: Ex
                   <Button
                     className="flex-1"
                     disabled={assetsLoading || !filteredAsset}
-                    onClick={() => filteredAsset && handleDownload(filteredAsset)}
+                    onClick={() => {
+                      if (filteredAsset) void handleDownload(filteredAsset)
+                    }}
                   >
                     <Download className="mr-2 h-4 w-4" />
                     다운로드
@@ -165,7 +167,9 @@ export function ExportDialog({ open, onOpenChange, projectId, languageCode }: Ex
                     variant="secondary"
                     disabled={assetsLoading || !canPublish || !filteredAsset}
                     title={canPublish ? 'YouTube로 업로드' : '마이페이지에서 유튜브 계정을 먼저 연동하세요.'}
-                    onClick={() => filteredAsset && handlePublishClick(filteredAsset)}
+                    onClick={() => {
+                      if (filteredAsset) handlePublishClick(filteredAsset)
+                    }}
                   >
                     YouTube 업로드
                   </Button>
@@ -174,7 +178,9 @@ export function ExportDialog({ open, onOpenChange, projectId, languageCode }: Ex
                 <Button
                   className="w-full"
                   disabled={assetsLoading || !filteredAsset}
-                  onClick={() => filteredAsset && handleDownload(filteredAsset)}
+                  onClick={() => {
+                    if (filteredAsset) void handleDownload(filteredAsset)
+                  }}
                 >
                   <Download className="mr-2 h-4 w-4" />
                   선택한 형식 다운로드

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 
+import { Upload } from 'lucide-react'
 import { useParams } from 'react-router-dom'
 
 import { AudioTrackWorkspace } from '@/features/editor/components/AudioTrackWorkspace'
@@ -12,13 +13,12 @@ import { useAudioGenerationEvents } from '@/features/editor/hooks/useAudioGenera
 import { useEditorState } from '@/features/editor/hooks/useEditorState'
 import { useSaveSegments } from '@/features/editor/hooks/useSaveSegments'
 import { useMux } from '@/features/editor/hooks/useMux'
-import { useEditorStore } from '@/shared/store/useEditorStore'
 import { ExportDialog } from '@/features/projects/modals/ExportDialog'
+import { useEditorStore } from '@/shared/store/useEditorStore'
 import { Breadcrumbs } from '@/shared/ui/Breadcrumbs'
 import { Button } from '@/shared/ui/Button'
 import { Spinner } from '@/shared/ui/Spinner'
 import { TabsContent, TabsList, TabsRoot, TabsTrigger } from '@/shared/ui/Tabs'
-import { Upload } from 'lucide-react'
 
 export default function EditorPage() {
   const { projectId = '', languageCode = '' } = useParams<{
