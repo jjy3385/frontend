@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { usePipelineStore } from './usePipelineStore'
 import type { ProjectStatus, ProjectSummary } from '@/entities/project/types'
 import { env } from '@/shared/config/env'
+// import { usePipelineStatusNotifier } from '@/features/projects/hooks/usePipelineStatusNotifier'
 
 const pipelineTrackStatuses = new Set<ProjectStatus>(['uploading', 'processing', 'uploaded'])
 const shouldTrack = (status?: ProjectStatus) =>
@@ -136,8 +137,9 @@ const transformToProgressItem = (payload: PipelineEventPayload): PipelineProgres
 }
 
 export function PipelineStatusListener({ project }: { project: ProjectSummary }) {
+  const track = shouldTrack(project.status)
   useEffect(() => {
-    if (!shouldTrack(project.status)) return
+    if (!track) return
     const source = new EventSource(`${env.apiBaseUrl}/api/pipeline/${project.id}/events`)
     const handleEvent = (event: MessageEvent<string>) => {
       const payload = JSON.parse(event.data) as PipelineEventPayload
@@ -150,6 +152,7 @@ export function PipelineStatusListener({ project }: { project: ProjectSummary })
       source.close()
       usePipelineStore.getState().clear(project.id)
     }
-  }, [project.id, project.status])
+  }, [project.id, track])
+  // usePipelineStatusNotifier(project.id, track, project.title)
   return null
 }

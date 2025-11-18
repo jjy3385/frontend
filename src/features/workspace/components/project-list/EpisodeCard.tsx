@@ -130,8 +130,6 @@ const parseProgressValue = (value: unknown) => {
 }
 
 const clampProgress = (value: number) => Math.min(Math.max(value, 0), 100)
-const PROGRESS_CIRCLE_RADIUS = 28
-const PROGRESS_CIRCLE_CIRCUMFERENCE = 2 * Math.PI * PROGRESS_CIRCLE_RADIUS
 
 type EpisodeCardProps = {
   project: ProjectSummary
@@ -156,8 +154,6 @@ export function EpisodeCard({ project, onEdit, onDelete }: EpisodeCardProps) {
   const liveProgress = Number.isFinite(liveProgressRaw) ? liveProgressRaw : 0
   const normalizedProgress = clampProgress(liveProgress)
   const overlayWidth = 100 - normalizedProgress
-  const progressCircleOffset =
-    PROGRESS_CIRCLE_CIRCUMFERENCE - (normalizedProgress / 100) * PROGRESS_CIRCLE_CIRCUMFERENCE
   const livePercentLabel = formatPercent(normalizedProgress)
   const shouldTrackPipeline = pipelineTrackStatuses.has(project.status ?? '')
   const fallbackPipelineStatus =
@@ -252,41 +248,10 @@ export function EpisodeCard({ project, onEdit, onDelete }: EpisodeCardProps) {
         />
         {/* 상태별 오버레이 */}
         {isRunning ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/55">
-            <div className="relative h-16 w-16">
-              <svg
-                className="h-full w-full -rotate-90"
-                viewBox="0 0 64 64"
-                role="img"
-                aria-hidden="true"
-              >
-                <circle
-                  className="text-white/25"
-                  stroke="currentColor"
-                  strokeWidth="6"
-                  fill="transparent"
-                  r={PROGRESS_CIRCLE_RADIUS}
-                  cx="32"
-                  cy="32"
-                />
-                <circle
-                  className="text-primary"
-                  stroke="currentColor"
-                  strokeWidth="6"
-                  strokeLinecap="round"
-                  fill="transparent"
-                  r={PROGRESS_CIRCLE_RADIUS}
-                  cx="32"
-                  cy="32"
-                  strokeDasharray={PROGRESS_CIRCLE_CIRCUMFERENCE}
-                  strokeDashoffset={progressCircleOffset}
-                />
-              </svg>
-              <span className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-white">
-                {livePercentLabel}
-              </span>
+          <div className="absolute inset-0 flex items-center justify-center bg-black/45 px-4 text-center">
+            <div className="rounded-full bg-black/50 px-3 py-1 text-xs font-semibold text-white">
+              {stageLabel ?? livePercentLabel}
             </div>
-            {stageLabel ? <p className="text-[11px] font-medium text-white">{stageLabel}</p> : null}
           </div>
         ) : isFailed ? (
           <div className="absolute inset-0 bg-black/60" />
