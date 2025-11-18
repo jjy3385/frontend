@@ -39,25 +39,25 @@ export function useMux({ projectId, editorData }: UseMuxOptions): UseMuxReturn {
   const showToast = useUiStore((state) => state.showToast)
   const [isMuxing, setIsMuxing] = useState(false)
 
+  // 에러 토스트 헬퍼
+  const showError = (description: string, autoDismiss = 3000) => {
+    showToast({
+      id: 'mux-error',
+      title: '에러',
+      description,
+      autoDismiss,
+    })
+  }
+
   const handleMux = async () => {
     if (!editorData) {
-      showToast({
-        id: 'mux-error',
-        title: '에러',
-        description: '에디터 데이터를 불러올 수 없습니다.',
-        autoDismiss: 3000,
-      })
+      showError('에디터 데이터를 불러올 수 없습니다.')
       return
     }
 
     const segments = getAllSegments()
     if (segments.length === 0) {
-      showToast({
-        id: 'mux-error',
-        title: '에러',
-        description: '세그먼트가 없습니다.',
-        autoDismiss: 3000,
-      })
+      showError('세그먼트가 없습니다.')
       return
     }
 
@@ -67,35 +67,21 @@ export function useMux({ projectId, editorData }: UseMuxOptions): UseMuxReturn {
         start: seg.start,
         end: seg.end,
         audio_file: seg.segment_audio_url!, // S3 키
+        playback_rate: seg.playbackRate ?? 1.0,
       }))
 
     if (muxSegments.length === 0) {
-      showToast({
-        id: 'mux-error',
-        title: '에러',
-        description: '오디오 파일이 있는 세그먼트가 없습니다.',
-        autoDismiss: 3000,
-      })
+      showError('오디오 파일이 있는 세그먼트가 없습니다.')
       return
     }
 
     if (!editorData.playback.video_source) {
-      showToast({
-        id: 'mux-error',
-        title: '에러',
-        description: '비디오 소스가 없습니다.',
-        autoDismiss: 3000,
-      })
+      showError('비디오 소스가 없습니다.')
       return
     }
 
     if (!editorData.playback.background_audio_source) {
-      showToast({
-        id: 'mux-error',
-        title: '에러',
-        description: '배경음 소스가 없습니다.',
-        autoDismiss: 3000,
-      })
+      showError('배경음 소스가 없습니다.')
       return
     }
 
