@@ -189,6 +189,7 @@ export function VoiceSampleForm({
       })
       resetForm()
       onSuccess?.()
+      void queryClient.invalidateQueries({ queryKey: ['voice-library'], exact: false })
 
       if (createdSample.id) {
         const source = new EventSource(

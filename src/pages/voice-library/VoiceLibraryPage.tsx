@@ -107,7 +107,7 @@ export default function VoiceLibraryPage() {
   >({
     mutationFn: ({ sample, next }) => toggleFavorite(sample.id, next),
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey })
+      void queryClient.invalidateQueries({ queryKey: ['voice-library'], exact: false })
     },
   })
   const mutateFavorite = favoriteMutation.mutate
