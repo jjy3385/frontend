@@ -9,6 +9,7 @@ import { UploadCard } from '@/features/workspace/components/upload-card/UploadCa
 import { routes } from '@/shared/config/routes'
 import { useAuthStore } from '@/shared/store/useAuthStore'
 import { useUiStore } from '@/shared/store/useUiStore'
+import { usePipelineStatusNotifier } from '@/features/projects/hooks/usePipelineStatusNotifier'
 import { Spinner } from '@/shared/ui/Spinner'
 
 const stepMap = {
@@ -17,6 +18,12 @@ const stepMap = {
 } as const
 
 // type WorkspaceSection = 'projects' | 'voice-samples' | 'glossary' | 'guide' | 'support'
+
+export function PipelineStatusListener({ project }: { project: ProjectSummary }) {
+  const shouldTrack = new Set(['uploading', 'processing', 'uploaded']).has(project.status ?? '')
+  usePipelineStatusNotifier(project.id, shouldTrack, project.title)
+  return null
+}
 
 export default function WorkspacePage() {
   const { data: projects = [], isLoading } = useProjects()
@@ -111,8 +118,8 @@ export default function WorkspacePage() {
     <div className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-6 py-8">
       <div className="mb-10 flex flex-wrap items-center justify-between gap-6">
         <div>
-          <p className="text-primary text-xs font-semibold uppercase tracking-[0.3em]">Workspace</p>
-          <p className="text-muted text-sm">AI 기반 자동 더빙으로 글로벌 콘텐츠를 만드세요.</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-primary">Workspace</p>
+          <p className="text-sm text-muted">AI 기반 자동 더빙으로 글로벌 콘텐츠를 만드세요.</p>
         </div>
         <div className="flex-shrink-0">
           <UploadCard />
@@ -120,20 +127,24 @@ export default function WorkspacePage() {
       </div>
       <section className="flex flex-1 flex-col space-y-10">
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-          </div>
+          <div className="flex items-center justify-between"></div>
 
           {isLoading ? (
-            <div className="border-surface-3 bg-surface-1 flex items-center justify-center rounded-3xl border py-10">
+            <div className="flex items-center justify-center rounded-3xl border border-surface-3 bg-surface-1 py-10">
               <Spinner />
-              <span className="text-muted ml-3 text-sm">프로젝트 불러오는 중…</span>
+              <span className="ml-3 text-sm text-muted">프로젝트 불러오는 중…</span>
             </div>
           ) : (
-            <ProjectList
-              projects={filteredProjects}
-              onEditProject={handleEditProject}
-              onDeleteProject={handleDeleteProject}
-            />
+            <>
+              {projects.map((project) => (
+                <PipelineStatusListener key={project.id} project={project} />
+              ))}
+              <ProjectList
+                projects={filteredProjects}
+                onEditProject={handleEditProject}
+                onDeleteProject={handleDeleteProject}
+              />
+            </>
           )}
         </div>
       </section>

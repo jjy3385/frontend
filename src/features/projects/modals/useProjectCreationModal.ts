@@ -173,7 +173,6 @@ export function useProjectCreationModal() {
             void handleFileUpload(projectId, nextDraft.file)
           } else if (nextDraft.sourceType === 'youtube') {
             void handleRegisterYoutube(projectId, nextDraft)
-            startTrackingProject(projectId)
           }
         },
       },

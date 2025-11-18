@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 import { env } from '@/shared/config/env'
+import { useUiStore } from '@/shared/store/useUiStore'
 
 export type PipelineProgressItem = {
   progress: number
