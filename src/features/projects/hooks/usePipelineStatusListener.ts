@@ -133,7 +133,7 @@ export function PipelineStatusListener({ project }: { project: ProjectSummary })
         showToast({
           id: `pipeline-completed-${project.id}`,
           title: '영상 처리가 완료되었습니다.',
-          description: `${project.title ?? '프로젝트'}의 파이프라인 처리가 끝났어요.`,
+          description: `${project.title ?? '프로젝트'}의 영상 번역이 완료되었어요.`,
           autoDismiss: 4000,
         })
       }
@@ -152,8 +152,7 @@ export function PipelineStatusListener({ project }: { project: ProjectSummary })
       const stageKey = (payload.current_stage ?? payload.stage ?? '').toLowerCase()
       const prev = usePipelineStore.getState().items[project.id]
       const normalizedProcessProgress = normalizeProgress(payload.progress)
-      const resolvedProgress =
-        normalizedProcessProgress ?? prev?.progress ?? 0
+      const resolvedProgress = normalizedProcessProgress ?? prev?.progress ?? 0
       const item: PipelineProgressItem = {
         progress: Math.min(Math.max(resolvedProgress, 0), 100),
         stage: stageKey || prev?.stage,

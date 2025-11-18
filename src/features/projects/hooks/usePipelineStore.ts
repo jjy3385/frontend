@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+
 import type { PipelineProgressItem } from './usePipelineStatusListener'
 
 type PipelineMap = Record<string, PipelineProgressItem>
