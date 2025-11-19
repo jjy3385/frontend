@@ -6,7 +6,15 @@ import { useUiStore } from '@/shared/store/useUiStore'
 
 import { usePipelineStore } from './usePipelineStore'
 
-const pipelineTrackStatuses = new Set<ProjectStatus>(['uploading', 'processing', 'uploaded'])
+const pipelineTrackStatuses = new Set<ProjectStatus>([
+  'uploading',
+  'processing',
+  'uploaded',
+  'completed',
+  'done',
+  'editing',
+  'failed',
+])
 const shouldTrack = (status?: ProjectStatus) =>
   pipelineTrackStatuses.has(status ?? ('' as ProjectStatus))
 
@@ -119,23 +127,24 @@ const transformToProgressItem = (payload: PipelineEventPayload): PipelineProgres
 
 export function PipelineStatusListener({ project }: { project: ProjectSummary }) {
   const track = shouldTrack(project.status)
-  console.log(track, project.id)
   const showToast = useUiStore((state) => state.showToast)
   const lastStatusRef = useRef<PipelineStageStatus>()
+  const trackable = pipelineTrackStatuses.has(project.status ?? '')
 
   useEffect(() => {
-    if (!track) {
+    if (!track || !trackable) {
       lastStatusRef.current = undefined
       return
     }
-    const source = new EventSource(`${env.apiBaseUrl}/api/storage/${project.id}/events`)
+
+    const source = new EventSource(`${env.apiBaseUrl}/api/pipeline/${project.id}/events`)
     const maybeNotify = (item: PipelineProgressItem) => {
       if (lastStatusRef.current !== 'completed' && item.status === 'completed') {
         showToast({
           id: `pipeline-completed-${project.id}`,
           title: '영상 처리가 완료되었습니다.',
           description: `${project.title ?? '프로젝트'}의 영상 번역이 완료되었어요.`,
-          autoDismiss: 4000,
+          autoDismiss: 6000,
         })
       }
       lastStatusRef.current = item.status
@@ -175,6 +184,6 @@ export function PipelineStatusListener({ project }: { project: ProjectSummary })
       source.close()
       usePipelineStore.getState().clear(project.id)
     }
-  }, [project.id, project.title, showToast, track])
+  }, [project.id, project.title, showToast, track, trackable])
   return null
 }

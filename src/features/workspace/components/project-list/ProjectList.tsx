@@ -11,8 +11,8 @@ type ProjectListProps = {
 export function ProjectList({ projects, onEditProject, onDeleteProject }: ProjectListProps) {
   if (projects.length === 0) {
     return (
-      <div className="border-surface-4 bg-surface-2 rounded-3xl border border-dashed p-10 text-center">
-        <p className="text-muted text-sm">등록된 에피소드가 없습니다. 지금 바로 만들어보세요.</p>
+      <div className="rounded-3xl border border-dashed border-surface-4 bg-surface-2 p-10 text-center">
+        <p className="text-sm text-muted">등록된 에피소드가 없습니다. 지금 바로 만들어보세요.</p>
       </div>
     )
   }
