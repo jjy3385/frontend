@@ -28,6 +28,16 @@ import {
 } from './index'
 
 
+const CATEGORY_OPTIONS = [
+  'Narrative & Story',
+  'Conversational',
+  'Characters & Animation',
+  'Social Media',
+  'Entertainment & TV',
+  'Advertisement',
+  'Informative & Educational',
+]
+
 type VoiceSampleFormProps = {
   initialFile?: File | null
   hideFileUpload?: boolean
