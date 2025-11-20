@@ -64,12 +64,12 @@ const router = createBrowserRouter(
         <Route path="*" element={<NotFoundPage />} />
       </Route>
       <Route path="/editor" element={<EditorLayout />} errorElement={<RouteErrorBoundary />}>
-        <Route path=":projectId/:languageCode" element={<EditorPage />} />
+        <Route path=":projectId" element={<EditorPage />} />
       </Route>
       <Route path="voice-samples" element={<VoiceSamplesPage />} />
       <Route path="voice-cloning" element={<VoiceCloningPage />} />
       <Route path="voice-library" element={<VoiceLibraryPage />} />
-      <Route path="editor/:projectId/:languageCode" element={<EditorPage />} />
+      <Route path="editor/:projectId" element={<EditorPage />} />
       <Route path="example" element={<ExampleCrudPage />} />
       <Route path="example/modal" element={<ModalExamplePage />} />
       <Route path="policies/terms-of-service" element={<TermsOfServicePage />} />

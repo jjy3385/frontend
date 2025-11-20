@@ -1,71 +1,59 @@
-import { Globe, Languages } from 'lucide-react'
-
 import { useProject } from '@/features/projects/hooks/useProjects'
-import { Button } from '@/shared/ui/Button'
-import { cn } from '@/shared/lib/utils'
+import { useProjectProgressStore } from '@/features/projects/stores/useProjectProgressStore'
 import { useEditorStore } from '@/shared/store/useEditorStore'
+
+import { useEditorLanguageSelection } from '../hooks/useEditorLanguageSelection'
+
+import { LanguageButton } from './LanguageButton'
 
 type LanguageSelectorProps = {
   projectId: string
   currentLanguageCode: string
+  onLanguageChange?: (languageCode: string) => void
 }
 
-type LanguageOption = {
-  code: string
-  label: string
-  isOriginal: boolean
-}
-
-export function LanguageSelector({ projectId, currentLanguageCode }: LanguageSelectorProps) {
+/**
+ * 에디터 언어 선택기
+ * - 완료된 타겟 언어만 활성화
+ * - 미완료 언어는 비활성화 (grayscale)
+ * - SSE 진행률에 따라 실시간 업데이트
+ */
+export function LanguageSelector({
+  projectId,
+  currentLanguageCode,
+  onLanguageChange,
+}: LanguageSelectorProps) {
   const { data: project } = useProject(projectId)
-  const { audioPlaybackMode, setAudioPlaybackMode } = useEditorStore((state) => ({
-    audioPlaybackMode: state.audioPlaybackMode,
-    setAudioPlaybackMode: state.setAudioPlaybackMode,
-  }))
+  const sseProgress = useProjectProgressStore((state) => state.getProjectProgress(projectId))
+  const setAudioPlaybackMode = useEditorStore((state) => state.setAudioPlaybackMode)
+
+  const { languageOptions } = useEditorLanguageSelection({
+    project,
+    sseProgress,
+  })
 
   if (!project) {
     return null
   }
 
-  // Build language options: original + targets
-  const languageOptions: LanguageOption[] = [
-    {
-      code: 'original',
-      label: `원어`,
-      isOriginal: true,
-    },
-    ...(project.targets?.map((target) => ({
-      code: target.language_code,
-      label: target.language_code.toUpperCase(),
-      isOriginal: false,
-    })) || []),
-  ]
-
   return (
     <div className="flex items-center gap-2">
       {languageOptions.map((option) => {
-        const isSelected = audioPlaybackMode === option.code
+        const isSelected = currentLanguageCode === option.code
 
         return (
-          <Button
+          <LanguageButton
             key={option.code}
-            variant={isSelected ? 'primary' : 'ghost'}
-            size="sm"
-            onClick={() => setAudioPlaybackMode(option.code)}
-            className={cn(
-              'gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all',
-              isSelected
-                ? 'shadow-sm'
-                : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50',
-            )}
-          >
-            {option.isOriginal ? (
-              <Globe className="h-3.5 w-3.5" />
-            ) : (
-              <Languages className="h-3.5 w-3.5" />
-            )}
-            <span>{option.label}</span>
-          </Button>
+            option={option}
+            isSelected={isSelected}
+            onClick={() => {
+              // 활성화된 언어만 선택 가능
+              if (option.isAvailable) {
+                setAudioPlaybackMode(option.code)
+                onLanguageChange?.(option.code)
+              }
+            }}
+          />
         )
       })}
     </div>

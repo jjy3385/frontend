@@ -51,7 +51,7 @@ export function ProjectStudioPanel({
               {buttonLabel}
             </div>
           ) : (
-            <Link to={routes.editor(projectId, selectedLanguageCode)}>
+            <Link to={routes.editor(projectId)}>
               <ExternalLink className="h-4 w-4" />
               {buttonLabel}
             </Link>

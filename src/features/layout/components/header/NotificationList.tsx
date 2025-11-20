@@ -24,7 +24,7 @@ export function NotificationList() {
   ) => {
     markAsRead(notificationId)
     if (projectId && targetLanguage) {
-      navigate(routes.editor(projectId, targetLanguage))
+      navigate(routes.editor(projectId))
     } else if (projectId) {
       navigate(routes.projectDetail(projectId))
     }

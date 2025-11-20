@@ -65,9 +65,7 @@ export function EpisodeCard({ project, onExport, onDelete, onTagClick }: Episode
   const hiddenTags = orderedTags.slice(MAX_VISIBLE_TAGS)
   const hiddenCount = Math.max(orderedTags.length - visibleTags.length, 0)
   const selectedWorkspaceTags = workspaceSelectedTags ?? EMPTY_TAGS
-  const episodeLink = primaryTargetLanguage
-    ? routes.editor(project.id, primaryTargetLanguage)
-    : routes.projectDetail(project.id)
+  const episodeLink = routes.editor(project.id)
 
   return (
     <Link
