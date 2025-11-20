@@ -253,7 +253,7 @@ export default function EditorPage() {
           <AudioTrackWorkspace
             segments={data.segments}
             duration={data.playback.duration}
-            originalAudioSrc={data.playback.audio_source}
+            originalAudioSrc={data.playback.audio_source ?? data.playback.video_source}
             backgroundAudioSrc={data.playback.background_audio_source}
             onSave={handleSave}
           />
