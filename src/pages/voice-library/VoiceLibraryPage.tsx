@@ -12,7 +12,7 @@ import {
   useDeleteVoiceSample,
   useRemoveFromMyVoices,
 } from '@/features/voice-samples/hooks/useVoiceSamples'
-import { VoiceSampleEditModal } from '@/features/voice-samples/modals/VoiceSampleEditModal'
+import { useLanguage } from '@/features/languages/hooks/useLanguage'
 import { env } from '@/shared/config/env'
 import { routes } from '@/shared/config/routes'
 import { Button } from '@/shared/ui/Button'
@@ -24,14 +24,16 @@ import {
 } from '@/shared/ui/Dropdown'
 import { Input } from '@/shared/ui/Input'
 
-import { VoiceFiltersModal, type VoiceFilters } from './components/VoiceFiltersModal'
+import { VoiceFiltersModal } from './components/VoiceFiltersModal'
 import { VoiceLibraryTabs } from './components/VoiceLibraryTabs'
+import { FilterChipsBar } from './components/FilterChipsBar'
+import { useVoiceLibraryFilters, type VoiceFilters } from './hooks/useVoiceLibraryFilters'
 import { CharacterVoicesSection } from './sections/CharacterVoicesSection'
 import { TrendingVoicesSection } from './sections/TrendingVoicesSection'
 import { UseCaseCarouselSection } from './sections/UseCaseCarouselSection'
 import { VoiceListSection } from './sections/VoiceListSection'
 
-type LibraryTab = 'library' | 'mine' | 'default'
+type LibraryTab = 'library' | 'mine'
 
 const EMPTY_SAMPLES: VoiceSample[] = []
 
@@ -60,8 +62,6 @@ export default function VoiceLibraryPage() {
   const [sort, setSort] = useState<
     'trending' | 'added-desc' | 'added-asc' | 'created-desc' | 'created-asc'
   >('added-desc')
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
-  const [editingSample, setEditingSample] = useState<VoiceSample | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const [playingSampleId, setPlayingSampleId] = useState<string | null>(null)
@@ -72,9 +72,21 @@ export default function VoiceLibraryPage() {
   const [addingToMyVoices, setAddingToMyVoices] = useState<Set<string>>(new Set())
   const [removingFromMyVoices, setRemovingFromMyVoices] = useState<Set<string>>(new Set())
   const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false)
-  const [filters, setFilters] = useState<VoiceFilters>({
-    gender: 'any',
-  })
+  const { data: languageResponse } = useLanguage()
+  const languageOptions = useMemo(
+    () =>
+      (languageResponse ?? []).map((lang) => ({
+        code: lang.language_code,
+        label: lang.name_ko,
+      })),
+    [languageResponse],
+  )
+  const { filters, setFilters, resetFilters, chips } = useVoiceLibraryFilters(
+    {
+      gender: 'any',
+    },
+    { languages: languageOptions },
+  )
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
 
   const queryKey = useMemo(
@@ -93,9 +105,10 @@ export default function VoiceLibraryPage() {
         q: search.trim() || undefined,
         mySamplesOnly: tab === 'mine',
         // myVoicesOnly는 제거 - mySamplesOnly만 사용 (자신이 만든 보이스는 자동으로 user_voices에 추가됨)
-        isDefault:
-          tab === 'default' ? true : tab === 'library' || tab === 'mine' ? false : undefined,
+        isBuiltin: undefined,
         gender: filters.gender && filters.gender !== 'any' ? filters.gender : undefined,
+        age: filters.age && filters.age !== 'any' ? filters.age : undefined,
+        accent: filters.accent && filters.accent !== 'any' ? filters.accent : undefined,
         languages:
           filters.languages && filters.languages.length > 0 ? filters.languages : undefined,
         category: filters.category && filters.category.length > 0 ? filters.category[0] : undefined,
@@ -197,10 +210,13 @@ export default function VoiceLibraryPage() {
     [playingSampleId, resolveSampleAudioUrl, stopPlayback],
   )
 
-  const handleEditSample = useCallback((sample: VoiceSample) => {
-    setEditingSample(sample)
-    setIsEditModalOpen(true)
-  }, [])
+  const handleEditSample = useCallback(
+    (sample: VoiceSample) => {
+      if (!sample.id) return
+      navigate(routes.voiceSampleEdit(sample.id), { state: { sample } })
+    },
+    [navigate],
+  )
 
   const handleDeleteSample = useCallback(
     (sample: VoiceSample) => {
@@ -218,10 +234,6 @@ export default function VoiceLibraryPage() {
     },
     [deleteVoiceSample, queryClient],
   )
-
-  const handleEditSuccess = useCallback(() => {
-    void queryClient.invalidateQueries({ queryKey: ['voice-library'], exact: false })
-  }, [queryClient])
 
   const samples = voiceQuery.data?.samples ?? EMPTY_SAMPLES
   const sortedSamples = useMemo(() => {
@@ -365,8 +377,7 @@ export default function VoiceLibraryPage() {
         <VoiceLibraryTabs activeTab={tab} onChange={setTab} />
         <div className="flex items-center gap-4">
           <Button variant="primary" onClick={() => navigate(routes.voiceCloning)} className="gap-2">
-            <Globe className="h-4 w-4" />
-            보이스 생성
+            + 음성 녹음
           </Button>
         </div>
       </div>
@@ -391,27 +402,27 @@ export default function VoiceLibraryPage() {
               >
                 {sort === 'trending' && (
                   <>
-                    Trending <ArrowDown className="h-3 w-3" />
+                    인기순 <ArrowDown className="h-3 w-3" />
                   </>
                 )}
                 {sort === 'added-desc' && (
                   <>
-                    Trending <ArrowDown className="h-3 w-3" />
+                    인기순 <ArrowDown className="h-3 w-3" />
                   </>
                 )}
                 {sort === 'added-asc' && (
                   <>
-                    Trending <ArrowUp className="h-3 w-3" />
+                    인기순 <ArrowUp className="h-3 w-3" />
                   </>
                 )}
                 {sort === 'created-desc' && (
                   <>
-                    Newest <ArrowDown className="h-3 w-3" />
+                    최신순 <ArrowDown className="h-3 w-3" />
                   </>
                 )}
                 {sort === 'created-asc' && (
                   <>
-                    Oldest <ArrowUp className="h-3 w-3" />
+                    오래된순 <ArrowUp className="h-3 w-3" />
                   </>
                 )}
                 <ChevronDown className="h-3 w-3" />
@@ -420,22 +431,22 @@ export default function VoiceLibraryPage() {
             <DropdownMenuContent align="start">
               <DropdownMenuItem onClick={() => setSort('added-desc')}>
                 <div className="flex items-center gap-1">
-                  Trending <ArrowDown className="h-3 w-3" />
+                  인기순 <ArrowDown className="h-3 w-3" />
                 </div>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setSort('added-asc')}>
                 <div className="flex items-center gap-1">
-                  Trending <ArrowUp className="h-3 w-3" />
+                  인기순 <ArrowUp className="h-3 w-3" />
                 </div>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setSort('created-desc')}>
                 <div className="flex items-center gap-1">
-                  Newest <ArrowDown className="h-3 w-3" />
+                  최신순 <ArrowDown className="h-3 w-3" />
                 </div>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setSort('created-asc')}>
                 <div className="flex items-center gap-1">
-                  Oldest <ArrowUp className="h-3 w-3" />
+                  오래된순 <ArrowUp className="h-3 w-3" />
                 </div>
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -446,10 +457,19 @@ export default function VoiceLibraryPage() {
             className="h-8 gap-1 rounded-full border-surface-3 px-3 py-1.5 text-xs"
           >
             <Filter className="h-3 w-3" />
-            Filters
+            필터
           </Button>
         </div>
       </div>
+
+      {/* 적용된 필터 칩 */}
+      <FilterChipsBar
+        chips={chips}
+        onReset={() => {
+          resetFilters()
+          setSelectedCategory(null)
+        }}
+      />
 
       {/* Trending voices 섹션 */}
       {tab === 'library' && trendingVoices.length > 0 && !search.trim() && !selectedCategory && (
@@ -529,16 +549,16 @@ export default function VoiceLibraryPage() {
         />
       )}
 
-      {/* 전체 목록 (내 보이스/Default Voices 탭에서만 표시) */}
-      {tab !== 'library' && (
+      {/* 내 보이스 목록 */}
+      {tab === 'mine' && (
         <VoiceListSection
-          title={tab === 'mine' ? 'My Voices' : 'Default Voices'}
+          title="My Voices"
           samples={sortedSamples}
           isLoading={voiceQuery.isLoading}
           onPlay={handlePlaySample}
           playingSampleId={playingSampleId}
-          onAddToMyVoices={tab === 'default' ? undefined : handleAddToMyVoices}
-          onRemoveFromMyVoices={tab === 'default' ? undefined : handleRemoveFromMyVoices}
+          onAddToMyVoices={handleAddToMyVoices}
+          onRemoveFromMyVoices={handleRemoveFromMyVoices}
           addingToMyVoices={addingToMyVoices}
           removingFromMyVoices={removingFromMyVoices}
           showActions={isMyTab}
@@ -548,18 +568,6 @@ export default function VoiceLibraryPage() {
           currentUserId={currentUser?._id}
         />
       )}
-
-      <VoiceSampleEditModal
-        open={isEditModalOpen}
-        onOpenChange={(open) => {
-          setIsEditModalOpen(open)
-          if (!open) {
-            setEditingSample(null)
-          }
-        }}
-        sample={editingSample}
-        onSuccess={handleEditSuccess}
-      />
 
       <VoiceFiltersModal
         open={isFiltersModalOpen}

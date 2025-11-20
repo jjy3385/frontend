@@ -2,17 +2,16 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { useQueryClient } from '@tanstack/react-query'
 import { HTTPError } from 'ky'
-import ReactCountryFlag from 'react-country-flag'
+import { Link } from 'react-router-dom'
 
-import { env } from '@/shared/config/env'
-import { queryKeys } from '@/shared/config/queryKeys'
+import { useAccents } from '@/features/accents/hooks/useAccents'
 import { useLanguage } from '@/features/languages/hooks/useLanguage'
 import { routes } from '@/shared/config/routes'
+import { env } from '@/shared/config/env'
+import { queryKeys } from '@/shared/config/queryKeys'
 import { useUiStore } from '@/shared/store/useUiStore'
 import { Button } from '@/shared/ui/Button'
-import { Input } from '@/shared/ui/Input'
 import { Label } from '@/shared/ui/Label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/Select'
 
 import { useFinishUploadMutation, usePrepareUploadMutation } from '../hooks/useVoiceSampleStorage'
 import {
@@ -20,27 +19,14 @@ import {
   prepareVoiceSampleAvatarUpload,
 } from '../api/voiceSamplesApi'
 
-const DEFAULT_AVATAR =
-  'https://ui-avatars.com/api/?name=Voice&background=EEF2FF&color=1E1B4B&size=128'
+import {
+  VoiceAvatarUploader,
+  VoiceAttributesSection,
+  VoiceCategorySelector,
+  VoiceDescriptionField,
+  VoiceNameField,
+} from './index'
 
-const languageCountryMap: Record<string, string> = {
-  ko: 'KR',
-  en: 'US',
-  ja: 'JP',
-  zh: 'CN',
-  es: 'ES',
-  fr: 'FR',
-  de: 'DE',
-  it: 'IT',
-  pt: 'PT',
-  ru: 'RU',
-}
-
-const getCountryCode = (code?: string) => {
-  if (!code) return 'US'
-  const normalized = code.toLowerCase()
-  return languageCountryMap[normalized] ?? normalized.slice(0, 2).toUpperCase()
-}
 
 type VoiceSampleFormProps = {
   initialFile?: File | null
@@ -58,7 +44,10 @@ export function VoiceSampleForm({
   const [name, setName] = useState('')
   const [languageCode, setLanguageCode] = useState('ko')
   const [gender, setGender] = useState('any')
-  const [category, setCategory] = useState<string>('')
+  const [age, setAge] = useState('any')
+  const [accent, setAccent] = useState('any')
+  const [labelFields, setLabelFields] = useState<Array<'accent' | 'gender' | 'age'>>([])
+  const [categories, setCategories] = useState<string[]>([])
   const [audioFile, setAudioFile] = useState<File | null>(initialFile)
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
@@ -75,6 +64,9 @@ export function VoiceSampleForm({
   const showToast = useUiStore((state) => state.showToast)
   const { data: languageResponse, isLoading: languagesLoading } = useLanguage()
   const languageOptions = useMemo(() => languageResponse ?? [], [languageResponse])
+
+  const { data: accentResponse, isLoading: accentsLoading } = useAccents(languageCode)
+  const accentOptions = useMemo(() => accentResponse ?? [], [accentResponse])
 
   // EventSource를 ref로 관리하여 cleanup 가능하도록 함
   const eventSourceRef = useRef<EventSource | null>(null)
@@ -96,17 +88,6 @@ export function VoiceSampleForm({
       setLanguageCode(languageOptions[0].language_code)
     }
   }, [languageOptions, languageCode])
-
-  const selectedLanguage = languageOptions.find((lang) => lang.language_code === languageCode)
-  const selectedCountryCode = getCountryCode(selectedLanguage?.language_code)
-  const selectedFlagIcon = selectedLanguage ? (
-    <ReactCountryFlag
-      countryCode={selectedCountryCode}
-      svg
-      style={{ width: '1.25em', height: '1.25em' }}
-      title={selectedLanguage.name_ko}
-    />
-  ) : null
 
   useEffect(() => {
     setAudioFile(initialFile)
@@ -133,6 +114,10 @@ export function VoiceSampleForm({
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
     if (!name.trim() || !audioFile) return
+
+    const includeAccent = labelFields.includes('accent')
+    const includeGender = labelFields.includes('gender')
+    const includeAge = labelFields.includes('age')
 
     try {
       setUploadStage('preparing')
@@ -162,9 +147,11 @@ export function VoiceSampleForm({
         is_public: true,
         object_key,
         country: languageCode,
-        gender,
-        category: category || undefined,
-        is_default: false,
+        gender: includeGender && gender !== 'any' ? gender : undefined,
+        age: includeAge && age !== 'any' ? age : undefined,
+        accent: includeAccent && accent !== 'any' ? accent : undefined,
+        category: categories.length > 0 ? categories : undefined,
+        is_builtin: false,
       })
 
       if (avatarFile && createdSample.id) {
@@ -186,7 +173,7 @@ export function VoiceSampleForm({
           })
 
           await finalizeVoiceSampleAvatarUpload(createdSample.id, { object_key: avatarKey })
-        } catch (error) {
+        } catch (error: unknown) {
           console.error('Failed to upload avatar image', error)
           showToast({
             id: 'voice-sample-avatar-error',
@@ -251,12 +238,12 @@ export function VoiceSampleForm({
                 autoDismiss: 3000,
               })
             }
-          } catch (error) {
+          } catch (error: unknown) {
             console.error('Failed to parse SSE data:', error)
           }
         })
 
-        source.onerror = (error) => {
+        source.onerror = (error: Event) => {
           console.error('SSE connection error:', error)
           source.close()
           eventSourceRef.current = null
@@ -265,7 +252,7 @@ export function VoiceSampleForm({
         // ref에 저장하여 cleanup 시 사용
         eventSourceRef.current = source
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Failed to create voice sample:', error)
 
       if (error instanceof HTTPError && error.response.status === 401) {
@@ -316,7 +303,10 @@ export function VoiceSampleForm({
     setName('')
     setLanguageCode('ko')
     setGender('any')
-    setCategory('')
+    setAge('any')
+    setAccent('any')
+    setLabelFields([])
+    setCategories([])
     setAvatarFile(null)
     setAvatarPreview(null)
     setUploadStage('idle')
@@ -334,21 +324,11 @@ export function VoiceSampleForm({
       }}
       className="space-y-6"
     >
-      <div className="space-y-2">
-        <Label htmlFor="name">이름</Label>
-        <Input
-          id="name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="성우 이름"
-          required
-          disabled={isUploading}
-        />
-      </div>
+      <VoiceNameField name={name} onChange={setName} disabled={isUploading} />
 
       {!hideFileUpload ? (
         <div className="space-y-2">
-          <Label>음성 파일</Label>
+          <Label className="text-sm font-semibold text-foreground">음성 파일</Label>
           <div className="space-y-3">
             <Button
               type="button"
@@ -377,131 +357,58 @@ export function VoiceSampleForm({
         </div>
       ) : null}
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="voice-language">언어</Label>
-          <Select
-            value={languageCode}
-            onValueChange={(value) => setLanguageCode(value)}
-            disabled={isUploading || languageOptions.length === 0 || languagesLoading}
-          >
-            <SelectTrigger>
-              <div className="flex w-full items-center gap-2">
-                {selectedFlagIcon}
-                <SelectValue
-                  placeholder={languagesLoading ? '언어를 불러오는 중...' : '언어를 선택하세요'}
-                />
-              </div>
-            </SelectTrigger>
-            <SelectContent>
-              {languageOptions.length === 0 ? (
-                <SelectItem value="__empty" disabled>
-                  {languagesLoading ? '언어를 불러오는 중...' : '등록된 언어가 없습니다.'}
-                </SelectItem>
-              ) : (
-                languageOptions.map((language) => {
-                  const code = language.language_code
-                  const flagCode = getCountryCode(code)
-                  return (
-                    <SelectItem key={code} value={code}>
-                      <span className="flex items-center gap-2">
-                        <ReactCountryFlag
-                          countryCode={flagCode}
-                          svg
-                          style={{ width: '1.25em', height: '1.25em' }}
-                          title={language.name_ko}
-                        />
-                        {language.name_ko}
-                      </span>
-                    </SelectItem>
-                  )
-                })
-              )}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="gender">성별</Label>
-          <select
-            id="gender"
-            value={gender}
-            onChange={(e) => setGender(e.target.value)}
-            className="focus-visible:outline-hidden w-full rounded-xl border border-surface-4 bg-surface-1 px-4 py-3 text-sm text-foreground focus-visible:ring-accent"
-            disabled={isUploading}
-          >
-            <option value="any">모든 성별</option>
-            <option value="female">여성</option>
-            <option value="male">남성</option>
-          </select>
-        </div>
-      </div>
+      <VoiceAttributesSection
+        languageCode={languageCode}
+        onLanguageChange={setLanguageCode}
+        languages={languageOptions}
+        languagesLoading={languagesLoading}
+        accent={accent}
+        onAccentChange={setAccent}
+        accentOptions={accentOptions}
+        accentsLoading={accentsLoading}
+        gender={gender}
+        onGenderChange={setGender}
+        age={age}
+        onAgeChange={setAge}
+        labelFields={labelFields}
+        onLabelFieldsChange={setLabelFields}
+        disabled={isUploading}
+      />
 
-      <div className="space-y-2">
-        <Label htmlFor="category">카테고리 (선택)</Label>
-        <select
-          id="category"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          className="focus-visible:outline-hidden w-full rounded-xl border border-surface-4 bg-surface-1 px-4 py-3 text-sm text-foreground focus-visible:ring-accent"
-          disabled={isUploading}
-        >
-          <option value="">카테고리 선택 안 함</option>
-          <option value="Narrative & Story">Narrative & Story</option>
-          <option value="Conversational">Conversational</option>
-          <option value="Characters & Animation">Characters & Animation</option>
-          <option value="Social Media">Social Media</option>
-          <option value="Entertainment & TV">Entertainment & TV</option>
-          <option value="Advertisement">Advertisement</option>
-          <option value="Informative & Educational">Informative & Educational</option>
-        </select>
-      </div>
+      <VoiceCategorySelector
+        selected={categories}
+        onChange={setCategories}
+        disabled={isUploading}
+      />
 
-      <div className="space-y-2">
-        <Label>아바타 이미지 (선택)</Label>
-        <div className="flex items-center gap-4">
-          <button
-            type="button"
-            onClick={() => document.getElementById('avatar-upload')?.click()}
-            disabled={isUploading}
-            className="rounded-full border border-dashed border-surface-4 p-1 transition hover:border-primary disabled:opacity-50"
-          >
-            <div className="h-16 w-16 overflow-hidden rounded-full">
-              <img
-                src={avatarPreview ?? DEFAULT_AVATAR}
-                alt="voice avatar"
-                className="h-full w-full object-cover"
-              />
-            </div>
-          </button>
-          <div className="space-y-1 text-xs text-muted">
-            <p>원하는 이미지를 등록해 보이스 썸네일을 꾸밀 수 있어요.</p>
-            <p>512x512 이하 PNG/JPG 권장, 미선택 시 기본 이미지가 사용됩니다.</p>
-            {avatarFile ? <p className="text-sm text-foreground">{avatarFile.name}</p> : null}
-          </div>
-          <input
-            id="avatar-upload"
-            type="file"
-            accept="image/png,image/jpeg"
-            className="hidden"
-            onChange={(event) => setAvatarFile(event.target.files?.[0] ?? null)}
-            disabled={isUploading}
-          />
-        </div>
-      </div>
+      <VoiceAvatarUploader
+        avatarPreview={avatarPreview}
+        onFileChange={(file) => setAvatarFile(file)}
+        disabled={isUploading}
+        helperText="512x512 이하 PNG/JPG 권장, 미선택 시 기본 이미지가 사용됩니다."
+      />
 
-      <div className="space-y-2">
-        <Label htmlFor="notes">설명</Label>
-        <textarea
-          id="notes"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          placeholder="이 목소리에 대한 정보를 간단히 적어주세요."
-          rows={3}
-          className="focus-visible:outline-hidden w-full rounded-xl border border-surface-4 bg-surface-1 px-4 py-3 text-sm text-foreground shadow-inner shadow-black/5 transition focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-          disabled={isUploading}
+      <VoiceDescriptionField value={notes} onChange={setNotes} disabled={isUploading} />
+      <div className="flex items-start gap-3">
+        <input
+          type="checkbox"
+          className="mt-1 h-5 w-5 rounded border-surface-4 text-primary focus:ring-accent"
+          defaultChecked
+          readOnly
         />
+        <div className="space-y-1 text-sm leading-relaxed text-muted">
+          <p>
+            음성 파일을 업로드함으로써 필요한 권리와 동의를 모두 확보했으며, 생성된 콘텐츠를 불법적이거나
+            부정한 목적으로 사용하지 않겠다는 점에 동의합니다. 실제 서비스와 동일한 수준의 정책을 참고용으로
+            제공합니다.
+          </p>
+          <div className="flex flex-wrap gap-3 text-primary underline underline-offset-4">
+            <Link to={routes.termsOfService}>이용약관</Link>
+            <Link to={routes.prohibitedPolicy}>금지 콘텐츠 및 사용 정책</Link>
+            <Link to={routes.privacyPolicy}>개인정보 처리방침</Link>
+          </div>
+        </div>
       </div>
-
       <div className="flex justify-end gap-3 pt-4">
         {onCancel ? (
           <Button type="button" variant="outline" onClick={onCancel} disabled={isUploading}>
