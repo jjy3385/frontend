@@ -7,7 +7,11 @@ import type { ProjectSummary } from '@/entities/project/types'
 import type { ProjectProgress } from '@/features/projects/types/progress'
 import { useLanguage } from '@/features/languages/hooks/useLanguage'
 
-import { EMPTY_LANGUAGES } from './episodeCardConstants'
+import {
+  EMPTY_LANGUAGES,
+  TARGET_STATUS_BADGE_COLORS,
+  TARGET_STATUS_LABELS,
+} from './episodeCardConstants'
 import { getCountryCode } from './episodeCardUtils'
 
 interface EpisodeCardTargetsProps {
@@ -45,44 +49,32 @@ export function EpisodeCardTargets({ project, sseProgressData }: EpisodeCardTarg
 
         // SSE 데이터가 있으면 사용, 없으면 API 데이터 사용
         const sseTarget = sseProgressData?.targets[target.language_code]
-        const progress = sseTarget?.progress ?? target.progress
+        const progress = sseTarget?.progress ?? target.progress ?? 0
+        const targetStatus = sseTarget?.status ?? target.status ?? 'pending'
+        const statusLabel = TARGET_STATUS_LABELS[targetStatus] ?? '대기'
+        const badgeClass = TARGET_STATUS_BADGE_COLORS[targetStatus] ?? TARGET_STATUS_BADGE_COLORS.pending
 
         return (
           <div
             key={target.target_id ?? `${target.project_id}-${languageCode}`}
-            className="relative h-5 w-8 overflow-hidden rounded border border-gray-300"
-            title={`${label} ${progress}%`}
+            className="relative inline-flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-surface-3"
+            title={`${label} ${statusLabel} ${progress}%`}
           >
-            {/* 배경 (grayscale) */}
-            <div className="absolute inset-0 grayscale">
-              <ReactCountryFlag
-                countryCode={countryCode}
-                svg
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  display: 'block',
-                }}
-              />
-            </div>
-
-            {/* 진행도 오버레이 (컬러) */}
-            <div
-              className="absolute inset-0 overflow-hidden"
+            <ReactCountryFlag
+              countryCode={countryCode}
+              svg
               style={{
-                clipPath: `polygon(0 0, ${progress}% 0, ${progress}% 100%, 0 100%)`,
+                width: '105%',
+                height: '105%',
+                display: 'block',
+                borderRadius: '9999px',
               }}
-            >
-              <ReactCountryFlag
-                countryCode={countryCode}
-                svg
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  display: 'block',
-                }}
-              />
-            </div>
+            />
+            <span
+              className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border border-white ${badgeClass}`}
+              aria-hidden="true"
+            />
+            <span className="sr-only">{`${label} ${statusLabel}`}</span>
           </div>
         )
       })}

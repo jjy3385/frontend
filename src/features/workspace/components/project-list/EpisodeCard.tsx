@@ -1,8 +1,18 @@
+import { useMemo } from 'react'
+
 import { Link } from 'react-router-dom'
 
 import type { ProjectSummary } from '@/entities/project/types'
 import { useProjectProgressStore } from '@/features/projects/stores/useProjectProgressStore'
 import { routes } from '@/shared/config/routes'
+import { useUiStore } from '@/shared/store/useUiStore'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from '@/shared/ui/Dropdown'
 
 import { EpisodeCardActions } from './EpisodeCardActions'
 import { EpisodeCardInfo } from './EpisodeCardInfo'
@@ -11,6 +21,8 @@ import { EpisodeCardThumbnail } from './EpisodeCardThumbnail'
 import { GRADIENTS } from './episodeCardConstants'
 import { getGradientIndex } from './episodeCardUtils'
 import { getProgressMessage, getStatusFlags, normalizeProjectData } from './projectDataNormalizer'
+
+const EMPTY_TAGS: string[] = []
 
 type EpisodeCardProps = {
   project: ProjectSummary
@@ -38,6 +50,21 @@ export function EpisodeCard({ project, onEdit, onDelete, onTagClick }: EpisodeCa
   const { isProcessing, isFailed, isCompleted } = getStatusFlags(normalizedData)
 
   const primaryTargetLanguage = project.targets?.[0]?.language_code
+  const workspaceSelectedTags = useUiStore((state) => state.workspaceSelectedTags)
+  const MAX_VISIBLE_TAGS = 3
+
+  const orderedTags = useMemo(() => {
+    const normalizedTags = project.tags ?? EMPTY_TAGS
+    const normalizedWorkspaceSelectedTags = workspaceSelectedTags ?? EMPTY_TAGS
+
+    const selected = normalizedWorkspaceSelectedTags.filter((t) => normalizedTags.includes(t))
+    const others = normalizedTags.filter((t) => !selected.includes(t))
+    return [...selected, ...others]
+  }, [project.tags, workspaceSelectedTags])
+  const visibleTags = orderedTags.slice(0, MAX_VISIBLE_TAGS)
+  const hiddenTags = orderedTags.slice(MAX_VISIBLE_TAGS)
+  const hiddenCount = Math.max(orderedTags.length - visibleTags.length, 0)
+  const selectedWorkspaceTags = workspaceSelectedTags ?? EMPTY_TAGS
   const episodeLink = primaryTargetLanguage
     ? routes.editor(project.id, primaryTargetLanguage)
     : routes.projectDetail(project.id)
@@ -70,9 +97,73 @@ export function EpisodeCard({ project, onEdit, onDelete, onTagClick }: EpisodeCa
           isCompleted={isCompleted}
           isFailed={isFailed}
           isProcessing={isProcessing}
-          onTagClick={onTagClick}
         />
         <EpisodeCardTargets project={project} sseProgressData={sseProgressData} />
+        <div className="relative mt-2 flex items-center gap-2">
+          <div className="relative flex min-w-0 flex-1">
+            <div className="flex flex-nowrap items-center gap-1 overflow-hidden whitespace-nowrap pr-10">
+              {visibleTags.map((tag) => (
+                <button
+                  key={tag}
+                  type="button"
+                  className={`flex-shrink-0 rounded-full px-3 py-1 text-[11px] font-medium transition hover:bg-surface-3 ${
+                    selectedWorkspaceTags.includes(tag)
+                      ? 'border border-primary/60 bg-primary/10 text-primary'
+                      : 'bg-surface-2 text-foreground'
+                  }`}
+                  onClick={(event) => {
+                    if (!onTagClick) return
+                    event.preventDefault()
+                    event.stopPropagation()
+                    onTagClick(tag)
+                  }}
+                >
+                  #{tag}
+                </button>
+              ))}
+            </div>
+            {hiddenCount > 0 ? (
+              <div className="pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-white via-white/70 to-transparent" />
+            ) : null}
+          </div>
+
+          {hiddenCount > 0 ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="text-muted-foreground focus-visible:outline-hidden flex h-8 shrink-0 items-center gap-2 rounded-full bg-surface-2 px-3 text-[11px] font-semibold shadow-sm transition hover:bg-surface-3 focus-visible:ring-2 focus-visible:ring-primary/30"
+                  aria-label={`태그 ${hiddenCount}개 더 보기`}
+                  onClick={(event) => {
+                    event.preventDefault()
+                    event.stopPropagation()
+                  }}
+                >
+                  +{hiddenCount}
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56 rounded-2xl">
+                <DropdownMenuLabel className="text-[11px] uppercase tracking-[0.2em] text-muted">
+                  추가 태그
+                </DropdownMenuLabel>
+                {hiddenTags.map((tag) => (
+                  <DropdownMenuItem
+                    key={tag}
+                    className="text-[12px]"
+                    onClick={(event) => {
+                      if (!onTagClick) return
+                      event.preventDefault()
+                      event.stopPropagation()
+                      onTagClick(tag)
+                    }}
+                  >
+                    #{tag}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : null}
+        </div>
       </div>
     </Link>
   )

@@ -113,6 +113,13 @@ export const TARGET_STATUS_LABELS: Record<string, StatusLabel> = {
   failed: '실패',
 }
 
+export const TARGET_STATUS_BADGE_COLORS: Record<string, string> = {
+  pending: 'bg-amber-400',
+  processing: 'bg-sky-500',
+  completed: 'bg-emerald-500',
+  failed: 'bg-rose-500',
+}
+
 /**
  * Stage별 진행도 매핑
  * 다음 단계의 진행도 직전까지 스무스하게 증가시키기 위함
