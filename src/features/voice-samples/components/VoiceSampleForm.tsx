@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { useQueryClient } from '@tanstack/react-query'
 import { HTTPError } from 'ky'
@@ -58,6 +58,7 @@ export function VoiceSampleForm({
   const [name, setName] = useState('')
   const [languageCode, setLanguageCode] = useState('ko')
   const [gender, setGender] = useState('any')
+  const [category, setCategory] = useState<string>('')
   const [audioFile, setAudioFile] = useState<File | null>(initialFile)
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
@@ -74,6 +75,19 @@ export function VoiceSampleForm({
   const showToast = useUiStore((state) => state.showToast)
   const { data: languageResponse, isLoading: languagesLoading } = useLanguage()
   const languageOptions = useMemo(() => languageResponse ?? [], [languageResponse])
+
+  // EventSource를 ref로 관리하여 cleanup 가능하도록 함
+  const eventSourceRef = useRef<EventSource | null>(null)
+
+  // 컴포넌트 언마운트 시 EventSource cleanup
+  useEffect(() => {
+    return () => {
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close()
+        eventSourceRef.current = null
+      }
+    }
+  }, [])
 
   useEffect(() => {
     if (languageOptions.length === 0) return
@@ -149,6 +163,8 @@ export function VoiceSampleForm({
         object_key,
         country: languageCode,
         gender,
+        category: category || undefined,
+        is_default: false,
       })
 
       if (avatarFile && createdSample.id) {
@@ -192,6 +208,12 @@ export function VoiceSampleForm({
       void queryClient.invalidateQueries({ queryKey: ['voice-library'], exact: false })
 
       if (createdSample.id) {
+        // 기존 EventSource가 있으면 먼저 닫기
+        if (eventSourceRef.current) {
+          eventSourceRef.current.close()
+          eventSourceRef.current = null
+        }
+
         const source = new EventSource(
           `${env.apiBaseUrl}/api/voice-samples/${createdSample.id}/stream`,
         )
@@ -208,6 +230,7 @@ export function VoiceSampleForm({
 
             if (data.has_audio_sample && data.audio_sample_url) {
               source.close()
+              eventSourceRef.current = null
               void queryClient.invalidateQueries({
                 queryKey: queryKeys.voiceSamples.all,
                 exact: false,
@@ -220,6 +243,7 @@ export function VoiceSampleForm({
               })
             } else if (data.error) {
               source.close()
+              eventSourceRef.current = null
               showToast({
                 id: 'voice-sample-stream-error',
                 title: '상태 확인 실패',
@@ -235,7 +259,11 @@ export function VoiceSampleForm({
         source.onerror = (error) => {
           console.error('SSE connection error:', error)
           source.close()
+          eventSourceRef.current = null
         }
+
+        // ref에 저장하여 cleanup 시 사용
+        eventSourceRef.current = source
       }
     } catch (error) {
       console.error('Failed to create voice sample:', error)
@@ -288,6 +316,7 @@ export function VoiceSampleForm({
     setName('')
     setLanguageCode('ko')
     setGender('any')
+    setCategory('')
     setAvatarFile(null)
     setAvatarPreview(null)
     setUploadStage('idle')
@@ -405,6 +434,26 @@ export function VoiceSampleForm({
             <option value="male">남성</option>
           </select>
         </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="category">카테고리 (선택)</Label>
+        <select
+          id="category"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          className="focus-visible:outline-hidden w-full rounded-xl border border-surface-4 bg-surface-1 px-4 py-3 text-sm text-foreground focus-visible:ring-accent"
+          disabled={isUploading}
+        >
+          <option value="">카테고리 선택 안 함</option>
+          <option value="Narrative & Story">Narrative & Story</option>
+          <option value="Conversational">Conversational</option>
+          <option value="Characters & Animation">Characters & Animation</option>
+          <option value="Social Media">Social Media</option>
+          <option value="Entertainment & TV">Entertainment & TV</option>
+          <option value="Advertisement">Advertisement</option>
+          <option value="Informative & Educational">Informative & Educational</option>
+        </select>
       </div>
 
       <div className="space-y-2">

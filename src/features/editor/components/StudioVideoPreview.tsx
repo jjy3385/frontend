@@ -37,6 +37,7 @@ export function StudioVideoPreview({
   })
 
   const videoRef = useRef<HTMLVideoElement>(null)
+  const lastSyncedPlayheadRef = useRef<number>(0)
   const { playhead, isPlaying, setPlayhead, setPlaying } = useEditorStore(
     (state) => ({
       playhead: state.playhead,
@@ -48,6 +49,7 @@ export function StudioVideoPreview({
   )
 
   // playhead와 비디오 currentTime 동기화 (playhead -> video)
+  // 최적화: 재생 중이 아닐 때만 동기화 (재생 중에는 비디오가 자체적으로 재생)
   useEffect(() => {
     const video = videoRef.current
     if (!video) return
@@ -55,12 +57,22 @@ export function StudioVideoPreview({
     // 비디오가 로드되지 않았으면 스킵
     if (video.readyState < 2) return
 
-    // 차이가 0.1초 이상일 때만 동기화 (무한 루프 방지)
-    const timeDiff = Math.abs(video.currentTime - playhead)
-    if (timeDiff > 0.1) {
-      video.currentTime = playhead
+    // 재생 중에는 동기화하지 않음 (60fps 업데이트로 인한 성능 저하 방지)
+    if (isPlaying) {
+      lastSyncedPlayheadRef.current = playhead
+      return
     }
-  }, [playhead])
+
+    // 일시정지 상태에서만 동기화
+    // 수동 탐색(seek)이나 외부에서 playhead 변경 시에만 비디오 위치 업데이트
+    const timeDiff = Math.abs(video.currentTime - playhead)
+    const playheadChanged = Math.abs(playhead - lastSyncedPlayheadRef.current) > 0.01
+
+    if (playheadChanged && timeDiff > 0.05) {
+      video.currentTime = playhead
+      lastSyncedPlayheadRef.current = playhead
+    }
+  }, [playhead, isPlaying])
 
   // 비디오의 play/pause 이벤트로 isPlaying 상태 동기화
   useEffect(() => {
@@ -160,14 +172,14 @@ export function StudioVideoPreview({
   const progress = duration > 0 ? (playhead / duration) * 100 : 0
 
   return (
-    <section className="border-surface-3 bg-surface-1 flex h-full flex-col shadow-soft">
+    <section className="flex h-full flex-col border-surface-3 bg-surface-1 shadow-soft">
       {/* <header className="flex items-center justify-between text-sm">
         <span className="text-muted font-medium">{activeLanguage} 영상</span>
         <span className="text-muted">
           {duration}s · {playbackRate.toFixed(1)}x
         </span>
       </header> */}
-      <div className="border-surface-3 relative flex flex-1 items-center justify-center overflow-hidden border bg-black">
+      <div className="relative flex flex-1 items-center justify-center overflow-hidden border border-surface-3 bg-black">
         {videoSrc ? (
           <video
             ref={videoRef}
@@ -181,7 +193,7 @@ export function StudioVideoPreview({
             <track kind="captions" />
           </video>
         ) : (
-          <div className="text-muted flex h-full items-center justify-center text-sm">
+          <div className="flex h-full items-center justify-center text-sm text-muted">
             비디오를 불러올 수 없습니다
           </div>
         )}
@@ -189,7 +201,7 @@ export function StudioVideoPreview({
 
       {/* 재생 진행도 프로그레스 바 */}
       <div
-        className="bg-surface-3 relative h-1 w-full cursor-pointer"
+        className="relative h-1 w-full cursor-pointer bg-surface-3"
         onClick={handleProgressClick}
         role="progressbar"
         aria-valuenow={playhead}
@@ -197,13 +209,13 @@ export function StudioVideoPreview({
         aria-valuemax={duration}
       >
         <div
-          className="bg-primary absolute left-0 top-0 h-full transition-all duration-100"
+          className="absolute left-0 top-0 h-full bg-primary transition-all duration-100"
           style={{ width: `${progress}%` }}
         />
       </div>
 
       {/* 재생 컨트롤 바 */}
-      <div className="border-surface-3 flex items-center justify-between border-t px-4 py-1">
+      <div className="flex items-center justify-between border-t border-surface-3 px-4 py-1">
         <Button
           variant="ghost"
           size="sm"
@@ -213,7 +225,7 @@ export function StudioVideoPreview({
         >
           {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
         </Button>
-        <div className="text-foreground font-mono text-xs">{formatTime(playhead)}</div>
+        <div className="font-mono text-xs text-foreground">{formatTime(playhead)}</div>
       </div>
     </section>
   )

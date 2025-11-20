@@ -46,6 +46,7 @@ export function AudioTrackWorkspace({
     formatTime,
     isInitialLoadComplete,
     readyAudioIds,
+    loadingProgress,
   } = useAudioTimeline(segments, duration, originalAudioSrc, backgroundAudioSrc)
 
   // Register editor hotkeys
@@ -57,33 +58,39 @@ export function AudioTrackWorkspace({
     togglePlayback,
     onSave,
   })
-  // Show loading indicator while initial segments are loading
-  if (!isInitialLoadComplete) {
-    return (
-      <section className="border-surface-3 bg-surface-1 flex h-full flex-col border-t">
-        <div className="border-surface-3 flex h-full flex-col items-center justify-center rounded-lg border">
-          <Spinner size="lg" />
-          <p className="text-muted mt-3 text-sm">초기 오디오 세그먼트 로딩 중...</p>
-        </div>
-      </section>
-    )
-  }
 
   return (
-    <section className="border-surface-3 bg-surface-1 flex h-full flex-col border-t">
-      <div className="border-surface-3 flex h-full flex-col rounded-lg border">
+    <section className="flex h-full flex-col">
+      <div className="flex h-full flex-col">
         {/* Controls - 항상 상단에 고정 */}
         <AudioTimelineControls />
 
+        {/* 인라인 로딩 인디케이터 - 타임라인을 언마운트하지 않고 상태만 표시 */}
+        {!isInitialLoadComplete && loadingProgress.totalCount > 0 && (
+          <div className="flex items-center gap-2 border-b border-surface-3 bg-surface-2 px-4 py-2">
+            <Spinner size="sm" />
+            <span className="text-xs text-muted">
+              오디오 세그먼트 로딩 중... ({loadingProgress.readyCount}/{loadingProgress.totalCount})
+            </span>
+            <div className="ml-2 h-1.5 flex-1 overflow-hidden rounded-full bg-surface-3">
+              <div
+                className="h-full bg-primary transition-all duration-300"
+                style={{
+                  width: `${(loadingProgress.readyCount / loadingProgress.totalCount) * 100}%`,
+                }}
+              />
+            </div>
+          </div>
+        )}
+
         {/* Timeline 영역 - 스크롤 가능 */}
         <div className="timeline-scroll-container grid flex-1 overflow-auto lg:grid-cols-[220px,1fr]">
-          {/* Sidebar - sticky로 좌측 고정 */}
-          <div className="border-surface-3 bg-surface-1 sticky left-0 z-40 hidden border-r lg:block">
-            {/* Sidebar 콘텐츠 */}
+          {/* Sidebar */}
+          <div className="sticky left-0 z-40 hidden border-r border-surface-3 bg-surface-1 lg:block">
             <AudioTrackSidebar trackRows={trackRows} getTrackRowHeight={getTrackRowHeight} />
           </div>
 
-          {/* Timeline 콘텐츠 */}
+          {/* Timeline */}
           <div className="bg-surface-1">
             <AudioTimeline
               trackRows={trackRows}
