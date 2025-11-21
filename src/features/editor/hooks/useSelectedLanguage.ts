@@ -35,7 +35,7 @@ export function useSelectedLanguage({ projectId }: UseSelectedLanguageProps) {
 
   useEffect(() => {
     // 세가지 충족 시에만 자동 업데이트:
-    // 1. defaultLanguageCode(completed된 타겟언어 앞순서)가 있다
+    // 1. defaultLanguageCode(completed된 첫 타겟)가 있다
     // 2. defaultLanguageCode has changed from previous value
     // 3. User hasn't manually selected a different language (selectedLanguage matches previous default)
     if (

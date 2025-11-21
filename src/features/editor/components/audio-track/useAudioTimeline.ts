@@ -37,6 +37,7 @@ export function useAudioTimeline(
   duration: number,
   originalAudioSrc?: string,
   backgroundAudioSrc?: string,
+  languageCode?: string,
 ) {
   const timelineRef = useRef<HTMLDivElement>(null)
   const rafRef = useRef<number>()
@@ -77,6 +78,11 @@ export function useAudioTimeline(
 
   // Initialize tracks from segments only once on first load
   const isInitializedRef = useRef(false)
+
+  // Reset initialization when language changes
+  useEffect(() => {
+    isInitializedRef.current = false
+  }, [languageCode])
 
   useEffect(() => {
     if (segments.length === 0 || isInitializedRef.current) return
@@ -241,6 +247,7 @@ export function useAudioTimeline(
     isScrubbing,
     audioObjects, // Pass preloaded Audio objects for instant playback
     readyAudioIds, // Track which segments are fully loaded and ready for playback
+    languageCode, // 언어 변경 감지용
   })
 
   // Original audio playback synchronized with playhead

@@ -128,6 +128,7 @@ export default function EditorPage() {
             duration={data.playback.duration}
             originalAudioSrc={data.playback.audio_source ?? data.playback.video_source}
             backgroundAudioSrc={data.playback.background_audio_source}
+            languageCode={selectedLanguage}
             onSave={handleSave}
           />
         </div>

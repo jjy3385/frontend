@@ -27,11 +27,17 @@ export function usePreloadSegmentAudios(segments: Segment[], enabled = true) {
   // Track how many presigned URLs have been successfully loaded
   const [loadedUrlCount, setLoadedUrlCount] = useState(0)
 
+  // Filter segments with valid audio URLs to avoid duplicate query keys
+  const segmentsWithAudio = useMemo(
+    () => segments.filter((segment) => !!segment.segment_audio_url),
+    [segments],
+  )
+
   // Create queries for all segment audio URLs with chunked loading
   // Only enable MAX_CONCURRENT_REQUESTS queries at a time to avoid browser connection limit
   const queries = useQueries({
-    queries: segments.map((segment, index) => ({
-      queryKey: queryKeys.storage.presignedUrl(segment.segment_audio_url ?? ''),
+    queries: segmentsWithAudio.map((segment, index) => ({
+      queryKey: queryKeys.storage.presignedUrl(segment.segment_audio_url!),
       queryFn: async () => {
         const url = await resolvePresignedUrl(segment.segment_audio_url!)
         // Increment loaded count when a URL is successfully fetched
@@ -39,10 +45,7 @@ export function usePreloadSegmentAudios(segments: Segment[], enabled = true) {
         return url
       },
       // Enable queries in chunks: first MAX_CONCURRENT_REQUESTS, then next batch after some complete
-      enabled:
-        enabled &&
-        !!segment.segment_audio_url &&
-        index < loadedUrlCount + MAX_CONCURRENT_REQUESTS,
+      enabled: enabled && index < loadedUrlCount + MAX_CONCURRENT_REQUESTS,
       staleTime: 5 * 60 * 1000, // 5 minutes
       gcTime: 10 * 60 * 1000, // 10 minutes
     })),
@@ -58,7 +61,7 @@ export function usePreloadSegmentAudios(segments: Segment[], enabled = true) {
   const audioUrls = useMemo(() => {
     const map = new Map<string, string>()
 
-    segments.forEach((segment, index) => {
+    segmentsWithAudio.forEach((segment, index) => {
       const query = queries[index]
       if (query?.data) {
         map.set(segment.id, query.data)
@@ -66,15 +69,15 @@ export function usePreloadSegmentAudios(segments: Segment[], enabled = true) {
     })
 
     return map
-  }, [segments, queries])
+  }, [segmentsWithAudio, queries])
 
   // Create Audio objects and explicitly load them (progressive loading)
   useEffect(() => {
     const audioObjects = audioObjectsRef.current
 
     // Determine which segments to load immediately (first N segments)
-    const initialSegments = segments.slice(0, INITIAL_LOAD_COUNT)
-    const backgroundSegments = segments.slice(INITIAL_LOAD_COUNT)
+    const initialSegments = segmentsWithAudio.slice(0, INITIAL_LOAD_COUNT)
+    const backgroundSegments = segmentsWithAudio.slice(INITIAL_LOAD_COUNT)
 
     // Helper to create and load audio
     const createAndLoadAudio = (segment: Segment, isPriority: boolean) => {
@@ -151,7 +154,7 @@ export function usePreloadSegmentAudios(segments: Segment[], enabled = true) {
     })
 
     // Clean up Audio objects for segments that no longer exist
-    const currentSegmentIds = new Set(segments.map((s) => s.id))
+    const currentSegmentIds = new Set(segmentsWithAudio.map((s) => s.id))
     for (const [segmentId, audio] of audioObjects.entries()) {
       if (!currentSegmentIds.has(segmentId)) {
         audio.pause()
@@ -164,7 +167,7 @@ export function usePreloadSegmentAudios(segments: Segment[], enabled = true) {
         })
       }
     }
-  }, [segments, audioUrls])
+  }, [segmentsWithAudio, audioUrls])
 
   // Cleanup on unmount
   useEffect(() => {
@@ -182,7 +185,7 @@ export function usePreloadSegmentAudios(segments: Segment[], enabled = true) {
   const isLoading = queries.some((q) => q.isLoading)
   const isError = queries.some((q) => q.isError)
   const loadedCount = queries.filter((q) => q.isSuccess).length
-  const totalCount = segments.length
+  const totalCount = segmentsWithAudio.length
 
   // Count ready audio (fully loaded and playable)
   const readyCount = readyAudioIds.size
