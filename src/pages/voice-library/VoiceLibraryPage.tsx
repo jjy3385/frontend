@@ -347,7 +347,6 @@ export default function VoiceLibraryPage() {
             (filters.tags ?? []).every((tag) => sample.tags?.includes(tag)),
           )
         : filteredSamples
-
     const commercialFiltered =
       filters.commercialOnly === true
         ? tagFiltered.filter((sample) => sample.canCommercialUse !== false)
