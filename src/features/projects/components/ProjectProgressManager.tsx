@@ -1,10 +1,12 @@
-import { useProjectProgressListener } from '../hooks/useProjectProgressListener'
+import { useGlobalSSE } from '../hooks/useGlobalSSE'
 
 /**
- * 전역 프로젝트 진행도 관리 컴포넌트
+ * 전역 SSE 연결 관리 컴포넌트
  *
- * 모든 페이지에서 프로젝트 처리 진행도를 실시간으로 추적하고
- * 완료 시 토스트 알림을 표시합니다.
+ * 단일 SSE 연결로 모든 이벤트 타입을 처리:
+ * - target-progress: 타겟 언어 파이프라인 진행률
+ * - project-progress: 프로젝트 전체 진행률
+ * - audio-completed/failed: 오디오 생성 완료/실패 (useSSEStore를 통해 구독자에게 전달)
  *
  * @example
  * // AppProviders.tsx에서 사용:
@@ -14,17 +16,15 @@ import { useProjectProgressListener } from '../hooks/useProjectProgressListener'
  * </QueryClientProvider>
  */
 export function ProjectProgressManager() {
-  // 전체 프로젝트의 진행도를 구독
-  useProjectProgressListener({
+  // 전역 SSE 연결 - 모든 프로젝트의 이벤트 구독
+  useGlobalSSE({
     // 타겟 언어 작업 완료 시 추가 처리
-    onTargetComplete: (projectId, targetLang, message) => {
-      console.log(`[Progress] Target completed: ${projectId} - ${targetLang}`)
-      // 여기에 추가적인 작업 수행 가능 (예: 쿼리 무효화, 라우팅 등)
+    onTargetComplete: (projectId, targetLang) => {
+      console.log(`[GlobalSSE] Target completed: ${projectId} - ${targetLang}`)
     },
     // 프로젝트 전체 완료 시 추가 처리
-    onProjectComplete: (projectId, message) => {
-      console.log(`[Progress] Project completed: ${projectId}`)
-      // 여기에 추가적인 작업 수행 가능 (예: 쿼리 무효화, 라우팅 등)
+    onProjectComplete: (projectId) => {
+      console.log(`[GlobalSSE] Project completed: ${projectId}`)
     },
   })
 

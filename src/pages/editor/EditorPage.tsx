@@ -7,7 +7,7 @@ import { EditorHeader } from '@/features/editor/components/EditorHeader'
 import { EditorSummaryPanel } from '@/features/editor/components/EditorSummaryPanel'
 import { ResizeDivider } from '@/features/editor/components/ResizeDivider'
 import { StudioVideoPreview } from '@/features/editor/components/StudioVideoPreview'
-import { useAudioGenerationEvents } from '@/features/editor/hooks/useAudioGenerationEvents'
+import { useAudioEventSubscription } from '@/features/editor/hooks/useAudioEventSubscription'
 import { useEditorState } from '@/features/editor/hooks/useEditorState'
 import { useResizablePanes } from '@/features/editor/hooks/useResizablePanes'
 import { useSaveSegments } from '@/features/editor/hooks/useSaveSegments'
@@ -48,8 +48,8 @@ export default function EditorPage() {
     languageCode: selectedLanguage,
   })
 
-  // Subscribe to audio generation events via SSE
-  useAudioGenerationEvents(projectId, selectedLanguage, !isLoading && !!data)
+  // Subscribe to audio generation events via global SSE
+  useAudioEventSubscription(projectId, selectedLanguage, !isLoading && !!data)
 
   if (isLoading || !data) {
     return (
