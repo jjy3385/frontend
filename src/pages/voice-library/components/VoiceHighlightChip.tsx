@@ -49,6 +49,19 @@ export function VoiceHighlightChip({
     setResolvedAvatar(getPresetAvatarUrl(sample.avatarPreset || 'default') ?? DEFAULT_AVATAR)
   }, [sample.avatarImageUrl, sample.avatarPreset])
 
+  const formatUserCount = (count?: number) => {
+    const safeCount = count ?? 0
+    if (safeCount >= 10000) {
+      const formatted = (safeCount / 10000).toFixed(1).replace(/\.0$/, '')
+      return `약 ${formatted}만명`
+    }
+    if (safeCount >= 1000) {
+      const formatted = (safeCount / 1000).toFixed(1).replace(/\.0$/, '')
+      return `약 ${formatted}천명`
+    }
+    return `${safeCount}명`
+  }
+
   const countryCode = useMemo(() => {
     if (!sample.country) return undefined
     const normalized = sample.country.trim().toLowerCase()
@@ -132,7 +145,7 @@ export function VoiceHighlightChip({
                 '언어 미상'}
             </span>
             <span className="text-muted">•</span>
-            <span className="truncate">{`${sample.addedCount ?? 0}명 사용`}</span>
+            <span className="truncate">{`${formatUserCount(sample.addedCount)} 사용`}</span>
           </div>
           {sample.tags?.length ? (
             <div className="mt-1 flex flex-wrap gap-1">

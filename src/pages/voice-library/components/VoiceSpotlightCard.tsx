@@ -90,6 +90,18 @@ export function VoiceSpotlightCard({
     .map((cat) => VOICE_CATEGORY_MAP[cat as keyof typeof VOICE_CATEGORY_MAP] ?? cat)
     .filter(Boolean)
     .join(', ')
+  const formatUserCount = (count?: number) => {
+    const safeCount = count ?? 0
+    if (safeCount >= 10000) {
+      const formatted = (safeCount / 10000).toFixed(1).replace(/\.0$/, '')
+      return `약 ${formatted}만명`
+    }
+    if (safeCount >= 1000) {
+      const formatted = (safeCount / 1000).toFixed(1).replace(/\.0$/, '')
+      return `약 ${formatted}천명`
+    }
+    return `${safeCount}명`
+  }
 
   /* 🔹 일레븐랩스 스타일: 리스트 row 용 */
   if (isTableRow) {
@@ -171,7 +183,12 @@ export function VoiceSpotlightCard({
           )}
         </div>
 
-        {/* 5열: 좋아요 수 + 버튼들 */}
+        {/* 5열: 사용 수 */}
+        <div className="text-right text-[12px] text-muted">
+          {`${formatUserCount(sample.addedCount)} 사용`}
+        </div>
+
+        {/* 6열: 좋아요 수 + 버튼들 */}
         <div className="flex w-full min-w-[120px] max-w-[200px] items-center justify-end gap-3">
           {/* 오너인 경우 오너 아이콘 표시, 아닌 경우 add/remove 버튼 */}
           {isOwner ? (

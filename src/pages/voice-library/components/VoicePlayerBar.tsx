@@ -66,7 +66,7 @@ export function VoicePlayerBar({
       )}
     >
       <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3">
-        <div className="flex items-center gap-3">
+        <div className="flex min-w-0 max-w-[32%] items-center gap-3">
           <div className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-indigo-500 to-sky-400 text-xs font-semibold text-white">
             {resolvedAvatar ? (
               <img
