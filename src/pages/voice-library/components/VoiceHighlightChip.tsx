@@ -40,24 +40,13 @@ export function VoiceHighlightChip({
   isInMyVoices = false,
 }: VoiceHighlightChipProps) {
   const [resolvedAvatar, setResolvedAvatar] = useState<string>(
-    getPresetAvatarUrl(sample.avatarPreset) && getPresetAvatarUrl(sample.avatarPreset)!.startsWith('/')
-      ? getPresetAvatarUrl(sample.avatarPreset)!
-      : sample.avatarImageUrl && sample.avatarImageUrl.startsWith('http')
-        ? sample.avatarImageUrl
-        : DEFAULT_AVATAR,
+    getPresetAvatarUrl(sample.avatarPreset || 'default'),
   )
   const hasAudioUrl = Boolean(sample.audio_sample_url)
   const isProcessing = !hasAudioUrl
 
   useEffect(() => {
-    const presetUrl = getPresetAvatarUrl(sample.avatarPreset)
-    if (presetUrl) {
-      setResolvedAvatar(presetUrl)
-    } else if (sample.avatarImageUrl && sample.avatarImageUrl.startsWith('http')) {
-      setResolvedAvatar(sample.avatarImageUrl)
-    } else {
-      setResolvedAvatar(DEFAULT_AVATAR)
-    }
+    setResolvedAvatar(getPresetAvatarUrl(sample.avatarPreset || 'default') ?? DEFAULT_AVATAR)
   }, [sample.avatarImageUrl, sample.avatarPreset])
 
   const countryCode = useMemo(() => {
@@ -98,11 +87,11 @@ export function VoiceHighlightChip({
           'bg-gradient-to-br from-indigo-500 to-sky-400 text-sm font-semibold text-white',
         )}
       >
-        {resolvedAvatar && resolvedAvatar !== DEFAULT_AVATAR ? (
+        {resolvedAvatar ? (
           <img
             src={resolvedAvatar}
             onError={(event) => {
-              event.currentTarget.style.display = 'none'
+              event.currentTarget.src = DEFAULT_AVATAR
             }}
             alt={sample.name}
             className="h-full w-full object-cover"

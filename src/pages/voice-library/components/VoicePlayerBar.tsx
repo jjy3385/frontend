@@ -42,16 +42,16 @@ export function VoicePlayerBar({
   useEffect(() => {
     let active = true
     const resolveAvatar = async () => {
-      const presetUrl = getPresetAvatarUrl(sample.avatarPreset)
-      if (presetUrl) {
-        if (active) setResolvedAvatar(presetUrl)
-        return
+      const presetUrl = getPresetAvatarUrl(sample.avatarPreset || 'default')
+      if (active) {
+        if (presetUrl) {
+          setResolvedAvatar(presetUrl)
+        } else if (sample.avatarImageUrl && sample.avatarImageUrl.startsWith('http')) {
+          setResolvedAvatar(sample.avatarImageUrl)
+        } else {
+          setResolvedAvatar(DEFAULT_AVATAR)
+        }
       }
-      if (sample.avatarImageUrl && sample.avatarImageUrl.startsWith('http')) {
-        if (active) setResolvedAvatar(sample.avatarImageUrl)
-        return
-      }
-      if (active) setResolvedAvatar(DEFAULT_AVATAR)
     }
     resolveAvatar()
     return () => {

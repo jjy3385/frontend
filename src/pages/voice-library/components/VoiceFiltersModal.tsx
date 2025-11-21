@@ -1,15 +1,14 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
-import { Filter, User } from 'lucide-react'
+import { Filter } from 'lucide-react'
 import ReactCountryFlag from 'react-country-flag'
 
 import { cn } from '@/shared/lib/utils'
 import { VOICE_CATEGORIES } from '@/shared/constants/voiceCategories'
 import { Button } from '@/shared/ui/Button'
 import { Dialog, DialogContent, DialogTitle } from '@/shared/ui/Dialog'
+import { Input } from '@/shared/ui/Input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/Select'
-import { ToggleGroup, ToggleGroupItem } from '@/shared/ui/ToggleGroup'
-import { useAccents } from '@/features/accents/hooks/useAccents'
 import { useLanguage } from '@/features/languages/hooks/useLanguage'
 
 import type { VoiceFilters as VoiceFiltersType } from '../hooks/useVoiceLibraryFilters'
@@ -43,6 +42,7 @@ interface VoiceFiltersModalProps {
   filters: VoiceFilters
   onFiltersChange: (filters: VoiceFilters) => void
   onApply: () => void
+  tagOptions: { tag: string; count: number }[]
 }
 
 export function VoiceFiltersModal({
@@ -51,33 +51,33 @@ export function VoiceFiltersModal({
   filters,
   onFiltersChange,
   onApply,
+  tagOptions,
 }: VoiceFiltersModalProps) {
   const { data: languageResponse, isLoading: languagesLoading } = useLanguage()
   const languages = languageResponse ?? []
   const [languageCode, setLanguageCode] = useState(filters.languages?.[0] ?? '')
-  const { data: accentResponse, isLoading: accentsLoading } = useAccents(languageCode || undefined)
-  const accents = accentResponse ?? []
 
   const [localFilters, setLocalFilters] = useState<VoiceFilters>(filters)
+  const [tagInput, setTagInput] = useState('')
 
   // 모달이 열릴 때 필터 상태 동기화
   useEffect(() => {
     if (open) {
       setLocalFilters(filters)
       setLanguageCode(filters.languages?.[0] ?? '')
+      setTagInput('')
     }
   }, [open, filters])
 
   const handleReset = () => {
     const resetFilters: VoiceFilters = {
-      gender: 'any',
-      accent: undefined,
-      age: undefined,
       languages: undefined,
       category: undefined,
+      tags: undefined,
     }
     setLocalFilters(resetFilters)
     setLanguageCode('')
+    setTagInput('')
     onFiltersChange(resetFilters)
   }
 
@@ -91,12 +91,19 @@ export function VoiceFiltersModal({
   const selectedFlagCode = selectedLanguage ? getCountryCode(selectedLanguage.language_code) : undefined
   const hasSelectedLanguage = Boolean(languageCode)
 
+  const filteredTags = useMemo(() => {
+    const query = tagInput.trim().toLowerCase()
+    const list = tagOptions ?? []
+    if (!query) return list
+    return list.filter(({ tag }) => tag.toLowerCase().includes(query))
+  }, [tagInput, tagOptions])
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
         <div className="flex items-center gap-2">
           <Filter className="h-5 w-5 text-muted" />
-          <DialogTitle>목소리 필터</DialogTitle>
+          <DialogTitle>필터</DialogTitle>
         </div>
 
         <div className="mt-6 space-y-6">
@@ -108,11 +115,9 @@ export function VoiceFiltersModal({
               onValueChange={(value) => {
                 setLanguageCode(value)
                 setLocalFilters((prev) => {
-                  const hasChanged = value !== prev.languages?.[0]
                   return {
                     ...prev,
                     languages: value ? [value] : undefined,
-                    accent: hasChanged ? undefined : prev.accent,
                   }
                 })
               }}
@@ -164,101 +169,6 @@ export function VoiceFiltersModal({
             </Select>
           </div>
 
-          {/* Accent */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">억양</label>
-            <Select
-              value={hasSelectedLanguage ? localFilters.accent ?? 'any' : ''}
-              onValueChange={(value) =>
-                setLocalFilters({ ...localFilters, accent: value === 'any' ? undefined : value })
-              }
-              disabled={accentsLoading || !hasSelectedLanguage}
-            >
-              <SelectTrigger>
-                <SelectValue
-                  placeholder={
-                    hasSelectedLanguage
-                      ? accentsLoading
-                        ? '억양을 불러오는 중...'
-                        : '선택 안 함'
-                      : '언어를 먼저 선택하세요'
-                  }
-                />
-              </SelectTrigger>
-              <SelectContent>
-                {hasSelectedLanguage ? (
-                  <>
-                    <SelectItem value="any">선택 안 함</SelectItem>
-                    {accents.map((opt) => (
-                      <SelectItem key={opt.code} value={opt.code}>
-                        {opt.name}
-                      </SelectItem>
-                    ))}
-                  </>
-                ) : (
-                  <SelectItem value="__no_language" disabled>
-                    언어를 먼저 선택하세요
-                  </SelectItem>
-                )}
-              </SelectContent>
-            </Select>
-          </div>
-          {/* Gender */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">성별</label>
-            <ToggleGroup
-              type="single"
-              value={localFilters.gender || 'any'}
-              onValueChange={(value) =>
-                setLocalFilters({
-                  ...localFilters,
-                  gender: (value as 'any' | 'male' | 'female' | 'neutral') || 'any',
-                })
-              }
-              className="flex gap-2"
-            >
-              <ToggleGroupItem
-                value="any"
-                className="rounded-lg border border-surface-3 data-[state=off]:bg-surface-2 data-[state=on]:bg-white data-[state=off]:text-muted data-[state=on]:text-foreground"
-              >
-                전체
-              </ToggleGroupItem>
-              <ToggleGroupItem
-                value="male"
-                className="rounded-lg border border-surface-3 data-[state=off]:bg-surface-2 data-[state=on]:bg-white data-[state=off]:text-muted data-[state=on]:text-foreground"
-              >
-                <User className="mr-1.5 h-4 w-4" />
-                남성
-              </ToggleGroupItem>
-              <ToggleGroupItem
-                value="female"
-                className="rounded-lg border border-surface-3 data-[state=off]:bg-surface-2 data-[state=on]:bg-white data-[state=off]:text-muted data-[state=on]:text-foreground"
-              >
-                <User className="mr-1.5 h-4 w-4" />
-                여성
-              </ToggleGroupItem>
-            </ToggleGroup>
-          </div>          
-          {/* Age */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">나이대</label>
-            <Select
-              value={localFilters.age ?? 'any'}
-              onValueChange={(value) =>
-                setLocalFilters({ ...localFilters, age: value === 'any' ? undefined : value })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="선택 안 함" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="any">선택 안 함</SelectItem>
-                <SelectItem value="young">청년 (Young)</SelectItem>
-                <SelectItem value="middle_aged">중년 (Middle-aged)</SelectItem>
-                <SelectItem value="old">노년 (Old)</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>     
           {/* Category */}
           <div className="space-y-2">
             <label className="text-sm font-medium">카테고리</label>
@@ -287,6 +197,51 @@ export function VoiceFiltersModal({
                   {label}
                 </button>
               ))}
+            </div>
+          </div>
+
+          {/* Tags */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">태그 검색</label>
+            <Input
+              placeholder="태그 검색..."
+              value={tagInput}
+              onChange={(e) => setTagInput(e.target.value)}
+              className="h-10"
+            />
+            <div className="max-h-40 space-y-2 overflow-y-auto rounded-lg border border-surface-3 p-3">
+              {filteredTags.length === 0 ? (
+                <p className="text-xs text-muted">추가/선택할 태그가 없습니다.</p>
+              ) : (
+                filteredTags.map(({ tag, count }) => {
+                  const isSelected = localFilters.tags?.includes(tag)
+                  return (
+                    <button
+                      key={tag}
+                      type="button"
+                      className={cn(
+                        'flex w-full items-center justify-between rounded-lg px-2 py-1 text-sm',
+                        isSelected
+                          ? 'border border-primary bg-primary/10 text-primary'
+                          : 'border border-surface-3 text-foreground hover:border-primary',
+                      )}
+                      onClick={() => {
+                        setLocalFilters((prev) => {
+                          const prevTags = prev.tags ?? []
+                          if (prevTags.includes(tag)) {
+                            const next = prevTags.filter((t) => t !== tag)
+                            return { ...prev, tags: next.length ? next : undefined }
+                          }
+                          return { ...prev, tags: [...prevTags, tag] }
+                        })
+                      }}
+                    >
+                      <span>#{tag}</span>
+                      <span className="text-xs text-muted">{count}</span>
+                    </button>
+                  )
+                })
+              )}
             </div>
           </div>
         </div>

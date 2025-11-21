@@ -63,7 +63,7 @@ export function VoiceListSection({
             return (
               <li
                 key={sample.id}
-                className="grid grid-cols-[minmax(0,3fr)_minmax(0,2fr)_auto] items-center rounded-xl px-1 py-2 hover:bg-surface-1"
+                className="grid grid-cols-[minmax(0,4fr)_minmax(0,1fr)_minmax(0,2fr)_minmax(0,2fr)_minmax(120px,1fr)] items-center rounded-xl px-1 py-2 hover:bg-surface-1"
               >
                 <VoiceSpotlightCard
                   sample={sample}

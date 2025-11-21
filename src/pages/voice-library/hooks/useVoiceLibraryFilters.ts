@@ -7,9 +7,7 @@ import { VOICE_CATEGORY_MAP } from '@/shared/constants/voiceCategories'
 export type VoiceFilters = {
   languages?: string[]
   category?: string[]
-  gender?: 'any' | 'male' | 'female' | 'neutral'
-  accent?: string
-  age?: string
+  tags?: string[]
 }
 
 type LanguageOption = {
@@ -42,21 +40,17 @@ export function useVoiceLibraryFilters(
   options?: { languages?: LanguageOption[] },
 ) {
   const [filters, setFilters] = useState<VoiceFilters>({
-    gender: 'any',
-    accent: undefined,
-    age: undefined,
     languages: undefined,
     category: undefined,
+    tags: undefined,
     ...initial,
   })
 
   const resetFilters = () =>
     setFilters({
-      gender: 'any',
-      accent: undefined,
-      age: undefined,
       languages: undefined,
       category: undefined,
+      tags: undefined,
     })
 
   const chips = useMemo<FilterChip[]>(() => {
@@ -141,27 +135,17 @@ export function useVoiceLibraryFilters(
       })
     }
 
-    if (filters.gender && filters.gender !== 'any') {
-      list.push({
-        label: '성별',
-        value: genderLabelMap[filters.gender] ?? filters.gender,
-        onRemove: () => setFilters((prev) => ({ ...prev, gender: 'any' })),
-      })
-    }
-
-    if (filters.age && filters.age !== 'any') {
-      list.push({
-        label: '나이대',
-        value: ageLabelMap[filters.age] ?? filters.age,
-        onRemove: () => setFilters((prev) => ({ ...prev, age: undefined })),
-      })
-    }
-
-    if (filters.accent) {
-      list.push({
-        label: '억양',
-        value: filters.accent,
-        onRemove: () => setFilters((prev) => ({ ...prev, accent: undefined })),
+    if (filters.tags?.length) {
+      filters.tags.forEach((tag) => {
+        list.push({
+          label: '태그',
+          value: `#${tag}`,
+          onRemove: () =>
+            setFilters((prev) => ({
+              ...prev,
+              tags: prev.tags?.filter((t) => t !== tag) ?? undefined,
+            })),
+        })
       })
     }
 

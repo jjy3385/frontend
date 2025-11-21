@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 import { Check } from 'lucide-react'
 
@@ -6,16 +6,18 @@ import { Label } from '@/shared/ui/Label'
 
 export function VoiceAvatarUploader({
   avatarPreview,
+  selectedPreset: selectedPresetProp,
   onPresetChange,
   disabled,
   helperText,
 }: {
   avatarPreview: string | null
+  selectedPreset?: string | null
   onPresetChange: (presetId: string | null) => void
   disabled?: boolean
   helperText?: string
 }) {
-  const [selectedPreset, setSelectedPreset] = useState<string | null>(null)
+  const [selectedPreset, setSelectedPreset] = useState<string | null>(selectedPresetProp ?? null)
   const [isPresetLoading, setIsPresetLoading] = useState(false)
 
   const presetAvatars = [
@@ -31,6 +33,10 @@ export function VoiceAvatarUploader({
     onPresetChange(presetId)
     setIsPresetLoading(false)
   }
+
+  useEffect(() => {
+    setSelectedPreset(selectedPresetProp ?? null)
+  }, [selectedPresetProp])
 
   return (
     <div className="space-y-2">

@@ -58,10 +58,8 @@ export async function fetchVoiceSamples(options?: {
   mySamplesOnly?: boolean
   category?: string | string[]
   isBuiltin?: boolean
-  gender?: string
-  age?: string
-  accent?: string
   languages?: string[]
+  tags?: string[]
   q?: string
 }): Promise<VoiceSamplesResponse> {
   const params = new URLSearchParams()
@@ -80,18 +78,14 @@ export async function fetchVoiceSamples(options?: {
   if (options?.isBuiltin !== undefined) {
     params.append('is_builtin', String(options.isBuiltin))
   }
-  if (options?.gender && options.gender !== 'any') {
-    params.append('gender', options.gender)
-  }
-  if (options?.age && options.age !== 'any') {
-    params.append('age', options.age)
-  }
-  if (options?.accent && options.accent !== 'any') {
-    params.append('accent', options.accent)
-  }
   if (options?.languages && options.languages.length > 0) {
     options.languages.forEach((lang) => {
       params.append('languages', lang)
+    })
+  }
+  if (options?.tags && options.tags.length > 0) {
+    options.tags.forEach((tag) => {
+      params.append('tags', tag)
     })
   }
   if (options?.q) {

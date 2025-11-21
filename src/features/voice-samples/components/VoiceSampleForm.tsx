@@ -13,7 +13,9 @@ import { Button } from '@/shared/ui/Button'
 import { Label } from '@/shared/ui/Label'
 
 import { useFinishUploadMutation, usePrepareUploadMutation } from '../hooks/useVoiceSampleStorage'
+
 import { getPresetAvatarUrl } from './voiceSampleFieldUtils'
+
 import {
   VoiceAvatarUploader,
   VoiceCategorySelector,
@@ -22,17 +24,6 @@ import {
   VoiceTagsField,
   VoiceLanguageField,
 } from './index'
-
-
-const CATEGORY_OPTIONS = [
-  'Narrative & Story',
-  'Conversational',
-  'Characters & Animation',
-  'Social Media',
-  'Entertainment & TV',
-  'Advertisement',
-  'Informative & Educational',
-]
 
 type VoiceSampleFormProps = {
   initialFile?: File | null
@@ -327,9 +318,10 @@ export function VoiceSampleForm({
 
       <VoiceAvatarUploader
         avatarPreview={avatarPreview}
-        onFileChange={(file) => setAvatarFile(file)}
+        selectedPreset={avatarPreset}
+        onPresetChange={setAvatarPreset}
         disabled={isUploading}
-        helperText="512x512 이하 PNG/JPG 권장, 미선택 시 기본 이미지가 사용됩니다."
+        helperText="기본 아바타 중 하나를 선택하세요."
       />
 
       <VoiceDescriptionField value={notes} onChange={setNotes} disabled={isUploading} />

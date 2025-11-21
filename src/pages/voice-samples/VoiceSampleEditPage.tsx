@@ -59,8 +59,9 @@ export default function VoiceSampleEditPage() {
     setLanguageCode(sample.country ?? 'ko')
     setCategories(sample.category ?? [])
     setTags(sample.tags ?? [])
-    setAvatarPreset(sample.avatarPreset ?? null)
-    setAvatarPreview(getPresetAvatarUrl(sample.avatarPreset) ?? sample.avatarImageUrl ?? null)
+    const nextPreset = sample.avatarPreset ?? 'default'
+    setAvatarPreset(nextPreset)
+    setAvatarPreview(getPresetAvatarUrl(nextPreset) ?? sample.avatarImageUrl ?? null)
   }, [sample])
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -144,15 +145,16 @@ export default function VoiceSampleEditPage() {
           />
 
           <VoiceCategorySelector selected={categories} onChange={setCategories} disabled={isSubmitting} />
-          <VoiceTagsField tags={tags} onChange={setTags} disabled={isSubmitting} />
+        <VoiceTagsField tags={tags} onChange={setTags} disabled={isSubmitting} />
 
-          <VoiceAvatarUploader
-            avatarPreview={avatarPreview}
-            onPresetChange={(preset) => {
-              setAvatarPreset(preset)
-              setAvatarPreview(getPresetAvatarUrl(preset) ?? null)
-            }}
-            disabled={isSubmitting}
+        <VoiceAvatarUploader
+          avatarPreview={avatarPreview}
+          selectedPreset={avatarPreset}
+          onPresetChange={(preset) => {
+            setAvatarPreset(preset)
+            setAvatarPreview(getPresetAvatarUrl(preset) ?? null)
+          }}
+          disabled={isSubmitting}
             helperText="512x512 이하 PNG/JPG 권장, 미선택 시 기존 또는 기본 이미지가 사용됩니다."
           />
 

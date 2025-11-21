@@ -1,10 +1,11 @@
 import { useMemo, useState, useEffect } from 'react'
 
-import { Check, Crown, MoreHorizontal, MoreVertical, Plus } from 'lucide-react'
+import { Check, Crown, MoreHorizontal, MoreVertical, Pause, Play, Plus } from 'lucide-react'
 import ReactCountryFlag from 'react-country-flag'
 
 import type { VoiceSample } from '@/entities/voice-sample/types'
 import { cn } from '@/shared/lib/utils'
+import { VOICE_CATEGORY_MAP } from '@/shared/constants/voiceCategories'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -59,22 +60,12 @@ export function VoiceSpotlightCard({
   isOwner = false,
 }: VoiceSpotlightCardProps) {
   const [resolvedAvatar, setResolvedAvatar] = useState<string>(
-    getPresetAvatarUrl(sample.avatarPreset) ??
-      (sample.avatarImageUrl && sample.avatarImageUrl.startsWith('http')
-        ? sample.avatarImageUrl
-        : DEFAULT_AVATAR),
+    getPresetAvatarUrl(sample.avatarPreset || 'default') ?? DEFAULT_AVATAR,
   )
   const isProcessing = !sample.audio_sample_url
 
   useEffect(() => {
-    const presetUrl = getPresetAvatarUrl(sample.avatarPreset)
-    if (presetUrl) {
-      setResolvedAvatar(presetUrl)
-    } else if (sample.avatarImageUrl && sample.avatarImageUrl.startsWith('http')) {
-      setResolvedAvatar(sample.avatarImageUrl)
-    } else {
-      setResolvedAvatar(DEFAULT_AVATAR)
-    }
+    setResolvedAvatar(getPresetAvatarUrl(sample.avatarPreset || 'default') ?? DEFAULT_AVATAR)
   }, [sample.avatarImageUrl, sample.avatarPreset])
 
   const countryCode = useMemo(() => {
@@ -94,6 +85,11 @@ export function VoiceSpotlightCard({
 
   const displayName = sample.name || 'Unknown'
   const initials = displayName[0]?.toUpperCase() || 'V'
+  const categories = sample.category ?? []
+  const categoryText = categories
+    .map((cat) => VOICE_CATEGORY_MAP[cat as keyof typeof VOICE_CATEGORY_MAP] ?? cat)
+    .filter(Boolean)
+    .join(', ')
 
   /* 🔹 일레븐랩스 스타일: 리스트 row 용 */
   if (isTableRow) {
@@ -108,11 +104,11 @@ export function VoiceSpotlightCard({
         {/* 1열: Voice 정보 */}
         <div className="flex items-center gap-3">
           <div className="relative flex h-8 w-8 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-pink-500 to-orange-400 text-[10px] font-semibold text-white">
-            {resolvedAvatar && resolvedAvatar !== DEFAULT_AVATAR ? (
+            {resolvedAvatar ? (
               <img
                 src={resolvedAvatar}
                 onError={(event) => {
-                  event.currentTarget.style.display = 'none'
+                  event.currentTarget.src = DEFAULT_AVATAR
                 }}
                 alt={sample.name}
                 className="h-full w-full object-cover"
@@ -127,15 +123,15 @@ export function VoiceSpotlightCard({
             )}
           </div>
           <div className="min-w-0">
-            <div className="truncate text-[12px] font-semibold text-foreground">{displayName}</div>
+            <div className="truncate text-sm font-semibold text-foreground">{displayName}</div>
             {sample.description && (
-              <div className="truncate text-[11px] text-muted">{sample.description}</div>
+              <div className="truncate text-xs text-muted">{sample.description}</div>
             )}
           </div>
         </div>
 
-        {/* 2열: Language · Category (국기 포함) */}
-        <div className="flex items-center gap-2 text-[11px] text-muted">
+        {/* 2열: Language */}
+        <div className="flex items-center gap-2 text-[13px] text-muted">
           {countryCode && (
             <ReactCountryFlag
               countryCode={countryCode}
@@ -143,14 +139,40 @@ export function VoiceSpotlightCard({
               style={{ width: '1em', height: '1em' }}
             />
           )}
-          <div className="flex flex-col">
+          <div className="flex flex-col leading-tight">
             <span className="leading-tight">{languageLabel}</span>
-            <span className="text-[10px] text-muted/70">Characters &amp; Animation</span>
           </div>
         </div>
 
-        {/* 3열: 좋아요 수 + 버튼들 */}
-        <div className="flex items-center justify-end gap-3">
+        {/* 3열: 카테고리 */}
+        <div className="min-w-0 text-[13px] text-muted">
+          {categoryText ? (
+            <span className="block truncate" title={categoryText}>
+              {categoryText}
+            </span>
+          ) : (
+            <span className="text-[11px] text-muted">카테고리 없음</span>
+          )}
+        </div>
+
+        {/* 4열: 태그 */}
+        <div className="flex max-h-10 flex-wrap items-center gap-1 overflow-hidden text-[12px] text-muted">
+          {sample.tags?.length ? (
+            sample.tags.slice(0, 4).map((tag) => (
+              <span
+                key={tag}
+                className="rounded-full bg-surface-2 px-2 py-0.5 text-[11px] text-muted whitespace-nowrap"
+              >
+                #{tag}
+              </span>
+            ))
+          ) : (
+            <span className="text-[11px] text-muted">태그 없음</span>
+          )}
+        </div>
+
+        {/* 5열: 좋아요 수 + 버튼들 */}
+        <div className="flex w-full min-w-[120px] max-w-[200px] items-center justify-end gap-3">
           {/* 오너인 경우 오너 아이콘 표시, 아닌 경우 add/remove 버튼 */}
           {isOwner ? (
             <div
@@ -158,7 +180,7 @@ export function VoiceSpotlightCard({
               title="내가 만든 목소리"
             >
               <Crown className="h-4 w-4" />
-              <span className="text-[10px] font-medium">Owner</span>
+              <span className="text-[11px] font-medium">Owner</span>
             </div>
           ) : (
             (onAddToMyVoices || onRemoveFromMyVoices) && (
@@ -252,21 +274,21 @@ export function VoiceSpotlightCard({
         onPlay(sample)
       }}
     >
-      <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-full bg-gradient-to-br from-purple-400 via-pink-400 to-blue-400">
-        <img
-          src={resolvedAvatar}
-          onError={(event) => {
-            event.currentTarget.src = DEFAULT_AVATAR
-          }}
-          alt={sample.name}
-          className="h-full w-full object-cover"
-        />
-        {isProcessing ? (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-            <Spinner size="sm" />
-          </div>
-        ) : null}
-      </div>
+        <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-full bg-gradient-to-br from-purple-400 via-pink-400 to-blue-400">
+          <img
+            src={resolvedAvatar ?? DEFAULT_AVATAR}
+            onError={(event) => {
+              event.currentTarget.src = DEFAULT_AVATAR
+            }}
+            alt={sample.name}
+            className="h-full w-full object-cover"
+          />
+          {isProcessing ? (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+              <Spinner size="sm" />
+            </div>
+          ) : null}
+        </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
@@ -333,20 +355,32 @@ export function VoiceSpotlightCard({
           </div>
         </div>
         <div className="mt-1.5 flex items-center gap-3 text-xs">
-          {countryCode && (
-            <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1">
+            {countryCode && (
               <ReactCountryFlag
                 countryCode={countryCode}
                 svg
                 style={{ width: '1em', height: '1em' }}
               />
-              <span className="text-muted">
-                {COUNTRY_DISPLAY_MAP[sample.country?.toLowerCase() ?? '']?.label ?? sample.country}
-              </span>
-            </div>
-          )}
+            )}
+            <span className="text-muted">
+              {COUNTRY_DISPLAY_MAP[sample.country?.toLowerCase() ?? '']?.label ?? sample.country}
+            </span>
+          </div>
           <span className="text-muted">•</span>
           <span className="text-muted">캐릭터 & 애니메이션</span>
+          {sample.tags?.length ? (
+            <div className="flex flex-wrap gap-1">
+              {sample.tags.slice(0, 2).map((tag) => (
+                <span
+                  key={tag}
+                  className="rounded-full bg-surface-2 px-2 py-0.5 text-[10px] text-muted"
+                >
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          ) : null}
         </div>
       </div>
     </div>

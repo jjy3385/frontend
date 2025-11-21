@@ -3,6 +3,7 @@ export type AttributeKey = 'accent' | 'gender' | 'age'
 export const DEFAULT_AVATAR = '/avatars/default-avatar.png'
 export const PRESET_AVATAR_MAP: Record<string, string> = {
   default: '/avatars/default-avatar.png',
+  default_avatar: '/avatars/default-avatar.png', // backward compatibility
   male: '/avatars/default-avatar-male.png',
   female: '/avatars/default-avatar-female.png',
 }
@@ -29,7 +30,7 @@ export const getCountryCode = (code?: string) => {
 }
 
 export const getPresetAvatarUrl = (preset?: string | null) => {
-  if (!preset) return undefined
-  return PRESET_AVATAR_MAP[preset]
+  if (!preset) return DEFAULT_AVATAR
+  return PRESET_AVATAR_MAP[preset] ?? DEFAULT_AVATAR
 }
 

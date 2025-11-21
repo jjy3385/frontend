@@ -25,11 +25,12 @@ import {
 import { VOICE_CATEGORY_MAP } from '@/shared/constants/voiceCategories'
 import { VoicePlayerBar } from './components/VoicePlayerBar'
 import { VoiceSearchBar } from './components/VoiceSearchBar'
+import type { VoiceFilters } from './hooks/useVoiceLibraryFilters'
 
 import { VoiceFiltersModal } from './components/VoiceFiltersModal'
 import { VoiceLibraryTabs } from './components/VoiceLibraryTabs'
 import { FilterChipsBar } from './components/FilterChipsBar'
-import { useVoiceLibraryFilters, type VoiceFilters } from './hooks/useVoiceLibraryFilters'
+import { useVoiceLibraryFilters } from './hooks/useVoiceLibraryFilters'
 import { CharacterVoicesSection } from './sections/CharacterVoicesSection'
 import { TrendingVoicesSection } from './sections/TrendingVoicesSection'
 import { UseCaseCarouselSection } from './sections/UseCaseCarouselSection'
@@ -116,12 +117,10 @@ export default function VoiceLibraryPage() {
         mySamplesOnly: tab === 'mine',
         // myVoicesOnly는 제거 - mySamplesOnly만 사용 (자신이 만든 보이스는 자동으로 user_voices에 추가됨)
         isBuiltin: undefined,
-        gender: filters.gender && filters.gender !== 'any' ? filters.gender : undefined,
-        age: filters.age && filters.age !== 'any' ? filters.age : undefined,
-        accent: filters.accent && filters.accent !== 'any' ? filters.accent : undefined,
         languages:
           filters.languages && filters.languages.length > 0 ? filters.languages : undefined,
         category: filters.category && filters.category.length > 0 ? filters.category[0] : undefined,
+        tags: filters.tags && filters.tags.length > 0 ? filters.tags : undefined,
       }),
     placeholderData: keepPreviousData,
   })
@@ -309,15 +308,25 @@ export default function VoiceLibraryPage() {
   const normalizedSearch = useMemo(() => search.trim().toLowerCase(), [search])
   const hasFilters = useMemo(() => {
     return Boolean(
-      (filters.gender && filters.gender !== 'any') ||
-        (filters.age && filters.age !== 'any') ||
-        (filters.accent && filters.accent !== 'any') ||
-        (filters.languages && filters.languages.length > 0) ||
-        (filters.category && filters.category.length > 0),
+      (filters.languages && filters.languages.length > 0) ||
+        (filters.category && filters.category.length > 0) ||
+        (filters.tags && filters.tags.length > 0),
     )
   }, [filters])
 
   const samples = voiceQuery.data?.samples ?? EMPTY_SAMPLES
+  const tagOptions = useMemo(() => {
+    const counts = new Map<string, number>()
+    samples.forEach((sample) => {
+      sample.tags?.forEach((tag) => {
+        const normalized = tag.trim()
+        if (!normalized) return
+        counts.set(normalized, (counts.get(normalized) ?? 0) + 1)
+      })
+    })
+    return Array.from(counts.entries()).map(([tag, count]) => ({ tag, count }))
+  }, [samples])
+
   const filteredSamples = useMemo(() => {
     if (!normalizedSearch) return samples
     return samples.filter((sample) => {
@@ -333,7 +342,13 @@ export default function VoiceLibraryPage() {
   }, [samples, normalizedSearch])
 
   const sortedSamples = useMemo(() => {
-    const sorted = [...filteredSamples]
+    const tagFiltered =
+      filters.tags && filters.tags.length
+        ? filteredSamples.filter((sample) =>
+            (filters.tags ?? []).every((tag) => sample.tags?.includes(tag)),
+          )
+        : filteredSamples
+    const sorted = [...tagFiltered]
     switch (sort) {
       case 'trending':
       case 'added-desc':
@@ -674,7 +689,7 @@ export default function VoiceLibraryPage() {
       {/* 내 보이스 목록 */}
       {tab === 'mine' && (
         <VoiceListSection
-          title="My Voices"
+          title="내 목소리"
           samples={sortedSamples}
           isLoading={voiceQuery.isLoading}
           onPlay={handlePlaySample}
@@ -694,12 +709,13 @@ export default function VoiceLibraryPage() {
         <VoiceFiltersModal
           open={isFiltersModalOpen}
           onOpenChange={setIsFiltersModalOpen}
-          filters={filters}
-          onFiltersChange={setFilters}
-          onApply={() => {
-            console.log('Filters applied:', filters)
-          }}
-        />
+        filters={filters}
+        onFiltersChange={setFilters}
+        onApply={() => {
+          console.log('Filters applied:', filters)
+        }}
+        tagOptions={tagOptions}
+      />
       </div>
 
       {playerSample && (
