@@ -10,6 +10,7 @@ type UseSegmentAudioPlayerOptions = {
   isScrubbing: boolean
   audioObjects?: Map<string, HTMLAudioElement> // segmentId -> preloaded Audio object
   readyAudioIds?: Set<string> // Set of segment IDs with fully loaded audio
+  languageCode?: string // 현재 선택된 언어 코드 (언어 변경 감지용)
 }
 
 type SegmentData = {
@@ -109,6 +110,7 @@ export function useSegmentAudioPlayer({
   isScrubbing,
   audioObjects,
   readyAudioIds,
+  languageCode,
 }: UseSegmentAudioPlayerOptions) {
   // 여러 Audio 객체를 Map으로 관리
   const audioRefsMap = useRef<Map<string, HTMLAudioElement>>(new Map())
@@ -117,6 +119,7 @@ export function useSegmentAudioPlayer({
   const prevSegmentsDataRef = useRef<SegmentData[]>([])
   const isPlayingRef = useRef<boolean>(isPlaying)
   const lastOffsetUpdateTimeRef = useRef<number>(0)
+  const prevLanguageCodeRef = useRef<string | undefined>(languageCode)
 
   // Refs를 최신 상태로 유지
   useEffect(() => {
@@ -279,6 +282,60 @@ export function useSegmentAudioPlayer({
       }
     }
   }, [playhead, activeSegmentsData, isScrubbing])
+
+  // Effect 6: 언어 변경 시 오프셋 재계산 및 오디오 전환
+  // 재생 중이든 아니든 새 세그먼트들에 대해 오디오 세팅
+  useEffect(() => {
+    const languageChanged = prevLanguageCodeRef.current !== languageCode
+    const audios = audioRefsMap.current
+
+    // 언어가 바뀌면 기존 오디오 정리
+    if (languageChanged) {
+      for (const audio of audios.values()) {
+        audio.pause()
+      }
+      audios.clear()
+      activeSegmentIdsRef.current = new Set()
+    }
+
+    // 새 세그먼트들에 대해 오디오 세팅
+    if (!audioObjects || activeSegmentsData.length === 0) return
+
+    let hasSetAudio = false
+
+    for (const segmentData of activeSegmentsData) {
+      // 이미 세팅된 세그먼트는 스킵
+      if (audios.has(segmentData.id)) continue
+
+      const audio = audioObjects.get(segmentData.id)
+      if (!audio) continue
+
+      hasSetAudio = true
+
+      // offset 계산 및 세팅
+      const offset = lastPlayheadRef.current - segmentData.start
+      audio.currentTime = Math.max(0, offset)
+      audio.playbackRate = segmentData.playbackRate
+      audios.set(segmentData.id, audio)
+
+      // 재생 중이면 바로 재생 시작
+      if (isPlayingRef.current) {
+        void audio.play().catch((error) => {
+          console.error(
+            `[MultiAudio] Language change playback failed for segment ${segmentData.id}:`,
+            error,
+          )
+        })
+      }
+    }
+
+    // 오디오 세팅이 성공했으면 언어 변경 완료로 표시
+    if (hasSetAudio && languageChanged) {
+      prevLanguageCodeRef.current = languageCode
+    }
+
+    activeSegmentIdsRef.current = new Set(activeSegmentsData.map((s) => s.id))
+  }, [languageCode, activeSegmentsData, audioObjects])
 
   // Cleanup on unmount
   useEffect(() => {

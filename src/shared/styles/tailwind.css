@@ -27,6 +27,12 @@
     --warning-darker: 38 92% 45%;
   }
 
+  html,
+  body,
+  #root {
+    @apply h-full;
+  }
+
   body {
     @apply bg-surface-1 text-foreground font-["Inter",sans-serif] antialiased;
   }

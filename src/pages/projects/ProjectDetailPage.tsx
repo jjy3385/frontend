@@ -94,7 +94,7 @@ export default function ProjectDetailPage() {
         {canEdit ? (
           <div className="flex flex-wrap gap-3">
             <Button asChild onClick={() => trackEvent('enter_editor_click', { projectId })}>
-              {/* <Link to={routes.editor(projectId, activeLanguage)}>편집하기</Link> */}
+              {/* <Link to={routes.editor(projectId)}>편집하기</Link> */}
             </Button>
           </div>
         ) : null}

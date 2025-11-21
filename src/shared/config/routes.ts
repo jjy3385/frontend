@@ -15,7 +15,7 @@ export const routes = {
   privacyPolicy: '/policies/privacy-policy',
   voiceSampleEdit: (id: string) => `/voice-samples/${id}/edit`,
   youtubeCallback: '/oauth2/callback/youtube',
-  editor: (projectId: string, languageCode: string) => `/editor/${projectId}/${languageCode}`,
+  editor: (projectId: string) => `/editor/${projectId}`,
 }
 
 export const workspaceModals = {

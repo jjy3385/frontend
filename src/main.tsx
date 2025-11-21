@@ -40,7 +40,6 @@ async function bootstrap() {
         {/* <PipelineStatusManager /> */}
         <AppRouter />
       </AppProviders>
-      ,
     </StrictMode>,
   )
 }

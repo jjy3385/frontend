@@ -13,6 +13,7 @@ type AudioTrackWorkspaceProps = {
   duration: number
   originalAudioSrc?: string
   backgroundAudioSrc?: string
+  languageCode?: string
   onSave?: () => void
 }
 
@@ -21,6 +22,7 @@ export function AudioTrackWorkspace({
   duration,
   originalAudioSrc,
   backgroundAudioSrc,
+  languageCode,
   onSave,
 }: AudioTrackWorkspaceProps) {
   // Segments are now managed directly in tracks store via useAudioTimeline
@@ -40,14 +42,12 @@ export function AudioTrackWorkspace({
     getTrackRowHeight,
     playhead,
     setPlayhead,
-    isPlaying,
     setPlaying,
     togglePlayback,
-    formatTime,
     isInitialLoadComplete,
     readyAudioIds,
     loadingProgress,
-  } = useAudioTimeline(segments, duration, originalAudioSrc, backgroundAudioSrc)
+  } = useAudioTimeline(segments, duration, originalAudioSrc, backgroundAudioSrc, languageCode)
 
   // Register editor hotkeys
   useEditorHotkeys({

@@ -12,7 +12,7 @@ export function RootLayout() {
   const hideSidebar = location.pathname.startsWith('/editor') || !isAuthenticated
 
   return (
-    <div className="bg-surface-1 text-foreground flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col bg-surface-1 text-foreground">
       <AppHeader />
       <div className="flex flex-1">
         {!hideSidebar && <AppSidebar />}

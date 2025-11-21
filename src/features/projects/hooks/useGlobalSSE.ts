@@ -6,6 +6,7 @@ import { useUiStore } from '@/shared/store/useUiStore'
 
 import { getLanguageDisplayName, NOTIFICATION_MESSAGES } from '../constants/notificationMessages'
 import { useProjectProgressStore } from '../stores/useProjectProgressStore'
+import { useSSEStore } from '../stores/useSSEStore'
 import type { ProjectProgressEvent, TargetProgressEvent } from '../types/progress'
 
 import {
@@ -21,39 +22,30 @@ import {
 } from './utils/progressEventHandlers'
 import { createConnectionErrorHandler, createReconnectionHandler } from './utils/sseReconnection'
 
-export interface UseProjectProgressListenerOptions {
-  projectId?: string // Optional: subscribe to specific project only
-  enabled?: boolean // Default: true
+export interface UseGlobalSSEOptions {
+  projectId?: string
+  enabled?: boolean
   onTargetComplete?: (projectId: string, targetLang: string, message: string) => void
   onProjectComplete?: (projectId: string, message: string) => void
 }
 
 /**
- * SSE 연결을 통해 프로젝트 진행도 이벤트를 구독하는 훅
+ * 전역 SSE 연결 훅
  *
- * @param options - 구독 옵션
- * @returns void
+ * 단일 SSE 연결로 다양한 이벤트 타입을 처리:
+ * - target-progress: 타겟 언어 파이프라인 진행률
+ * - project-progress: 프로젝트 전체 진행률
+ * - audio-completed: 오디오 생성 완료
+ * - audio-failed: 오디오 생성 실패
  *
- * @example
- * // 전체 프로젝트 구독 (대시보드)
- * useProjectProgressListener()
- *
- * // 특정 프로젝트만 구독
- * useProjectProgressListener({ projectId: 'project-123' })
- *
- * // 완료 콜백과 함께 사용
- * useProjectProgressListener({
- *   onTargetComplete: (projectId, targetLang) => {
- *     console.log(`${projectId}의 ${targetLang} 작업 완료!`)
- *   }
- * })
+ * 오디오 이벤트는 useSSEStore를 통해 구독자에게 전달됨
  */
-export function useProjectProgressListener({
+export function useGlobalSSE({
   projectId,
   enabled = true,
   onTargetComplete,
   onProjectComplete,
-}: UseProjectProgressListenerOptions = {}) {
+}: UseGlobalSSEOptions = {}) {
   const eventSourceRef = useRef<EventSource | null>(null)
   const previousTargetStatusRef = useRef<Map<string, string>>(new Map())
   const previousProjectStatusRef = useRef<Map<string, string>>(new Map())
@@ -63,31 +55,62 @@ export function useProjectProgressListener({
 
   const showToast = useUiStore((state) => state.showToast)
   const addNotification = useNotificationStore((state) => state.addNotification)
+
+  // Progress store actions
   const {
-    setConnectionStatus,
-    setConnectionError,
-    setLastHeartbeat,
+    setConnectionStatus: setProgressConnectionStatus,
+    setConnectionError: setProgressConnectionError,
+    setLastHeartbeat: setProgressLastHeartbeat,
     updateTargetProgress,
     updateProjectProgress,
   } = useProjectProgressStore()
 
-  // Create completion checkers
+  // SSE store actions (for audio events)
+  const {
+    setConnectionStatus: setSSEConnectionStatus,
+    setConnectionError: setSSEConnectionError,
+    setLastHeartbeat: setSSELastHeartbeat,
+    notifyAudioEvent,
+  } = useSSEStore()
+
+  // Sync connection status to both stores
+  const setConnectionStatus = useCallback(
+    (status: 'disconnected' | 'connecting' | 'connected' | 'error') => {
+      setProgressConnectionStatus(status)
+      setSSEConnectionStatus(status)
+    },
+    [setProgressConnectionStatus, setSSEConnectionStatus],
+  )
+
+  const setConnectionError = useCallback(
+    (error: string | null) => {
+      setProgressConnectionError(error)
+      setSSEConnectionError(error)
+    },
+    [setProgressConnectionError, setSSEConnectionError],
+  )
+
+  const setLastHeartbeat = useCallback(
+    (timestamp: string) => {
+      setProgressLastHeartbeat(timestamp)
+      setSSELastHeartbeat(timestamp)
+    },
+    [setProgressLastHeartbeat, setSSELastHeartbeat],
+  )
+
+  // Completion checkers
   const checkTargetCompletion = useCallback(
     (event: TargetProgressEvent) => {
       const checker = createTargetCompletionChecker(
         previousTargetStatusRef.current,
         (projectId, projectTitle, targetLang, message) => {
-          // 서버에서 제공하는 projectTitle 사용 (캐시 불필요)
           const languageDisplay = getLanguageDisplayName(targetLang)
-
-          // 알림 메시지 생성
           const notificationMessage = NOTIFICATION_MESSAGES.TARGET_COMPLETED(
             projectTitle,
             languageDisplay,
             targetLang,
           )
 
-          // 토스트 표시 (초록색 성공 토스트)
           showToast({
             id: `target-completed-${projectId}:${targetLang}`,
             title: '더빙 생성이 완료되었습니다',
@@ -96,7 +119,6 @@ export function useProjectProgressListener({
             variant: 'success',
           })
 
-          // 알림 저장
           addNotification({
             type: 'success',
             title: '더빙 생성이 완료되었습니다',
@@ -130,26 +152,23 @@ export function useProjectProgressListener({
   const connect = useCallback(() => {
     if (!enabled || eventSourceRef.current?.readyState === EventSource.OPEN) return
 
-    // Close existing connection if any
     if (eventSourceRef.current) {
       eventSourceRef.current.close()
       eventSourceRef.current = null
     }
 
-    // Build URL with optional project_id query param
     const url = new URL(`${env.apiBaseUrl}/api/progress/events`)
     if (projectId) {
       url.searchParams.set('project_id', projectId)
     }
 
-    console.log('[SSE] Connecting to progress events:', url.toString())
+    console.log('[GlobalSSE] Connecting:', url.toString())
     setConnectionStatus('connecting')
 
     const eventSource = new EventSource(url.toString(), {
       withCredentials: true,
     })
 
-    // Dependencies for event handlers
     const deps = {
       setConnectionStatus,
       setConnectionError,
@@ -161,27 +180,79 @@ export function useProjectProgressListener({
       checkProjectCompletion,
     }
 
-    // Register event handlers
+    // Progress event handlers
     eventSource.addEventListener(
       'connected',
       createConnectedHandler(deps, reconnectAttemptsRef, showToast),
     )
-
     eventSource.addEventListener('target-progress', createTargetProgressHandler(deps))
-
     eventSource.addEventListener('project-progress', createProjectProgressHandler(deps))
-
     eventSource.addEventListener('heartbeat', createHeartbeatHandler(deps))
-
     eventSource.addEventListener('error-message', createErrorMessageHandler(deps))
 
-    // Handle connection errors with reconnection logic
+    // Audio generation event handlers (NEW)
+    // Server sends: { projectId, targetLang, metadata: { segmentId, languageCode, audioS3Key, audioDuration } }
+    eventSource.addEventListener('audio-completed', (event: MessageEvent) => {
+      try {
+        const raw = JSON.parse(event.data as string) as {
+          projectId: string
+          targetLang: string
+          metadata: {
+            segmentId: string
+            languageCode: string
+            audioS3Key: string
+            audioDuration?: number
+          }
+        }
+        console.log('[GlobalSSE] Audio completed:', raw)
+
+        // Transform to AudioGenerationEvent format
+        notifyAudioEvent({
+          projectId: raw.projectId,
+          languageCode: raw.metadata.languageCode || raw.targetLang,
+          segmentId: raw.metadata.segmentId,
+          audioS3Key: raw.metadata.audioS3Key,
+          audioDuration: raw.metadata.audioDuration,
+          status: 'completed',
+        })
+      } catch (error) {
+        console.error('[GlobalSSE] Failed to parse audio-completed:', error)
+      }
+    })
+
+    eventSource.addEventListener('audio-failed', (event: MessageEvent) => {
+      try {
+        const raw = JSON.parse(event.data as string) as {
+          projectId: string
+          targetLang: string
+          metadata: {
+            segmentId: string
+            languageCode: string
+            error?: string
+          }
+        }
+        console.log('[GlobalSSE] Audio failed:', raw)
+
+        notifyAudioEvent({
+          projectId: raw.projectId,
+          languageCode: raw.metadata.languageCode || raw.targetLang,
+          segmentId: raw.metadata.segmentId,
+          audioS3Key: '',
+          status: 'failed',
+          error: raw.metadata.error,
+        })
+      } catch (error) {
+        console.error('[GlobalSSE] Failed to parse audio-failed:', error)
+      }
+    })
+
+    // Reconnection logic
     const attemptReconnect = createReconnectionHandler(
       reconnectAttemptsRef,
       reconnectTimeoutRef,
       setConnectionStatus,
       showToast,
-      () => connectRef.current?.(), // Use ref to avoid circular dependency
+      () => connectRef.current?.(),
     )
 
     eventSource.onerror = createConnectionErrorHandler(
@@ -202,45 +273,35 @@ export function useProjectProgressListener({
     checkTargetCompletion,
     checkProjectCompletion,
     showToast,
+    notifyAudioEvent,
   ])
 
-  // Store connect function in ref
   connectRef.current = connect
 
-  // Cleanup on unmount or when dependencies change
   useEffect(() => {
     if (enabled) {
       connect()
     }
 
-    // Cleanup function
     const cleanup = () => {
-      console.log('[SSE] Cleanup: Closing connection')
+      console.log('[GlobalSSE] Cleanup')
 
-      // Clear reconnect timeout - access ref directly
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current)
         reconnectTimeoutRef.current = undefined
       }
 
-      // Close EventSource - access ref directly, not captured value
       if (eventSourceRef.current) {
-        console.log('[SSE] Closing EventSource with readyState:', eventSourceRef.current.readyState)
         eventSourceRef.current.close()
         eventSourceRef.current = null
       }
 
-      // Reset connection status
       setConnectionStatus('disconnected')
       setConnectionError(null)
-
-      // Reset reconnect attempts on cleanup
       reconnectAttemptsRef.current = 0
     }
 
-    // Handle page unload/refresh
     const handleBeforeUnload = () => {
-      console.log('[SSE] Page unloading - closing connection')
       if (eventSourceRef.current) {
         eventSourceRef.current.close()
         eventSourceRef.current = null
@@ -254,11 +315,10 @@ export function useProjectProgressListener({
       cleanup()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabled, projectId]) // Removed store setters from deps to prevent unnecessary re-renders
+  }, [enabled, projectId])
 
-  // Return connection status for component use
-  const connectionStatus = useProjectProgressStore((state) => state.connectionStatus)
-  const connectionError = useProjectProgressStore((state) => state.connectionError)
+  const connectionStatus = useSSEStore((state) => state.connectionStatus)
+  const connectionError = useSSEStore((state) => state.connectionError)
 
   return { connectionStatus, connectionError }
 }
