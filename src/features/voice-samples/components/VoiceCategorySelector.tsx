@@ -11,7 +11,7 @@ export function VoiceCategorySelector({
   disabled?: boolean
 }) {
   return (
-    <div className="space-y-2 rounded-xl border border-surface-3 bg-surface-1 p-4">
+    <div className="space-y-2">
       <Label>카테고리 (중복 가능)</Label>
       <div className="flex flex-wrap gap-2">
         {VOICE_CATEGORIES.map(({ code, label }) => {

@@ -4,40 +4,21 @@ import { Check, Pause, Play, Plus } from 'lucide-react'
 import ReactCountryFlag from 'react-country-flag'
 
 import type { VoiceSample } from '@/entities/voice-sample/types'
-import { env } from '@/shared/config/env'
 import { cn } from '@/shared/lib/utils'
 import { Spinner } from '@/shared/ui/Spinner'
+import { VOICE_CATEGORY_MAP } from '@/shared/constants/voiceCategories'
+import { DEFAULT_AVATAR, getPresetAvatarUrl } from '@/features/voice-samples/components/voiceSampleFieldUtils'
 
-const DEFAULT_AVATAR =
-  'https://ui-avatars.com/api/?name=Voice&background=EEF2FF&color=1E1B4B&size=128'
 const COUNTRY_DISPLAY_MAP: Record<string, { code: string; label: string }> = {
-  ko: { code: 'KR', label: 'Korean' },
-  en: { code: 'US', label: 'English' },
-  jp: { code: 'JP', label: 'Japanese' },
-  es: { code: 'ES', label: 'Spanish' },
-  fr: { code: 'FR', label: 'French' },
+  ko: { code: 'KR', label: '한국어' },
+  kr: { code: 'KR', label: '한국어' },
+  en: { code: 'US', label: '영어' },
+  jp: { code: 'JP', label: '일본어' },
+  es: { code: 'ES', label: '스페인어' },
+  fr: { code: 'FR', label: '프랑스어' },
 }
 
-const getPresignedUrl = async (path: string): Promise<string | undefined> => {
-  try {
-    const apiBase = env.apiBaseUrl.startsWith('http')
-      ? `${env.apiBaseUrl}/api`
-      : env.apiBaseUrl || '/api'
-    const pathSegments = path.split('/')
-    const encodedPath = pathSegments.map((segment) => encodeURIComponent(segment)).join('/')
-    const response = await fetch(`${apiBase}/storage/media/${encodedPath}`)
-    if (!response.ok) {
-      throw new Error(`Failed to get presigned URL: ${response.statusText}`)
-    }
-    const data = (await response.json()) as { url: string }
-    return data.url
-  } catch (error) {
-    console.error('Presigned URL 가져오기 실패:', error)
-    return undefined
-  }
-}
-
-interface TrendingVoiceChipProps {
+interface VoiceHighlightChipProps {
   sample: VoiceSample
   onPlay: (sample: VoiceSample) => void
   isPlaying: boolean
@@ -48,7 +29,7 @@ interface TrendingVoiceChipProps {
   isInMyVoices?: boolean
 }
 
-export function TrendingVoiceChip({
+export function VoiceHighlightChip({
   sample,
   onPlay,
   isPlaying,
@@ -57,32 +38,29 @@ export function TrendingVoiceChip({
   isAdding = false,
   isRemoving = false,
   isInMyVoices = false,
-}: TrendingVoiceChipProps) {
+}: VoiceHighlightChipProps) {
   const [resolvedAvatar, setResolvedAvatar] = useState<string>(
-    sample.avatarImageUrl && sample.avatarImageUrl.startsWith('http')
-      ? sample.avatarImageUrl
-      : DEFAULT_AVATAR,
+    getPresetAvatarUrl(sample.avatarPreset || 'default'),
   )
-  const isProcessing = !sample.audio_sample_url
+  const hasAudioUrl = Boolean(sample.audio_sample_url)
+  const isProcessing = !hasAudioUrl
 
   useEffect(() => {
-    let active = true
-    const path = sample.avatarImagePath
-    if (path && !path.startsWith('http')) {
-      void getPresignedUrl(path).then((url) => {
-        if (url && active) {
-          setResolvedAvatar(url)
-        }
-      })
-    } else if (sample.avatarImageUrl && sample.avatarImageUrl.startsWith('http')) {
-      setResolvedAvatar(sample.avatarImageUrl)
-    } else {
-      setResolvedAvatar(DEFAULT_AVATAR)
+    setResolvedAvatar(getPresetAvatarUrl(sample.avatarPreset || 'default') ?? DEFAULT_AVATAR)
+  }, [sample.avatarImageUrl, sample.avatarPreset])
+
+  const formatUserCount = (count?: number) => {
+    const safeCount = count ?? 0
+    if (safeCount >= 10000) {
+      const formatted = (safeCount / 10000).toFixed(1).replace(/\.0$/, '')
+      return `약 ${formatted}만명`
     }
-    return () => {
-      active = false
+    if (safeCount >= 1000) {
+      const formatted = (safeCount / 1000).toFixed(1).replace(/\.0$/, '')
+      return `약 ${formatted}천명`
     }
-  }, [sample.avatarImagePath, sample.avatarImageUrl])
+    return `${safeCount}명`
+  }
 
   const countryCode = useMemo(() => {
     if (!sample.country) return undefined
@@ -98,21 +76,20 @@ export function TrendingVoiceChip({
   const displayName = sample.name || 'Unknown'
   const initials = displayName[0]?.toUpperCase() || 'V'
 
+
   return (
     <button
       type="button"
       onClick={(e) => {
         e.stopPropagation()
-        if (!isProcessing && sample.audio_sample_url) {
-          onPlay(sample)
-        }
-        // TODO: 필요하면 여기서 상세 페이지로 이동 로직 추가
+        if (isProcessing) return
+        onPlay(sample)
       }}
       className={cn(
         // ElevenLabs 스타일: 작은 카드 / 라운드 / 은은한 그림자
         'group flex items-center gap-3 rounded-3xl',
         'bg-surface-1 px-3 py-3 shadow-sm',
-        'border border-surface-3/40',
+        'border border-surface-3',
         'transition-all hover:-translate-y-[1px] hover:shadow-md',
       )}
     >
@@ -123,11 +100,11 @@ export function TrendingVoiceChip({
           'bg-gradient-to-br from-indigo-500 to-sky-400 text-sm font-semibold text-white',
         )}
       >
-        {resolvedAvatar && resolvedAvatar !== DEFAULT_AVATAR ? (
+        {resolvedAvatar ? (
           <img
             src={resolvedAvatar}
             onError={(event) => {
-              event.currentTarget.style.display = 'none'
+              event.currentTarget.src = DEFAULT_AVATAR
             }}
             alt={sample.name}
             className="h-full w-full object-cover"
@@ -142,29 +119,47 @@ export function TrendingVoiceChip({
         )}
       </div>
 
-      {/* 텍스트 영역 */}
-      <div className="min-w-0 flex-1 text-left">
-        {/* 이름 */}
-        <div className="truncate text-sm font-semibold text-foreground">{displayName}</div>
-        {/* 두 번째 줄: 보이스 타입/설명 (없으면 안 그려짐) */}
-        {sample.description && (
-          <div className="truncate text-[11px] text-muted">{sample.description}</div>
-        )}
-        {/* 세 번째 줄: 언어/국기 */}
-        <div className="mt-0.5 flex items-center gap-1 text-[11px] text-muted">
-          {countryCode && (
-            <ReactCountryFlag
-              countryCode={countryCode}
-              svg
-              style={{ width: '0.8em', height: '0.8em' }}
-            />
-          )}
-          <span className="truncate">
-            {(COUNTRY_DISPLAY_MAP[sample.country?.toLowerCase() ?? '']?.label ?? sample.country) ||
-              '언어 미상'}
-          </span>
+        {/* 텍스트 영역 */}
+        <div className="min-w-0 flex-1 text-left">
+          {/* 이름 */}
+          <div className="truncate text-sm font-semibold text-foreground">{displayName}</div>
+          {/* 두 번째 줄: 카테고리 */}
+          <div className="truncate text-[11px] text-muted">
+            {sample.category?.length
+              ? VOICE_CATEGORY_MAP[sample.category[0] as keyof typeof VOICE_CATEGORY_MAP] ??
+                sample.category[0]
+              : '카테고리 미지정'}
+          </div>
+          {/* 세 번째 줄: 언어/국기 및 사용 수 */}
+          <div className="mt-0.5 flex items-center gap-2 text-[11px] text-muted">
+            {countryCode && (
+              <ReactCountryFlag
+                countryCode={countryCode}
+                svg
+                style={{ width: '0.8em', height: '0.8em' }}
+              />
+            )}
+            <span className="truncate">
+              {(COUNTRY_DISPLAY_MAP[sample.country?.toLowerCase() ?? '']?.label ??
+                sample.country) ||
+                '언어 미상'}
+            </span>
+            <span className="text-muted">•</span>
+            <span className="truncate">{`${formatUserCount(sample.addedCount)} 사용`}</span>
+          </div>
+          {sample.tags?.length ? (
+            <div className="mt-1 flex flex-wrap gap-1">
+              {sample.tags.slice(0, 3).map((tag) => (
+                <span
+                  key={tag}
+                  className="rounded-full bg-surface-2 px-2 py-0.5 text-[10px] text-muted"
+                >
+                  #{tag}
+                </span>
+              ))}
+            </div>
+          ) : null}
         </div>
-      </div>
 
       {/* 액션 버튼들 */}
       <div className="flex items-center gap-1">
@@ -195,7 +190,7 @@ export function TrendingVoiceChip({
               }
             }}
             disabled={isAdding || isRemoving}
-            title={isInMyVoices ? '내 보이스에서 제거' : '내 보이스에 추가'}
+            title={isInMyVoices ? '내 목소리에서 제거' : '내 목소리에 추가'}
             className={cn(
               'flex-shrink-0 rounded-full p-1.5 transition-colors',
               isInMyVoices

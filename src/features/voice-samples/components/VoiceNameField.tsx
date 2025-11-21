@@ -11,9 +11,9 @@ export function VoiceNameField({
   disabled?: boolean
 }) {
   return (
-    <div className="space-y-2 rounded-xl border border-surface-3 bg-surface-1 p-4">
+    <div className="space-y-2">
       <Label htmlFor="voice-name">
-        이름<span className="text-danger ml-1">*</span>
+        이름<span className="ml-1 text-danger">*</span>
       </Label>
       <Input
         id="voice-name"

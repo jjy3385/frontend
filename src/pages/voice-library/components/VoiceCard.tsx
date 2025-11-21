@@ -203,7 +203,7 @@ export function VoiceCard({
                 }
               }}
               disabled={isAdding || isRemoving}
-              title={isInMyVoices ? '내 보이스에서 제거' : '내 보이스에 추가'}
+              title={isInMyVoices ? '내 목소리에서 제거' : '내 목소리에 추가'}
               className={cn(
                 'flex items-center gap-1 rounded-full px-1.5 py-1 transition-colors',
                 isInMyVoices

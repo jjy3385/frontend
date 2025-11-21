@@ -1,6 +1,6 @@
 import type { VoiceSample } from '@/entities/voice-sample/types'
 
-import { VoiceSpotlightCard } from '../components/VoiceSpotlightCard'
+import { VoiceHighlightChip } from '../components/VoiceHighlightChip'
 
 interface CharacterVoicesSectionProps {
   voices: VoiceSample[]
@@ -30,33 +30,25 @@ export function CharacterVoicesSection({
       {showTitle && (
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">캐릭터 목소리</h2>
-          {/* <button type="button" className="text-xs text-muted hover:text-foreground">
-            View all
-          </button> */}
         </div>
       )}
-      <ul className="space-y-1">
+      <div className="grid grid-cols-3 gap-3">
         {voices.map((sample) => (
-          <li
+          <VoiceHighlightChip
             key={sample.id}
-            className="grid grid-cols-[minmax(0,3fr)_minmax(0,2fr)_auto] items-center rounded-xl px-1 py-2 hover:bg-surface-1"
-          >
-            <VoiceSpotlightCard
-              sample={sample}
-              onAddToMyVoices={onAddToMyVoices ? () => onAddToMyVoices(sample) : undefined}
-              onRemoveFromMyVoices={
-                onRemoveFromMyVoices ? () => onRemoveFromMyVoices(sample) : undefined
-              }
-              isAdding={onAddToMyVoices ? addingToMyVoices.has(sample.id) : false}
-              isRemoving={onRemoveFromMyVoices ? removingFromMyVoices.has(sample.id) : false}
-              isInMyVoices={sample.isInMyVoices ?? false}
-              onPlay={onPlay}
-              isPlaying={playingSampleId === sample.id}
-              isTableRow
-            />
-          </li>
+            sample={sample}
+            onAddToMyVoices={onAddToMyVoices ? () => onAddToMyVoices(sample) : undefined}
+            onRemoveFromMyVoices={
+              onRemoveFromMyVoices ? () => onRemoveFromMyVoices(sample) : undefined
+            }
+            isAdding={onAddToMyVoices ? addingToMyVoices.has(sample.id) : false}
+            isRemoving={onRemoveFromMyVoices ? removingFromMyVoices.has(sample.id) : false}
+            isInMyVoices={sample.isInMyVoices ?? false}
+            onPlay={onPlay}
+            isPlaying={playingSampleId === sample.id}
+          />
         ))}
-      </ul>
+      </div>
     </section>
   )
 }

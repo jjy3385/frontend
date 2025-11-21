@@ -49,10 +49,8 @@ export function useUpdateVoiceSample() {
         name?: string
         description?: string
         country?: string
-        gender?: string
-        age?: string
-        accent?: string
         category?: string[]
+        tags?: string[]
       }
     }
   >({

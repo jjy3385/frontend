@@ -10,7 +10,7 @@ export function VoiceDescriptionField({
   disabled?: boolean
 }) {
   return (
-    <div className="space-y-2 rounded-xl border border-surface-3 bg-surface-1 p-4">
+    <div className="space-y-2">
       <Label htmlFor="voice-notes">설명</Label>
       <textarea
         id="voice-notes"

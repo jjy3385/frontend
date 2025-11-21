@@ -4,7 +4,6 @@ import { useQueryClient } from '@tanstack/react-query'
 import { HTTPError } from 'ky'
 import { Link } from 'react-router-dom'
 
-import { useAccents } from '@/features/accents/hooks/useAccents'
 import { useLanguage } from '@/features/languages/hooks/useLanguage'
 import { routes } from '@/shared/config/routes'
 import { env } from '@/shared/config/env'
@@ -14,19 +13,17 @@ import { Button } from '@/shared/ui/Button'
 import { Label } from '@/shared/ui/Label'
 
 import { useFinishUploadMutation, usePrepareUploadMutation } from '../hooks/useVoiceSampleStorage'
-import {
-  finalizeVoiceSampleAvatarUpload,
-  prepareVoiceSampleAvatarUpload,
-} from '../api/voiceSamplesApi'
+
+import { getPresetAvatarUrl } from './voiceSampleFieldUtils'
 
 import {
   VoiceAvatarUploader,
-  VoiceAttributesSection,
   VoiceCategorySelector,
   VoiceDescriptionField,
   VoiceNameField,
+  VoiceTagsField,
+  VoiceLanguageField,
 } from './index'
-
 
 type VoiceSampleFormProps = {
   initialFile?: File | null
@@ -43,14 +40,11 @@ export function VoiceSampleForm({
 }: VoiceSampleFormProps) {
   const [name, setName] = useState('')
   const [languageCode, setLanguageCode] = useState('ko')
-  const [gender, setGender] = useState('any')
-  const [age, setAge] = useState('any')
-  const [accent, setAccent] = useState('any')
-  const [labelFields, setLabelFields] = useState<Array<'accent' | 'gender' | 'age'>>([])
   const [categories, setCategories] = useState<string[]>([])
+  const [tags, setTags] = useState<string[]>([])
   const [audioFile, setAudioFile] = useState<File | null>(initialFile)
-  const [avatarFile, setAvatarFile] = useState<File | null>(null)
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
+  const [avatarPreset, setAvatarPreset] = useState<string | null>('default')
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(getPresetAvatarUrl('default') ?? null)
   const [notes, setNotes] = useState('')
   const [uploadProgress, setUploadProgress] = useState(0)
   const [uploadStage, setUploadStage] = useState<'idle' | 'preparing' | 'uploading' | 'finalizing'>(
@@ -62,11 +56,8 @@ export function VoiceSampleForm({
   const finishUploadMutation = useFinishUploadMutation()
   const queryClient = useQueryClient()
   const showToast = useUiStore((state) => state.showToast)
-  const { data: languageResponse, isLoading: languagesLoading } = useLanguage()
+  const { data: languageResponse } = useLanguage()
   const languageOptions = useMemo(() => languageResponse ?? [], [languageResponse])
-
-  const { data: accentResponse, isLoading: accentsLoading } = useAccents(languageCode)
-  const accentOptions = useMemo(() => accentResponse ?? [], [accentResponse])
 
   // EventSource를 ref로 관리하여 cleanup 가능하도록 함
   const eventSourceRef = useRef<EventSource | null>(null)
@@ -94,16 +85,12 @@ export function VoiceSampleForm({
   }, [initialFile])
 
   useEffect(() => {
-    if (!avatarFile) {
+    if (!avatarPreset) {
       setAvatarPreview(null)
       return
     }
-    const url = URL.createObjectURL(avatarFile)
-    setAvatarPreview(url)
-    return () => {
-      URL.revokeObjectURL(url)
-    }
-  }, [avatarFile])
+    setAvatarPreview(getPresetAvatarUrl(avatarPreset) ?? null)
+  }, [avatarPreset])
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -114,10 +101,6 @@ export function VoiceSampleForm({
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
     if (!name.trim() || !audioFile) return
-
-    const includeAccent = labelFields.includes('accent')
-    const includeGender = labelFields.includes('gender')
-    const includeAge = labelFields.includes('age')
 
     try {
       setUploadStage('preparing')
@@ -147,41 +130,11 @@ export function VoiceSampleForm({
         is_public: true,
         object_key,
         country: languageCode,
-        gender: includeGender && gender !== 'any' ? gender : undefined,
-        age: includeAge && age !== 'any' ? age : undefined,
-        accent: includeAccent && accent !== 'any' ? accent : undefined,
         category: categories.length > 0 ? categories : undefined,
         is_builtin: false,
+        tags: tags.length > 0 ? tags : undefined,
+        avatar_preset: avatarPreset ?? undefined,
       })
-
-      if (avatarFile && createdSample.id) {
-        try {
-          const {
-            upload_url,
-            fields,
-            object_key: avatarKey,
-          } = await prepareVoiceSampleAvatarUpload(createdSample.id, {
-            filename: avatarFile.name,
-            content_type: avatarFile.type || 'image/png',
-          })
-
-          await uploadFileWithProgress({
-            uploadUrl: upload_url,
-            fields,
-            file: avatarFile,
-            onProgress: () => {},
-          })
-
-          await finalizeVoiceSampleAvatarUpload(createdSample.id, { object_key: avatarKey })
-        } catch (error: unknown) {
-          console.error('Failed to upload avatar image', error)
-          showToast({
-            id: 'voice-sample-avatar-error',
-            title: '아바타 업로드 실패',
-            description: '이미지를 업로드하는 중 문제가 발생했습니다.',
-          })
-        }
-      }
 
       setUploadProgress(100)
       showToast({
@@ -302,13 +255,10 @@ export function VoiceSampleForm({
   const resetForm = () => {
     setName('')
     setLanguageCode('ko')
-    setGender('any')
-    setAge('any')
-    setAccent('any')
-    setLabelFields([])
     setCategories([])
-    setAvatarFile(null)
-    setAvatarPreview(null)
+    setTags([])
+    setAvatarPreset('default')
+    setAvatarPreview(getPresetAvatarUrl('default') ?? null)
     setUploadStage('idle')
     setUploadProgress(0)
     setNotes('')
@@ -325,10 +275,16 @@ export function VoiceSampleForm({
       className="space-y-6"
     >
       <VoiceNameField name={name} onChange={setName} disabled={isUploading} />
+      <VoiceLanguageField
+        value={languageCode}
+        onChange={setLanguageCode}
+        options={languageOptions}
+        disabled={isUploading}
+      />
 
       {!hideFileUpload ? (
         <div className="space-y-2">
-          <Label className="text-sm font-semibold text-foreground">음성 파일</Label>
+          <Label>음성 파일</Label>
           <div className="space-y-3">
             <Button
               type="button"
@@ -357,35 +313,15 @@ export function VoiceSampleForm({
         </div>
       ) : null}
 
-      <VoiceAttributesSection
-        languageCode={languageCode}
-        onLanguageChange={setLanguageCode}
-        languages={languageOptions}
-        languagesLoading={languagesLoading}
-        accent={accent}
-        onAccentChange={setAccent}
-        accentOptions={accentOptions}
-        accentsLoading={accentsLoading}
-        gender={gender}
-        onGenderChange={setGender}
-        age={age}
-        onAgeChange={setAge}
-        labelFields={labelFields}
-        onLabelFieldsChange={setLabelFields}
-        disabled={isUploading}
-      />
-
-      <VoiceCategorySelector
-        selected={categories}
-        onChange={setCategories}
-        disabled={isUploading}
-      />
+      <VoiceCategorySelector selected={categories} onChange={setCategories} disabled={isUploading} />
+      <VoiceTagsField tags={tags} onChange={setTags} disabled={isUploading} />
 
       <VoiceAvatarUploader
         avatarPreview={avatarPreview}
-        onFileChange={(file) => setAvatarFile(file)}
+        selectedPreset={avatarPreset}
+        onPresetChange={setAvatarPreset}
         disabled={isUploading}
-        helperText="512x512 이하 PNG/JPG 권장, 미선택 시 기본 이미지가 사용됩니다."
+        helperText="기본 아바타 중 하나를 선택하세요."
       />
 
       <VoiceDescriptionField value={notes} onChange={setNotes} disabled={isUploading} />

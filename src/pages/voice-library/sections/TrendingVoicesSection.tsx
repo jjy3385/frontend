@@ -1,6 +1,6 @@
 import type { VoiceSample } from '@/entities/voice-sample/types'
 
-import { TrendingVoiceChip } from '../components/TrendingVoiceChip'
+import { VoiceHighlightChip } from '../components/VoiceHighlightChip'
 
 interface TrendingVoicesSectionProps {
   voices: VoiceSample[]
@@ -39,7 +39,7 @@ export function TrendingVoicesSection({
       </div>
       <div className="grid grid-cols-3 gap-3">
         {voices.slice(0, 6).map((sample) => (
-          <TrendingVoiceChip
+          <VoiceHighlightChip
             key={sample.id}
             sample={sample}
             onPlay={onPlay}
