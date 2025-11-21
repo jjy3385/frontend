@@ -1,10 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react'
 
-import { useQueryClient } from '@tanstack/react-query'
-
-import type { ProjectSummary } from '@/entities/project/types'
 import { env } from '@/shared/config/env'
-import { queryKeys } from '@/shared/config/queryKeys'
 import { useNotificationStore } from '@/shared/store/useNotificationStore'
 import { useUiStore } from '@/shared/store/useUiStore'
 
@@ -65,7 +61,6 @@ export function useProjectProgressListener({
   const reconnectAttemptsRef = useRef(0)
   const connectRef = useRef<() => void>()
 
-  const queryClient = useQueryClient()
   const showToast = useUiStore((state) => state.showToast)
   const addNotification = useNotificationStore((state) => state.addNotification)
   const {
