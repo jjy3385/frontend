@@ -49,6 +49,9 @@ function transformVoiceSample(apiSample: VoiceSampleApiResponse): VoiceSample {
     age: apiSample.age ?? undefined,
     accent: apiSample.accent ?? undefined,
     tags: apiSample.tags ?? undefined,
+    licenseCode: (apiSample as unknown as { license_code?: string }).license_code ?? undefined,
+    canCommercialUse: (apiSample as unknown as { can_commercial_use?: boolean }).can_commercial_use ?? undefined,
+    isDeletable: (apiSample as unknown as { is_deletable?: boolean }).is_deletable ?? undefined,
   }
 }
 
@@ -138,6 +141,8 @@ export interface FinishUploadPayload {
   is_builtin?: boolean
   tags?: string[]
   avatar_preset?: string
+  license_code?: string
+  can_commercial_use?: boolean
 }
 
 export async function finishVoiceSampleUpload(payload: FinishUploadPayload): Promise<VoiceSample> {
@@ -234,6 +239,9 @@ export async function updateVoiceSample(
     category?: string[]
     tags?: string[]
     avatar_preset?: string
+    license_code?: string
+    can_commercial_use?: boolean
+    is_public?: boolean
   },
 ): Promise<VoiceSample> {
   const response = await apiClient
@@ -245,6 +253,9 @@ export async function updateVoiceSample(
         category: payload.category,
         tags: payload.tags,
         avatar_preset: payload.avatar_preset,
+        license_code: payload.license_code,
+        can_commercial_use: payload.can_commercial_use,
+        is_public: payload.is_public,
       },
     })
     .json<VoiceSampleApiResponse>()

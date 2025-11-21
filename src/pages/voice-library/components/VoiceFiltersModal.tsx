@@ -74,6 +74,7 @@ export function VoiceFiltersModal({
       languages: undefined,
       category: undefined,
       tags: undefined,
+      commercialOnly: undefined,
     }
     setLocalFilters(resetFilters)
     setLanguageCode('')
@@ -243,6 +244,32 @@ export function VoiceFiltersModal({
                 })
               )}
             </div>
+          </div>
+          {/* Commercial use */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">상업적 사용</label>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                className={cn(
+                  'rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors',
+                  localFilters.commercialOnly
+                    ? 'border-primary bg-primary/10 text-primary'
+                    : 'border-surface-3 bg-surface-1 text-muted hover:bg-surface-2',
+                )}
+                onClick={() =>
+                  setLocalFilters((prev) => ({
+                    ...prev,
+                    commercialOnly: prev.commercialOnly ? undefined : true,
+                  }))
+                }
+              >
+                상업 사용 가능한 음성만 보기
+              </button>
+            </div>
+            <p className="text-xs text-muted">
+              YouTube 등 배포를 고려하면 상업 사용 가능 음성만 선택하는 것을 권장합니다.
+            </p>
           </div>
         </div>
 
