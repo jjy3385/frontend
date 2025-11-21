@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { RotateCcw, RotateCw, Download, ChevronDown, Pause, Play } from 'lucide-react'
 
@@ -37,27 +37,14 @@ export function VoicePlayerBar({
   onClose,
 }: VoicePlayerBarProps) {
   const [isClosing, setIsClosing] = useState(false)
-  const [resolvedAvatar, setResolvedAvatar] = useState<string | null>(null)
-
-  useEffect(() => {
-    let active = true
-    const resolveAvatar = async () => {
-      const presetUrl = getPresetAvatarUrl(sample.avatarPreset || 'default')
-      if (active) {
-        if (presetUrl) {
-          setResolvedAvatar(presetUrl)
-        } else if (sample.avatarImageUrl && sample.avatarImageUrl.startsWith('http')) {
-          setResolvedAvatar(sample.avatarImageUrl)
-        } else {
-          setResolvedAvatar(DEFAULT_AVATAR)
-        }
-      }
+  const resolvedAvatar = useMemo(() => {
+    const presetUrl = getPresetAvatarUrl(sample.avatarPreset ?? 'default')
+    if (presetUrl) return presetUrl
+    if (typeof sample.avatarImageUrl === 'string' && sample.avatarImageUrl.startsWith('http')) {
+      return sample.avatarImageUrl
     }
-    resolveAvatar()
-    return () => {
-      active = false
-    }
-  }, [sample])
+    return DEFAULT_AVATAR
+  }, [sample.avatarImageUrl, sample.avatarPreset])
 
   useEffect(() => {
     if (!sample) return

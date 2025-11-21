@@ -1,25 +1,24 @@
 import { useEffect, useMemo, useState } from 'react'
 
-import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 
 import type { VoiceSample } from '@/entities/voice-sample/types'
-import { fetchVoiceSample, updateVoiceSample } from '@/features/voice-samples/api/voiceSamplesApi'
-import { useLanguage } from '@/features/languages/hooks/useLanguage'
-import { queryKeys } from '@/shared/config/queryKeys'
-import { routes } from '@/shared/config/routes'
 import {
   VoiceAvatarUploader,
   VoiceCategorySelector,
   VoiceDescriptionField,
+  VoiceLanguageField,
   VoiceNameField,
   VoiceTagsField,
-  VoiceLanguageField,
 } from '@/features/voice-samples/components'
+import { fetchVoiceSample, updateVoiceSample } from '@/features/voice-samples/api/voiceSamplesApi'
+import { useLanguage } from '@/features/languages/hooks/useLanguage'
 import { getPresetAvatarUrl } from '@/features/voice-samples/components/voiceSampleFieldUtils'
 import { VoiceCloningLayout } from '@/pages/voice-cloning/components/VoiceCloningLayout'
+import { queryKeys } from '@/shared/config/queryKeys'
+import { routes } from '@/shared/config/routes'
 import { Button } from '@/shared/ui/Button'
-import { Link } from 'react-router-dom'
 
 export default function VoiceSampleEditPage() {
   const { id } = useParams<{ id: string }>()

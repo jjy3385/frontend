@@ -13,6 +13,7 @@ import {
   useRemoveFromMyVoices,
 } from '@/features/voice-samples/hooks/useVoiceSamples'
 import { useLanguage } from '@/features/languages/hooks/useLanguage'
+import { VOICE_CATEGORY_MAP } from '@/shared/constants/voiceCategories'
 import { env } from '@/shared/config/env'
 import { routes } from '@/shared/config/routes'
 import { Button } from '@/shared/ui/Button'
@@ -22,11 +23,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/shared/ui/Dropdown'
-import { VOICE_CATEGORY_MAP } from '@/shared/constants/voiceCategories'
+
 import { VoicePlayerBar } from './components/VoicePlayerBar'
 import { VoiceSearchBar } from './components/VoiceSearchBar'
 import type { VoiceFilters } from './hooks/useVoiceLibraryFilters'
-
 import { VoiceFiltersModal } from './components/VoiceFiltersModal'
 import { VoiceLibraryTabs } from './components/VoiceLibraryTabs'
 import { FilterChipsBar } from './components/FilterChipsBar'
@@ -88,12 +88,9 @@ export default function VoiceLibraryPage() {
       })),
     [languageResponse],
   )
-  const { filters, setFilters, resetFilters, chips } = useVoiceLibraryFilters(
-    {
-      gender: 'any',
-    },
-    { languages: languageOptions },
-  )
+  const { filters, setFilters, resetFilters, chips } = useVoiceLibraryFilters(undefined, {
+    languages: languageOptions,
+  })
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const selectedCategoryLabel = useMemo(() => {
     if (!selectedCategory) return null
@@ -370,7 +367,7 @@ export default function VoiceLibraryPage() {
       default:
         return sorted
     }
-  }, [filteredSamples, sort])
+  }, [filteredSamples, sort, filters.tags])
 
   useEffect(() => {
     const pendingSamples = sortedSamples.filter(

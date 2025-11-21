@@ -6,6 +6,7 @@ import type {
   VoiceSamplesResponse,
 } from '@/entities/voice-sample/types'
 import { apiClient, apiGet, apiPost } from '@/shared/api/client'
+
 import { getPresetAvatarUrl } from '../components/voiceSampleFieldUtils'
 
 // 백엔드 응답을 프론트엔드 타입으로 변환
@@ -44,7 +45,6 @@ function transformVoiceSample(apiSample: VoiceSampleApiResponse): VoiceSample {
     gender: (apiSample.gender as 'male' | 'female' | 'neutral') ?? undefined,
     avatarImageUrl: presetUrl ?? apiSample.avatar_image_url ?? undefined,
     avatarImagePath: apiSample.avatar_image_path ?? apiSample.avatar_image_url ?? undefined,
-    avatarPreset,
     avatarPreset,
     age: apiSample.age ?? undefined,
     accent: apiSample.accent ?? undefined,
