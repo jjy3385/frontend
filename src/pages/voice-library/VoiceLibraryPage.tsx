@@ -305,6 +305,7 @@ export default function VoiceLibraryPage() {
   const normalizedSearch = useMemo(() => search.trim().toLowerCase(), [search])
   const hasFilters = useMemo(() => {
     return Boolean(
+
       (filters.languages && filters.languages.length > 0) ||
         (filters.category && filters.category.length > 0) ||
         (filters.tags && filters.tags.length > 0) ||
@@ -346,6 +347,7 @@ export default function VoiceLibraryPage() {
             (filters.tags ?? []).every((tag) => sample.tags?.includes(tag)),
           )
         : filteredSamples
+
     const commercialFiltered =
       filters.commercialOnly === true
         ? tagFiltered.filter((sample) => sample.canCommercialUse !== false)
@@ -372,6 +374,7 @@ export default function VoiceLibraryPage() {
       default:
         return sorted
     }
+
   }, [filteredSamples, sort, filters.tags, filters.commercialOnly])
 
   useEffect(() => {
