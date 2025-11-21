@@ -24,18 +24,12 @@ export function VoiceAvatarUploader({
     { id: 'female', src: '/avatars/default-avatar-female.png', label: '기본 3' },
   ]
 
-  const handlePresetSelect = async (presetId: string, src: string) => {
+  const handlePresetSelect = (presetId: string) => {
     if (disabled) return
     setIsPresetLoading(true)
     setSelectedPreset(presetId)
-    try {
-      onPresetChange(presetId)
-    } catch (error) {
-      console.error('Failed to load preset avatar', error)
-      setSelectedPreset(null)
-    } finally {
-      setIsPresetLoading(false)
-    }
+    onPresetChange(presetId)
+    setIsPresetLoading(false)
   }
 
   return (
@@ -50,7 +44,7 @@ export function VoiceAvatarUploader({
                 key={preset.id}
                 type="button"
                 onClick={() => {
-                  void handlePresetSelect(preset.id, preset.src)
+                  handlePresetSelect(preset.id)
                 }}
                 disabled={disabled || isPresetLoading}
                 className={`relative rounded-full border p-1 transition ${
