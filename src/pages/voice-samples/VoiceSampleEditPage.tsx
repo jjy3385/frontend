@@ -4,25 +4,22 @@ import { useNavigate, useParams, useLocation } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 
 import type { VoiceSample } from '@/entities/voice-sample/types'
-import {
-  fetchVoiceSample,
-  prepareVoiceSampleAvatarUpload,
-  finalizeVoiceSampleAvatarUpload,
-  updateVoiceSample,
-} from '@/features/voice-samples/api/voiceSamplesApi'
-import { useAccents } from '@/features/accents/hooks/useAccents'
+import { fetchVoiceSample, updateVoiceSample } from '@/features/voice-samples/api/voiceSamplesApi'
 import { useLanguage } from '@/features/languages/hooks/useLanguage'
 import { queryKeys } from '@/shared/config/queryKeys'
 import { routes } from '@/shared/config/routes'
-import { VoiceCloningLayout } from '@/pages/voice-cloning/components/VoiceCloningLayout'
 import {
   VoiceAvatarUploader,
-  VoiceAttributesSection,
   VoiceCategorySelector,
   VoiceDescriptionField,
   VoiceNameField,
+  VoiceTagsField,
+  VoiceLanguageField,
 } from '@/features/voice-samples/components'
+import { getPresetAvatarUrl } from '@/features/voice-samples/components/voiceSampleFieldUtils'
+import { VoiceCloningLayout } from '@/pages/voice-cloning/components/VoiceCloningLayout'
 import { Button } from '@/shared/ui/Button'
+import { Link } from 'react-router-dom'
 
 export default function VoiceSampleEditPage() {
   const { id } = useParams<{ id: string }>()
@@ -46,93 +43,39 @@ export default function VoiceSampleEditPage() {
   const [name, setName] = useState('')
   const [notes, setNotes] = useState('')
   const [languageCode, setLanguageCode] = useState('ko')
-  const [gender, setGender] = useState('any')
-  const [age, setAge] = useState('any')
-  const [accent, setAccent] = useState('any')
-  const [labelFields, setLabelFields] = useState<Array<'accent' | 'gender' | 'age'>>([])
   const [categories, setCategories] = useState<string[]>([])
-  const [avatarFile, setAvatarFile] = useState<File | null>(null)
+  const [tags, setTags] = useState<string[]>([])
+  const [avatarPreset, setAvatarPreset] = useState<string | null>(null)
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const { data: languageResponse, isLoading: languagesLoading } = useLanguage()
+  const { data: languageResponse } = useLanguage()
   const languageOptions = useMemo(() => languageResponse ?? [], [languageResponse])
-
-  const { data: accentResponse, isLoading: accentsLoading } = useAccents(languageCode)
-  const accentOptions = useMemo(() => accentResponse ?? [], [accentResponse])
 
   useEffect(() => {
     if (!sample) return
-    const normalizeOptional = (value?: string | null) => {
-      if (!value) return 'any'
-      const trimmed = value.trim()
-      return trimmed.length === 0 ? 'any' : trimmed
-    }
-    const normalizedAccent = normalizeOptional(sample.accent)
-    const normalizedGender = normalizeOptional(sample.gender)
-    const normalizedAge = normalizeOptional(sample.age)
-
     setName(sample.name ?? '')
     setNotes(sample.description ?? '')
     setLanguageCode(sample.country ?? 'ko')
-    setGender(normalizedGender)
-    setAge(normalizedAge)
-    setAccent(normalizedAccent)
     setCategories(sample.category ?? [])
-    setAvatarPreview(sample.avatarImageUrl ?? null)
-    const initialFields: Array<'accent' | 'gender' | 'age'> = []
-    if (normalizedAccent !== 'any') initialFields.push('accent')
-    if (normalizedGender !== 'any') initialFields.push('gender')
-    if (normalizedAge !== 'any') initialFields.push('age')
-    setLabelFields(initialFields)
+    setTags(sample.tags ?? [])
+    setAvatarPreset(sample.avatarPreset ?? null)
+    setAvatarPreview(getPresetAvatarUrl(sample.avatarPreset) ?? sample.avatarImageUrl ?? null)
   }, [sample])
-
-  useEffect(() => {
-    if (!avatarFile) return
-    const url = URL.createObjectURL(avatarFile)
-    setAvatarPreview(url)
-    return () => {
-      URL.revokeObjectURL(url)
-    }
-  }, [avatarFile])
-
-  const handleAvatarUpload = async (sampleId: string) => {
-    if (!avatarFile) return
-    const { upload_url, fields, object_key } = await prepareVoiceSampleAvatarUpload(sampleId, {
-      filename: avatarFile.name,
-      content_type: avatarFile.type || 'image/png',
-    })
-    const formData = new FormData()
-    Object.entries(fields).forEach(([key, value]) => formData.append(key, value))
-    formData.append('file', avatarFile)
-    await fetch(upload_url, {
-      method: 'POST',
-      body: formData,
-      credentials: 'omit',
-    })
-    await finalizeVoiceSampleAvatarUpload(sampleId, { object_key })
-  }
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault()
     if (!id || !name.trim()) return
     try {
       setIsSubmitting(true)
-      const includeAccent = labelFields.includes('accent')
-      const includeGender = labelFields.includes('gender')
-      const includeAge = labelFields.includes('age')
       await updateVoiceSample(id, {
         name: name.trim(),
         description: notes.trim() || undefined,
         country: languageCode,
-        gender: includeGender && gender !== 'any' ? gender : undefined,
-        age: includeAge && age !== 'any' ? age : undefined,
-        accent: includeAccent && accent !== 'any' ? accent : undefined,
         category: categories.length > 0 ? categories : undefined,
+        tags: tags.length > 0 ? tags : undefined,
+        avatar_preset: avatarPreset ?? undefined,
       })
-      if (avatarFile) {
-        await handleAvatarUpload(id)
-      }
       void queryClient.invalidateQueries({ queryKey: ['voice-library'], exact: false })
       queryClient.setQueryData(queryKeys.voiceSamples.detail(id), (prev: VoiceSample | undefined) =>
         prev
@@ -141,16 +84,16 @@ export default function VoiceSampleEditPage() {
               name,
               description: notes,
               country: languageCode,
-              gender: gender === 'any' ? undefined : gender,
-              age: age === 'any' ? undefined : age,
-              accent: accent === 'any' ? undefined : accent,
               category: categories.length > 0 ? categories : undefined,
+              tags: tags.length > 0 ? tags : undefined,
+              avatarPreset: avatarPreset ?? undefined,
+              avatarImageUrl: getPresetAvatarUrl(avatarPreset) ?? prev.avatarImageUrl,
             }
           : prev,
       )
       navigate(routes.voiceLibrary)
     } catch (error) {
-      console.error('보이스 샘플 수정 실패:', error)
+      console.error('음성 샘플 수정 실패:', error)
     } finally {
       setIsSubmitting(false)
     }
@@ -159,7 +102,7 @@ export default function VoiceSampleEditPage() {
   if (isLoading) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center text-sm text-muted">
-        보이스 정보를 불러오는 중...
+        음성 정보를 불러오는 중...
       </div>
     )
   }
@@ -167,7 +110,7 @@ export default function VoiceSampleEditPage() {
   if (!sample) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center text-sm text-muted">
-        보이스 정보를 찾을 수 없습니다.
+        음성 정보를 찾을 수 없습니다.
       </div>
     )
   }
@@ -175,54 +118,75 @@ export default function VoiceSampleEditPage() {
   return (
     <VoiceCloningLayout
       title="Voice Sample"
-      subtitle="보이스 샘플 수정"
-      description="보이스 등록 폼과 동일한 레이아웃으로 모든 필드를 수정할 수 있습니다."
+      subtitle="음성 샘플 수정"
+      description="음성 등록 폼과 동일한 레이아웃으로 모든 필드를 수정할 수 있습니다."
+      step="details"
     >
-      <form
-        onSubmit={(e) => {
-          void handleSubmit(e)
-        }}
-        className="space-y-6 bg-white p-6"
-      >
-        <VoiceNameField name={name} onChange={setName} disabled={isSubmitting} />
-
-        <VoiceAttributesSection
-          languageCode={languageCode}
-          onLanguageChange={setLanguageCode}
-          languages={languageOptions}
-          languagesLoading={languagesLoading}
-          accent={accent}
-          onAccentChange={setAccent}
-          accentOptions={accentOptions}
-          accentsLoading={accentsLoading}
-          gender={gender}
-          onGenderChange={setGender}
-          age={age}
-          onAgeChange={setAge}
-          labelFields={labelFields}
-          onLabelFieldsChange={setLabelFields}
-          disabled={isSubmitting}
-        />
-
-        <VoiceCategorySelector selected={categories} onChange={setCategories} disabled={isSubmitting} />
-
-        <VoiceAvatarUploader
-          avatarPreview={avatarPreview}
-          onFileChange={(file) => setAvatarFile(file)}
-          disabled={isSubmitting}
-          helperText="512x512 이하 PNG/JPG 권장, 미선택 시 기존 또는 기본 이미지가 사용됩니다."
-        />
-
-        <VoiceDescriptionField value={notes} onChange={setNotes} disabled={isSubmitting} />
-        <div className="flex justify-end gap-3 pt-4">
-          <Button type="button" variant="outline" onClick={() => navigate(-1)} disabled={isSubmitting}>
-            취소
-          </Button>
-          <Button type="submit" variant="primary" disabled={!name.trim() || isSubmitting}>
-            {isSubmitting ? '수정 중...' : '수정하기'}
+      <div className="p-8 sm:p-12">
+        <div className="mb-6 flex items-center justify-between">
+          <h2 className="text-2xl font-semibold">세부 정보 입력</h2>
+          <Button type="button" variant="ghost" onClick={() => navigate(-1)} disabled={isSubmitting}>
+            뒤로
           </Button>
         </div>
-      </form>
+        <form
+          onSubmit={(e) => {
+            void handleSubmit(e)
+          }}
+          className="space-y-6"
+        >
+          <VoiceNameField name={name} onChange={setName} disabled={isSubmitting} />
+          <VoiceLanguageField
+            value={languageCode}
+            onChange={setLanguageCode}
+            options={languageOptions}
+            disabled={isSubmitting}
+          />
+
+          <VoiceCategorySelector selected={categories} onChange={setCategories} disabled={isSubmitting} />
+          <VoiceTagsField tags={tags} onChange={setTags} disabled={isSubmitting} />
+
+          <VoiceAvatarUploader
+            avatarPreview={avatarPreview}
+            onPresetChange={(preset) => {
+              setAvatarPreset(preset)
+              setAvatarPreview(getPresetAvatarUrl(preset) ?? null)
+            }}
+            disabled={isSubmitting}
+            helperText="512x512 이하 PNG/JPG 권장, 미선택 시 기존 또는 기본 이미지가 사용됩니다."
+          />
+
+          <VoiceDescriptionField value={notes} onChange={setNotes} disabled={isSubmitting} />
+          <div className="flex items-start gap-3">
+            <input
+              type="checkbox"
+              className="mt-1 h-5 w-5 rounded border-surface-4 text-primary focus:ring-accent"
+              defaultChecked
+              readOnly
+            />
+            <div className="space-y-1 text-sm leading-relaxed text-muted">
+              <p>
+                음성 파일을 업로드함으로써 필요한 권리와 동의를 모두 확보했으며, 생성된 콘텐츠를 불법적이거나
+                부정한 목적으로 사용하지 않겠다는 점에 동의합니다. 실제 서비스와 동일한 수준의 정책을 참고용으로
+                제공합니다.
+              </p>
+              <div className="flex flex-wrap gap-3 text-primary underline underline-offset-4">
+                <Link to={routes.termsOfService}>이용약관</Link>
+                <Link to={routes.prohibitedPolicy}>금지 콘텐츠 및 사용 정책</Link>
+                <Link to={routes.privacyPolicy}>개인정보 처리방침</Link>
+              </div>
+            </div>
+          </div>
+          <div className="flex justify-end gap-3 pt-4">
+            <Button type="button" variant="outline" onClick={() => navigate(-1)} disabled={isSubmitting}>
+              취소
+            </Button>
+            <Button type="submit" variant="primary" disabled={!name.trim() || isSubmitting}>
+              {isSubmitting ? '수정 중...' : '수정하기'}
+            </Button>
+          </div>
+        </form>
+      </div>
     </VoiceCloningLayout>
   )
 }

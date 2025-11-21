@@ -22,7 +22,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/shared/ui/Dropdown'
-import { Input } from '@/shared/ui/Input'
+import { VOICE_CATEGORY_MAP } from '@/shared/constants/voiceCategories'
+import { VoicePlayerBar } from './components/VoicePlayerBar'
+import { VoiceSearchBar } from './components/VoiceSearchBar'
 
 import { VoiceFiltersModal } from './components/VoiceFiltersModal'
 import { VoiceLibraryTabs } from './components/VoiceLibraryTabs'
@@ -65,6 +67,10 @@ export default function VoiceLibraryPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const [playingSampleId, setPlayingSampleId] = useState<string | null>(null)
+  const [playerSample, setPlayerSample] = useState<VoiceSample | null>(null)
+  const [playerDuration, setPlayerDuration] = useState(0)
+  const [playerCurrentTime, setPlayerCurrentTime] = useState(0)
+  const [playerLoading, setPlayerLoading] = useState(false)
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const deleteVoiceSample = useDeleteVoiceSample()
@@ -88,6 +94,10 @@ export default function VoiceLibraryPage() {
     { languages: languageOptions },
   )
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const selectedCategoryLabel = useMemo(() => {
+    if (!selectedCategory) return null
+    return VOICE_CATEGORY_MAP[selectedCategory as keyof typeof VOICE_CATEGORY_MAP] ?? selectedCategory
+  }, [selectedCategory])
 
   const queryKey = useMemo(
     () => ['voice-library', tab, search, filters] as const,
@@ -135,12 +145,22 @@ export default function VoiceLibraryPage() {
     audio.src = ''
     audio.load()
     audioRef.current = null
+    setPlayerDuration(0)
+    setPlayerCurrentTime(0)
+    setPlayerLoading(false)
   }, [])
 
   const stopPlayback = useCallback(() => {
     cleanupAudio()
     setPlayingSampleId(null)
   }, [cleanupAudio])
+
+  const pausePlayback = useCallback(() => {
+    const audio = audioRef.current
+    if (!audio) return
+    audio.pause()
+    setPlayingSampleId(null)
+  }, [])
 
   useEffect(() => {
     const sources = processingSourcesRef.current
@@ -154,22 +174,15 @@ export default function VoiceLibraryPage() {
   }, [stopPlayback])
 
   const resolveSampleAudioUrl = useCallback(async (sample: VoiceSample) => {
+    if (!sample.audio_sample_url) return undefined
     const storageSegment = '/storage/media/'
-    if (sample.audio_sample_url) {
-      if (sample.audio_sample_url.includes(storageSegment)) {
-        const path = sample.audio_sample_url.split(storageSegment).pop()
-        if (path) {
-          return getPresignedUrl(path)
-        }
-      } else {
-        return sample.audio_sample_url
+    if (sample.audio_sample_url.includes(storageSegment)) {
+      const path = sample.audio_sample_url.split(storageSegment).pop()
+      if (path) {
+        return getPresignedUrl(path)
       }
-    }
-    if (sample.file_path_wav) {
-      return getPresignedUrl(sample.file_path_wav)
-    }
-    if (sample.previewUrl) {
-      return sample.previewUrl
+    } else {
+      return sample.audio_sample_url
     }
     return undefined
   }, [])
@@ -180,8 +193,10 @@ export default function VoiceLibraryPage() {
         const sampleId = sample.id
         if (!sampleId) return
 
+        setPlayerSample(sample)
+
         if (playingSampleId === sampleId) {
-          stopPlayback()
+          pausePlayback()
           return
         }
 
@@ -189,26 +204,82 @@ export default function VoiceLibraryPage() {
 
         const audioUrl = await resolveSampleAudioUrl(sample)
         if (!audioUrl) {
+          setPlayerLoading(true)
           console.warn('재생 가능한 오디오 URL을 찾지 못했습니다.', sample)
           return
         }
+        setPlayerLoading(false)
 
         const audio = new Audio(audioUrl)
         audioRef.current = audio
+        setPlayerSample(sample)
         setPlayingSampleId(sampleId)
+        audio.addEventListener('loadedmetadata', () => {
+          setPlayerDuration(audio.duration)
+        })
+        audio.addEventListener('timeupdate', () => {
+          setPlayerCurrentTime(audio.currentTime)
+        })
 
         audio.addEventListener('ended', () => {
           stopPlayback()
         })
 
-        audio.play().catch((error) => {
-          console.error('음성 재생 실패:', error)
-          stopPlayback()
-        })
+        audio.play()
+          .then(() => {
+            setPlayerSample(sample)
+            setPlayerLoading(false)
+          })
+          .catch((error) => {
+            console.error('음성 재생 실패:', error)
+            stopPlayback()
+          })
       })()
     },
-    [playingSampleId, resolveSampleAudioUrl, stopPlayback],
+    [pausePlayback, playingSampleId, resolveSampleAudioUrl, stopPlayback],
   )
+
+  const handleSeekPlayer = useCallback((value: number) => {
+    const audio = audioRef.current
+    if (!audio) return
+    audio.currentTime = value
+    setPlayerCurrentTime(value)
+  }, [])
+
+  const handleSkipPlayer = useCallback(
+    (amount: number) => {
+      const audio = audioRef.current
+      if (!audio) return
+      const next = Math.max(
+        0,
+        Math.min(audio.currentTime + amount, playerDuration || audio.duration || 0),
+      )
+      audio.currentTime = next
+      setPlayerCurrentTime(next)
+    },
+    [playerDuration],
+  )
+
+  const togglePlayerPlayPause = useCallback(() => {
+    if (!playerSample) return
+    if (playingSampleId === playerSample.id) {
+      pausePlayback()
+      return
+    }
+    if (audioRef.current && audioRef.current.src) {
+      void audioRef.current
+        .play()
+        .then(() => setPlayingSampleId(playerSample.id))
+        .catch((error) => console.error('음성 재생 실패:', error))
+      return
+    }
+    handlePlaySample(playerSample)
+  }, [handlePlaySample, pausePlayback, playerSample, playingSampleId])
+
+  const handleClosePlayer = useCallback(() => {
+    stopPlayback()
+    setPlayerSample(null)
+  }, [stopPlayback])
 
   const handleEditSample = useCallback(
     (sample: VoiceSample) => {
@@ -221,7 +292,7 @@ export default function VoiceLibraryPage() {
   const handleDeleteSample = useCallback(
     (sample: VoiceSample) => {
       if (!sample.id) return
-      if (!window.confirm(`"${sample.name}" 보이스를 삭제하시겠습니까?`)) return
+      if (!window.confirm(`"${sample.name}" 목소리를 삭제하시겠습니까?`)) return
       setDeletingId(sample.id)
       deleteVoiceSample.mutate(sample.id, {
         onSuccess: () => {
@@ -235,9 +306,34 @@ export default function VoiceLibraryPage() {
     [deleteVoiceSample, queryClient],
   )
 
+  const normalizedSearch = useMemo(() => search.trim().toLowerCase(), [search])
+  const hasFilters = useMemo(() => {
+    return Boolean(
+      (filters.gender && filters.gender !== 'any') ||
+        (filters.age && filters.age !== 'any') ||
+        (filters.accent && filters.accent !== 'any') ||
+        (filters.languages && filters.languages.length > 0) ||
+        (filters.category && filters.category.length > 0),
+    )
+  }, [filters])
+
   const samples = voiceQuery.data?.samples ?? EMPTY_SAMPLES
+  const filteredSamples = useMemo(() => {
+    if (!normalizedSearch) return samples
+    return samples.filter((sample) => {
+      const name = sample.name?.toLowerCase() ?? ''
+      const desc = sample.description?.toLowerCase() ?? ''
+      const tagsText = sample.tags?.join(' ').toLowerCase() ?? ''
+      return (
+        name.includes(normalizedSearch) ||
+        desc.includes(normalizedSearch) ||
+        tagsText.includes(normalizedSearch)
+      )
+    })
+  }, [samples, normalizedSearch])
+
   const sortedSamples = useMemo(() => {
-    const sorted = [...samples]
+    const sorted = [...filteredSamples]
     switch (sort) {
       case 'trending':
       case 'added-desc':
@@ -259,7 +355,7 @@ export default function VoiceLibraryPage() {
       default:
         return sorted
     }
-  }, [samples, sort])
+  }, [filteredSamples, sort])
 
   useEffect(() => {
     const pendingSamples = sortedSamples.filter(
@@ -322,14 +418,20 @@ export default function VoiceLibraryPage() {
       sources.clear()
     }
   }, [queryClient, sortedSamples])
-  // Trending voices (인기 보이스) - 추가 횟수 순으로 정렬된 상위 6개
+  // Trending voices (인기 보이스) - 추가 횟수 기준으로 실제 인기 보이스만 노출
   const trendingVoices = useMemo(() => {
-    return [...sortedSamples].sort((a, b) => (b.addedCount ?? 0) - (a.addedCount ?? 0)).slice(0, 6)
+    return [...sortedSamples]
+      .filter((sample) => (sample.addedCount ?? 0) > 0)
+      .sort((a, b) => (b.addedCount ?? 0) - (a.addedCount ?? 0))
+      .slice(0, 6)
   }, [sortedSamples])
 
-  // Character voices (캐릭터 보이스) - 설명이 있는 보이스들
+  // Character voices (캐릭터 보이스) - 캐릭터 카테고리로 명확히 필터링
   const characterVoices = useMemo(() => {
-    return sortedSamples.filter((sample) => sample.description).slice(0, 6)
+    return sortedSamples
+      .filter((sample) => sample.category?.includes('character'))
+      .sort((a, b) => (b.addedCount ?? 0) - (a.addedCount ?? 0))
+      .slice(0, 6)
   }, [sortedSamples])
 
   // Add to my voices 핸들러
@@ -371,7 +473,8 @@ export default function VoiceLibraryPage() {
   )
 
   return (
-    <div className="mx-auto max-w-7xl space-y-8 px-6 py-6">
+    <>
+      <div className="mx-auto max-w-7xl space-y-8 px-6 py-6 pb-28">
       {/* 상단 네비게이션 */}
       <div className="flex items-center justify-between gap-4">
         <VoiceLibraryTabs activeTab={tab} onChange={setTab} />
@@ -384,15 +487,7 @@ export default function VoiceLibraryPage() {
 
       {/* 검색 및 필터 */}
       <div className="flex items-center gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search library voices..."
-            className="h-10 rounded-full border-surface-3 bg-surface-1 py-2.5 pl-9 pr-3 text-sm shadow-sm focus:border-primary focus:ring-2 focus:ring-primary/20"
-          />
-        </div>
+        <VoiceSearchBar value={search} onChange={setSearch} />
         <div className="flex items-center gap-2 text-xs">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -472,7 +567,11 @@ export default function VoiceLibraryPage() {
       />
 
       {/* Trending voices 섹션 */}
-      {tab === 'library' && trendingVoices.length > 0 && !search.trim() && !selectedCategory && (
+      {tab === 'library' &&
+        trendingVoices.length > 0 &&
+        !search.trim() &&
+        !hasFilters &&
+        !selectedCategory && (
         <TrendingVoicesSection
           voices={trendingVoices}
           onPlay={handlePlaySample}
@@ -490,7 +589,7 @@ export default function VoiceLibraryPage() {
       )}
 
       {/* Handpicked for your use case 캐러셀 */}
-      {tab === 'library' && !search.trim() && !selectedCategory && (
+      {tab === 'library' && !search.trim() && !hasFilters && !selectedCategory && (
         <UseCaseCarouselSection
           onCategoryClick={(category) => {
             setSelectedCategory(category)
@@ -514,7 +613,7 @@ export default function VoiceLibraryPage() {
               >
                 ← Back
               </button>
-              <h2 className="text-lg font-semibold">{selectedCategory}</h2>
+              <h2 className="text-lg font-semibold">{selectedCategoryLabel}</h2>
             </div>
           </div>
           <VoiceListSection
@@ -536,7 +635,11 @@ export default function VoiceLibraryPage() {
       )}
 
       {/* Character voices 섹션 */}
-      {tab === 'library' && characterVoices.length > 0 && !selectedCategory && (
+      {tab === 'library' &&
+        characterVoices.length > 0 &&
+        !selectedCategory &&
+        !normalizedSearch &&
+        !hasFilters && (
         <CharacterVoicesSection
           voices={characterVoices}
           onPlay={handlePlaySample}
@@ -546,6 +649,25 @@ export default function VoiceLibraryPage() {
           addingToMyVoices={addingToMyVoices}
           removingFromMyVoices={removingFromMyVoices}
           showTitle={!search.trim()}
+        />
+      )}
+
+      {/* 검색/필터 결과 전용 섹션 */}
+      {tab === 'library' && !selectedCategory && (normalizedSearch || hasFilters) && (
+        <VoiceListSection
+          title="검색 결과"
+          samples={sortedSamples}
+          isLoading={voiceQuery.isLoading}
+          onPlay={handlePlaySample}
+          playingSampleId={playingSampleId}
+          onAddToMyVoices={handleAddToMyVoices}
+          onRemoveFromMyVoices={handleRemoveFromMyVoices}
+          addingToMyVoices={addingToMyVoices}
+          removingFromMyVoices={removingFromMyVoices}
+          showActions={false}
+          onEdit={undefined}
+          onDelete={undefined}
+          deletingId={null}
         />
       )}
 
@@ -569,16 +691,30 @@ export default function VoiceLibraryPage() {
         />
       )}
 
-      <VoiceFiltersModal
-        open={isFiltersModalOpen}
-        onOpenChange={setIsFiltersModalOpen}
-        filters={filters}
-        onFiltersChange={setFilters}
-        onApply={() => {
-          // TODO: 필터 적용 로직
-          console.log('Filters applied:', filters)
-        }}
-      />
-    </div>
+        <VoiceFiltersModal
+          open={isFiltersModalOpen}
+          onOpenChange={setIsFiltersModalOpen}
+          filters={filters}
+          onFiltersChange={setFilters}
+          onApply={() => {
+            console.log('Filters applied:', filters)
+          }}
+        />
+      </div>
+
+      {playerSample && (
+        <VoicePlayerBar
+          sample={playerSample}
+          isPlaying={playingSampleId === playerSample.id}
+          currentTime={playerCurrentTime}
+          duration={playerDuration}
+          isLoading={playerLoading}
+          onPlayPause={togglePlayerPlayPause}
+          onSeek={handleSeekPlayer}
+          onSkip={handleSkipPlayer}
+          onClose={handleClosePlayer}
+        />
+      )}
+    </>
   )
 }

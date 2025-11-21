@@ -1,10 +1,9 @@
 import { useMemo, useState, useEffect } from 'react'
 
-import { Check, Crown, MoreHorizontal, MoreVertical, Pause, Play, Plus } from 'lucide-react'
+import { Check, Crown, MoreHorizontal, MoreVertical, Plus } from 'lucide-react'
 import ReactCountryFlag from 'react-country-flag'
 
 import type { VoiceSample } from '@/entities/voice-sample/types'
-import { env } from '@/shared/config/env'
 import { cn } from '@/shared/lib/utils'
 import {
   DropdownMenu,
@@ -13,39 +12,19 @@ import {
   DropdownMenuTrigger,
 } from '@/shared/ui/Dropdown'
 import { Spinner } from '@/shared/ui/Spinner'
+import { DEFAULT_AVATAR, getPresetAvatarUrl } from '@/features/voice-samples/components/voiceSampleFieldUtils'
 
-const DEFAULT_AVATAR =
-  'https://ui-avatars.com/api/?name=Voice&background=EEF2FF&color=1E1B4B&size=128'
 const COUNTRY_DISPLAY_MAP: Record<string, { code: string; label: string }> = {
-  ko: { code: 'KR', label: '한국' },
-  kr: { code: 'KR', label: '한국' },
-  en: { code: 'US', label: '영어권' },
-  us: { code: 'US', label: '미국' },
-  uk: { code: 'GB', label: '영국' },
-  gb: { code: 'GB', label: '영국' },
-  ja: { code: 'JP', label: '일본' },
-  jp: { code: 'JP', label: '일본' },
-  zh: { code: 'CN', label: '중국' },
-  cn: { code: 'CN', label: '중국' },
-}
-
-const getPresignedUrl = async (path: string): Promise<string | undefined> => {
-  try {
-    const apiBase = env.apiBaseUrl.startsWith('http')
-      ? `${env.apiBaseUrl}/api`
-      : env.apiBaseUrl || '/api'
-    const pathSegments = path.split('/')
-    const encodedPath = pathSegments.map((segment) => encodeURIComponent(segment)).join('/')
-    const response = await fetch(`${apiBase}/storage/media/${encodedPath}`)
-    if (!response.ok) {
-      throw new Error(`Failed to get presigned URL: ${response.statusText}`)
-    }
-    const data = (await response.json()) as { url: string }
-    return data.url
-  } catch (error) {
-    console.error('Presigned URL 가져오기 실패:', error)
-    return undefined
-  }
+  ko: { code: 'KR', label: '한국어' },
+  kr: { code: 'KR', label: '한국어' },
+  en: { code: 'US', label: '영어' },
+  us: { code: 'US', label: '영어(미국)' },
+  uk: { code: 'GB', label: '영어(영국)' },
+  gb: { code: 'GB', label: '영어(영국)' },
+  ja: { code: 'JP', label: '일본어' },
+  jp: { code: 'JP', label: '일본어' },
+  zh: { code: 'CN', label: '중국어' },
+  cn: { code: 'CN', label: '중국어' },
 }
 
 interface VoiceSpotlightCardProps {
@@ -72,7 +51,7 @@ export function VoiceSpotlightCard({
   isRemoving = false,
   isInMyVoices = false,
   onPlay,
-  isPlaying,
+  isPlaying: _isPlaying,
   isTableRow = false,
   onEdit,
   onDelete,
@@ -80,30 +59,23 @@ export function VoiceSpotlightCard({
   isOwner = false,
 }: VoiceSpotlightCardProps) {
   const [resolvedAvatar, setResolvedAvatar] = useState<string>(
-    sample.avatarImageUrl && sample.avatarImageUrl.startsWith('http')
-      ? sample.avatarImageUrl
-      : DEFAULT_AVATAR,
+    getPresetAvatarUrl(sample.avatarPreset) ??
+      (sample.avatarImageUrl && sample.avatarImageUrl.startsWith('http')
+        ? sample.avatarImageUrl
+        : DEFAULT_AVATAR),
   )
   const isProcessing = !sample.audio_sample_url
 
   useEffect(() => {
-    let active = true
-    const path = sample.avatarImagePath
-    if (path && !path.startsWith('http')) {
-      void getPresignedUrl(path).then((url) => {
-        if (url && active) {
-          setResolvedAvatar(url)
-        }
-      })
+    const presetUrl = getPresetAvatarUrl(sample.avatarPreset)
+    if (presetUrl) {
+      setResolvedAvatar(presetUrl)
     } else if (sample.avatarImageUrl && sample.avatarImageUrl.startsWith('http')) {
       setResolvedAvatar(sample.avatarImageUrl)
     } else {
       setResolvedAvatar(DEFAULT_AVATAR)
     }
-    return () => {
-      active = false
-    }
-  }, [sample.avatarImagePath, sample.avatarImageUrl])
+  }, [sample.avatarImageUrl, sample.avatarPreset])
 
   const countryCode = useMemo(() => {
     if (!sample.country) return undefined
@@ -126,7 +98,13 @@ export function VoiceSpotlightCard({
   /* 🔹 일레븐랩스 스타일: 리스트 row 용 */
   if (isTableRow) {
     return (
-      <>
+      <div
+        className="contents cursor-pointer"
+        onClick={() => {
+          if (isProcessing) return
+          onPlay(sample)
+        }}
+      >
         {/* 1열: Voice 정보 */}
         <div className="flex items-center gap-3">
           <div className="relative flex h-8 w-8 flex-shrink-0 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-pink-500 to-orange-400 text-[10px] font-semibold text-white">
@@ -173,17 +151,6 @@ export function VoiceSpotlightCard({
 
         {/* 3열: 좋아요 수 + 버튼들 */}
         <div className="flex items-center justify-end gap-3">
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation()
-              onPlay(sample)
-            }}
-            title={isPlaying ? '일시정지' : '재생'}
-            className="rounded-full p-1 text-muted transition-colors hover:bg-surface-2 hover:text-foreground"
-          >
-            {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-          </button>
           {/* 오너인 경우 오너 아이콘 표시, 아닌 경우 add/remove 버튼 */}
           {isOwner ? (
             <div
@@ -206,7 +173,7 @@ export function VoiceSpotlightCard({
                   }
                 }}
                 disabled={isAdding || isRemoving}
-                title={isInMyVoices ? '내 보이스에서 제거' : '내 보이스에 추가'}
+                title={isInMyVoices ? '내 목소리에서 제거' : '내 목소리에 추가'}
                 className={cn(
                   'rounded-full p-1 transition-colors',
                   isInMyVoices
@@ -273,12 +240,18 @@ export function VoiceSpotlightCard({
             </button>
           )}
         </div>
-      </>
+      </div>
     )
   }
 
   return (
-    <div className="group flex items-center gap-3 rounded-xl border border-surface-3 bg-surface-1 p-3 shadow-sm transition-all hover:shadow-md">
+    <div
+      className="group flex cursor-pointer items-center gap-3 rounded-xl border border-surface-3 bg-surface-1 p-3 shadow-sm transition-all hover:shadow-md"
+      onClick={() => {
+        if (isProcessing) return
+        onPlay(sample)
+      }}
+    >
       <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-full bg-gradient-to-br from-purple-400 via-pink-400 to-blue-400">
         <img
           src={resolvedAvatar}
@@ -292,27 +265,7 @@ export function VoiceSpotlightCard({
           <div className="absolute inset-0 flex items-center justify-center bg-black/50">
             <Spinner size="sm" />
           </div>
-        ) : (
-          <button
-            type="button"
-            className={cn(
-              'absolute inset-0 flex items-center justify-center transition-opacity',
-              isPlaying
-                ? 'bg-primary/80 opacity-100'
-                : 'bg-black/50 opacity-0 group-hover:opacity-100',
-            )}
-            onClick={(e) => {
-              e.stopPropagation()
-              onPlay(sample)
-            }}
-          >
-            {isPlaying ? (
-              <Pause className="h-5 w-5 text-white" />
-            ) : (
-              <Play className="h-5 w-5 text-white" />
-            )}
-          </button>
-        )}
+        ) : null}
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-2">
@@ -340,7 +293,7 @@ export function VoiceSpotlightCard({
             {isOwner ? (
               <div
                 className="flex items-center gap-1 rounded-full px-2 py-1 text-xs text-primary"
-                title="내가 만든 보이스"
+                title="내가 만든 목소리"
               >
                 <Crown className="h-4 w-4" />
                 <span className="text-[10px] font-medium">Owner</span>
@@ -364,7 +317,7 @@ export function VoiceSpotlightCard({
                       : 'text-muted hover:bg-surface-2',
                     (isAdding || isRemoving) && 'cursor-not-allowed opacity-50',
                   )}
-                  title={isInMyVoices ? '내 보이스에서 제거' : '내 보이스에 추가'}
+                  title={isInMyVoices ? '내 목소리에서 제거' : '내 목소리에 추가'}
                 >
                   {isAdding || isRemoving ? (
                     <Spinner size="sm" />

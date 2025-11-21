@@ -51,7 +51,7 @@ export function VoiceListSection({
         </div>
       ) : samples.length === 0 ? (
         <div className="rounded-2xl border border-surface-3 bg-surface-1 p-12 text-center">
-          <p className="text-muted">조건에 맞는 보이스가 없습니다.</p>
+          <p className="text-muted">조건에 맞는 목소리가 없습니다.</p>
         </div>
       ) : (
         <ul className="space-y-1">

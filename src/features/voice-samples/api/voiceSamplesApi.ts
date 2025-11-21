@@ -6,6 +6,7 @@ import type {
   VoiceSamplesResponse,
 } from '@/entities/voice-sample/types'
 import { apiClient, apiGet, apiPost } from '@/shared/api/client'
+import { getPresetAvatarUrl } from '../components/voiceSampleFieldUtils'
 
 // 백엔드 응답을 프론트엔드 타입으로 변환
 function transformVoiceSample(apiSample: VoiceSampleApiResponse): VoiceSample {
@@ -22,6 +23,8 @@ function transformVoiceSample(apiSample: VoiceSampleApiResponse): VoiceSample {
       : undefined
   const isBuiltin =
     apiSample.is_builtin ?? (apiSample as unknown as { is_default?: boolean }).is_default ?? false
+  const avatarPreset = (apiSample as unknown as { avatar_preset?: string }).avatar_preset ?? undefined
+  const presetUrl = getPresetAvatarUrl(avatarPreset)
 
   return {
     id: sampleId,
@@ -39,10 +42,13 @@ function transformVoiceSample(apiSample: VoiceSampleApiResponse): VoiceSample {
     owner_id: apiSample.owner_id ? String(apiSample.owner_id) : undefined,
     country: apiSample.country ?? undefined,
     gender: (apiSample.gender as 'male' | 'female' | 'neutral') ?? undefined,
-    avatarImageUrl: apiSample.avatar_image_url ?? undefined,
+    avatarImageUrl: presetUrl ?? apiSample.avatar_image_url ?? undefined,
     avatarImagePath: apiSample.avatar_image_path ?? apiSample.avatar_image_url ?? undefined,
+    avatarPreset,
+    avatarPreset,
     age: apiSample.age ?? undefined,
     accent: apiSample.accent ?? undefined,
+    tags: apiSample.tags ?? undefined,
   }
 }
 
@@ -134,11 +140,10 @@ export interface FinishUploadPayload {
   is_public: boolean
   object_key: string
   country?: string
-  gender?: string
-  age?: string
-  accent?: string
   category?: string[]
   is_builtin?: boolean
+  tags?: string[]
+  avatar_preset?: string
 }
 
 export async function finishVoiceSampleUpload(payload: FinishUploadPayload): Promise<VoiceSample> {
@@ -232,10 +237,9 @@ export async function updateVoiceSample(
     name?: string
     description?: string
     country?: string
-    gender?: string
-    age?: string
-    accent?: string
     category?: string[]
+    tags?: string[]
+    avatar_preset?: string
   },
 ): Promise<VoiceSample> {
   const response = await apiClient
@@ -244,10 +248,9 @@ export async function updateVoiceSample(
         name: payload.name,
         description: payload.description,
         country: payload.country,
-        gender: payload.gender,
-        age: payload.age,
-        accent: payload.accent,
         category: payload.category,
+        tags: payload.tags,
+        avatar_preset: payload.avatar_preset,
       },
     })
     .json<VoiceSampleApiResponse>()

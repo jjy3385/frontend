@@ -19,8 +19,10 @@ export interface VoiceSampleApiResponse {
   gender?: string | null
   avatar_image_url?: string | null
   avatar_image_path?: string | null
+  avatar_preset?: string | null
   age?: string | null
   accent?: string | null
+  tags?: string[] | null
 }
 
 // 프론트엔드에서 사용하는 타입 (camelCase)
@@ -46,6 +48,7 @@ export interface VoiceSample {
   accent?: string
   avatarImageUrl?: string
   avatarImagePath?: string
+  avatarPreset?: string
   provider?: string
   tags?: string[]
   createdAt?: string
