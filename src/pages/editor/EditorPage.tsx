@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { useParams } from 'react-router-dom'
 
@@ -14,7 +14,6 @@ import { useSaveSegments } from '@/features/editor/hooks/useSaveSegments'
 import { useSelectedLanguage } from '@/features/editor/hooks/useSelectedLanguage'
 import { useMux } from '@/features/editor/hooks/useMux'
 import { ExportDialog } from '@/features/projects/modals/ExportDialog'
-import { useEditorStore } from '@/shared/store/useEditorStore'
 import { Spinner } from '@/shared/ui/Spinner'
 
 export default function EditorPage() {
@@ -38,7 +37,6 @@ export default function EditorPage() {
   // Editor state and data
   const [isExportOpen, setIsExportOpen] = useState(false)
   const { data, isLoading } = useEditorState(projectId, selectedLanguage)
-  const reset = useEditorStore((state) => state.reset)
   const { handleMux, isMuxing } = useMux({
     projectId,
     editorData: data,
@@ -49,11 +47,6 @@ export default function EditorPage() {
     projectId,
     languageCode: selectedLanguage,
   })
-
-  // Reset editor state when project or language changes
-  useEffect(() => {
-    reset()
-  }, [projectId, selectedLanguage, reset])
 
   // Subscribe to audio generation events via SSE
   useAudioGenerationEvents(projectId, selectedLanguage, !isLoading && !!data)
@@ -71,8 +64,8 @@ export default function EditorPage() {
   const targetLanguage = data.playback.active_language || '번역본'
 
   return (
-    <div className="flex h-full flex-col bg-background">
-      <div ref={contentRef} className="flex min-h-0 flex-col gap-0">
+    <div className="flex h-full flex-col overflow-hidden bg-background">
+      <div ref={contentRef} className="flex min-h-0 flex-1 flex-col gap-0">
         {/* 상단: 영상 + 요약/번역 패널 (좌우 분할) */}
         <div
           ref={topRowRef}

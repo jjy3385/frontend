@@ -42,14 +42,12 @@ export function EpisodeCard({ project, onExport, onDelete, onTagClick }: Episode
   // API와 SSE 데이터를 정규화하여 일관된 형태로 통합
   const normalizedData = normalizeProjectData(project, sseProgressData)
 
-  // SSE로 받은 진행도 사용
   const progress = normalizedData.progress
   const progressMessage = getProgressMessage(normalizedData)
 
   // UI 표시용 플래그 계산
   const { isProcessing, isFailed, isCompleted } = getStatusFlags(normalizedData)
 
-  const primaryTargetLanguage = project.targets?.[0]?.language_code
   const workspaceSelectedTags = useUiStore((state) => state.workspaceSelectedTags)
   const MAX_VISIBLE_TAGS = 3
 

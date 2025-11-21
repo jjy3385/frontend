@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 
 import { useProject } from '@/features/projects/hooks/useProjects'
 import { useProjectProgressStore } from '@/features/projects/stores/useProjectProgressStore'
+import { useEditorStore } from '@/shared/store/useEditorStore'
 
 import { useEditorLanguageSelection } from './useEditorLanguageSelection'
 
@@ -20,6 +21,7 @@ interface UseSelectedLanguageProps {
 export function useSelectedLanguage({ projectId }: UseSelectedLanguageProps) {
   const { data: project } = useProject(projectId)
   const sseProgress = useProjectProgressStore((state) => state.getProjectProgress(projectId))
+  const setAudioPlaybackMode = useEditorStore((state) => state.setAudioPlaybackMode)
 
   // Determine default language based on completion status
   const { defaultLanguageCode } = useEditorLanguageSelection({
@@ -31,10 +33,9 @@ export function useSelectedLanguage({ projectId }: UseSelectedLanguageProps) {
   const [selectedLanguage, setSelectedLanguage] = useState<string>('original')
   const previousDefaultRef = useRef<string>('')
 
-  // Auto-select first available target language, or stay on original if none available
   useEffect(() => {
-    // Only auto-update if:
-    // 1. defaultLanguageCode is valid
+    // 세가지 충족 시에만 자동 업데이트:
+    // 1. defaultLanguageCode(completed된 타겟언어 앞순서)가 있다
     // 2. defaultLanguageCode has changed from previous value
     // 3. User hasn't manually selected a different language (selectedLanguage matches previous default)
     if (
@@ -43,9 +44,10 @@ export function useSelectedLanguage({ projectId }: UseSelectedLanguageProps) {
       (selectedLanguage === 'original' || selectedLanguage === previousDefaultRef.current)
     ) {
       setSelectedLanguage(defaultLanguageCode)
+      setAudioPlaybackMode(defaultLanguageCode)
       previousDefaultRef.current = defaultLanguageCode
     }
-  }, [defaultLanguageCode, selectedLanguage])
+  }, [defaultLanguageCode, selectedLanguage, setAudioPlaybackMode])
 
   return {
     selectedLanguage,
