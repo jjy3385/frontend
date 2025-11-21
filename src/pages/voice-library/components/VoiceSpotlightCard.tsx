@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from 'react'
 
-import { Check, Crown, MoreHorizontal, MoreVertical, Pause, Play, Plus } from 'lucide-react'
+import { Check, Crown, MoreHorizontal, MoreVertical, Plus } from 'lucide-react'
 import ReactCountryFlag from 'react-country-flag'
 
 import type { VoiceSample } from '@/entities/voice-sample/types'

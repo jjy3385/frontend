@@ -305,13 +305,22 @@ export default function VoiceLibraryPage() {
   const normalizedSearch = useMemo(() => search.trim().toLowerCase(), [search])
   const hasFilters = useMemo(() => {
     return Boolean(
+<<<<<<< HEAD
       (filters.languages && filters.languages.length > 0) ||
         (filters.category && filters.category.length > 0) ||
         (filters.tags && filters.tags.length > 0),
+=======
+      (filters.gender && filters.gender !== 'any') ||
+        (filters.age && filters.age !== 'any') ||
+        (filters.accent && filters.accent !== 'any') ||
+        (filters.languages && filters.languages.length > 0) ||
+        (filters.category && filters.category.length > 0),
+>>>>>>> dbd3765 (feat: voice-market-2)
     )
   }, [filters])
 
   const samples = voiceQuery.data?.samples ?? EMPTY_SAMPLES
+<<<<<<< HEAD
   const tagOptions = useMemo(() => {
     const counts = new Map<string, number>()
     samples.forEach((sample) => {
@@ -324,6 +333,8 @@ export default function VoiceLibraryPage() {
     return Array.from(counts.entries()).map(([tag, count]) => ({ tag, count }))
   }, [samples])
 
+=======
+>>>>>>> dbd3765 (feat: voice-market-2)
   const filteredSamples = useMemo(() => {
     if (!normalizedSearch) return samples
     return samples.filter((sample) => {
@@ -339,6 +350,7 @@ export default function VoiceLibraryPage() {
   }, [samples, normalizedSearch])
 
   const sortedSamples = useMemo(() => {
+<<<<<<< HEAD
     const tagFiltered =
       filters.tags && filters.tags.length
         ? filteredSamples.filter((sample) =>
@@ -346,6 +358,9 @@ export default function VoiceLibraryPage() {
           )
         : filteredSamples
     const sorted = [...tagFiltered]
+=======
+    const sorted = [...filteredSamples]
+>>>>>>> dbd3765 (feat: voice-market-2)
     switch (sort) {
       case 'trending':
       case 'added-desc':
@@ -367,7 +382,11 @@ export default function VoiceLibraryPage() {
       default:
         return sorted
     }
+<<<<<<< HEAD
   }, [filteredSamples, sort, filters.tags])
+=======
+  }, [filteredSamples, sort])
+>>>>>>> dbd3765 (feat: voice-market-2)
 
   useEffect(() => {
     const pendingSamples = sortedSamples.filter(
@@ -706,6 +725,7 @@ export default function VoiceLibraryPage() {
         <VoiceFiltersModal
           open={isFiltersModalOpen}
           onOpenChange={setIsFiltersModalOpen}
+<<<<<<< HEAD
         filters={filters}
         onFiltersChange={setFilters}
         onApply={() => {
@@ -713,6 +733,14 @@ export default function VoiceLibraryPage() {
         }}
         tagOptions={tagOptions}
       />
+=======
+          filters={filters}
+          onFiltersChange={setFilters}
+          onApply={() => {
+            console.log('Filters applied:', filters)
+          }}
+        />
+>>>>>>> dbd3765 (feat: voice-market-2)
       </div>
 
       {playerSample && (

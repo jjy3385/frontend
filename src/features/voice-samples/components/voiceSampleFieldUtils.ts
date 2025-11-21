@@ -3,7 +3,6 @@ export type AttributeKey = 'accent' | 'gender' | 'age'
 export const DEFAULT_AVATAR = '/avatars/default-avatar.png'
 export const PRESET_AVATAR_MAP: Record<string, string> = {
   default: '/avatars/default-avatar.png',
-  default_avatar: '/avatars/default-avatar.png', // backward compatibility
   male: '/avatars/default-avatar-male.png',
   female: '/avatars/default-avatar-female.png',
 }
