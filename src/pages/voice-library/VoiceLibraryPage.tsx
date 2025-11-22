@@ -373,7 +373,6 @@ export default function VoiceLibraryPage() {
       default:
         return sorted
     }
-
   }, [filteredSamples, sort, filters.tags, filters.commercialOnly])
 
   useEffect(() => {
