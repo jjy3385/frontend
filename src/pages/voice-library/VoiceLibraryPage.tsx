@@ -372,7 +372,7 @@ export default function VoiceLibraryPage() {
       default:
         return sorted
     }
-  }, [filteredSamples, sort, filters.tags])
+  }, [filteredSamples, sort, filters.tags, filters.commercialOnly])
 
   useEffect(() => {
     const pendingSamples = sortedSamples.filter(

@@ -52,7 +52,7 @@ export function VoiceSpotlightCard({
   isRemoving = false,
   isInMyVoices = false,
   onPlay,
-  isPlaying: _isPlaying,
+  isPlaying,
   isTableRow = false,
   onEdit,
   onDelete,
