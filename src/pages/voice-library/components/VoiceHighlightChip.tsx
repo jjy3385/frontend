@@ -62,6 +62,12 @@ export function VoiceHighlightChip({
     return `${safeCount}명`
   }
 
+  const licenseBadgeLabel = sample.canCommercialUse === false ? '비상업 전용' : '상업 사용 가능'
+  const licenseBadgeClass =
+    sample.canCommercialUse === false
+      ? 'bg-amber-100 text-amber-700'
+      : 'bg-emerald-100 text-emerald-700'
+
   const countryCode = useMemo(() => {
     if (!sample.country) return undefined
     const normalized = sample.country.trim().toLowerCase()
@@ -121,16 +127,19 @@ export function VoiceHighlightChip({
 
         {/* 텍스트 영역 */}
         <div className="min-w-0 flex-1 text-left">
-          {/* 이름 */}
-          <div className="truncate text-sm font-semibold text-foreground">{displayName}</div>
-          {/* 두 번째 줄: 카테고리 */}
-          <div className="truncate text-[11px] text-muted">
-            {sample.category?.length
-              ? VOICE_CATEGORY_MAP[sample.category[0] as keyof typeof VOICE_CATEGORY_MAP] ??
-                sample.category[0]
-              : '카테고리 미지정'}
+          {/* 이름 + 라이선스 뱃지 */}
+          <div className="flex items-start gap-2">
+            <div className="truncate text-sm font-semibold text-foreground">{displayName}</div>
+            <span
+              className={cn(
+                'shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold shadow-sm',
+                licenseBadgeClass,
+              )}
+            >
+              {licenseBadgeLabel}
+            </span>
           </div>
-          {/* 세 번째 줄: 언어/국기 및 사용 수 */}
+          {/* 두 번째 줄: 언어/국기 및 사용 수 */}
           <div className="mt-0.5 flex items-center gap-2 text-[11px] text-muted">
             {countryCode && (
               <ReactCountryFlag
@@ -146,19 +155,24 @@ export function VoiceHighlightChip({
             </span>
             <span className="text-muted">•</span>
             <span className="truncate">{`${formatUserCount(sample.addedCount)} 사용`}</span>
+          </div>          
+          {/* 세 번째 줄: 카테고리 + 태그 한 줄 */}
+          <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-muted">
+            <span className="rounded-full bg-surface-2 px-2 py-0.5">
+              {sample.category?.length
+                ? VOICE_CATEGORY_MAP[sample.category[0] as keyof typeof VOICE_CATEGORY_MAP] ??
+                  sample.category[0]
+                : '카테고리 미지정'}
+            </span>
+            {sample.tags?.slice(0, 3).map((tag) => (
+              <span
+                key={tag}
+                className="rounded-full bg-surface-2 px-2 py-0.5 text-[10px] text-muted"
+              >
+                #{tag}
+              </span>
+            ))}
           </div>
-          {sample.tags?.length ? (
-            <div className="mt-1 flex flex-wrap gap-1">
-              {sample.tags.slice(0, 3).map((tag) => (
-                <span
-                  key={tag}
-                  className="rounded-full bg-surface-2 px-2 py-0.5 text-[10px] text-muted"
-                >
-                  #{tag}
-                </span>
-              ))}
-            </div>
-          ) : null}
         </div>
 
       {/* 액션 버튼들 */}

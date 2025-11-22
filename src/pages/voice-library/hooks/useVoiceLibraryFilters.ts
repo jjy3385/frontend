@@ -8,6 +8,7 @@ export type VoiceFilters = {
   languages?: string[]
   category?: string[]
   tags?: string[]
+  commercialOnly?: boolean
 }
 
 type LanguageOption = {
@@ -43,6 +44,7 @@ export function useVoiceLibraryFilters(
     languages: undefined,
     category: undefined,
     tags: undefined,
+    commercialOnly: undefined,
     ...initial,
   })
 
@@ -51,6 +53,7 @@ export function useVoiceLibraryFilters(
       languages: undefined,
       category: undefined,
       tags: undefined,
+      commercialOnly: undefined,
     })
 
   const chips = useMemo<FilterChip[]>(() => {
@@ -146,6 +149,18 @@ export function useVoiceLibraryFilters(
               tags: prev.tags?.filter((t) => t !== tag) ?? undefined,
             })),
         })
+      })
+    }
+
+    if (filters.commercialOnly) {
+      list.push({
+        label: '사용',
+        value: '상업 사용 가능',
+        onRemove: () =>
+          setFilters((prev) => ({
+            ...prev,
+            commercialOnly: undefined,
+          })),
       })
     }
 

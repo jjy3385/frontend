@@ -54,6 +54,9 @@ export interface VoiceSample {
   createdAt?: string
   updatedAt?: string
   owner_id?: string
+  licenseCode?: string
+  canCommercialUse?: boolean
+  isDeletable?: boolean
 }
 
 export interface VoiceSamplePayload {

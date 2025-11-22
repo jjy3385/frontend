@@ -307,7 +307,8 @@ export default function VoiceLibraryPage() {
     return Boolean(
       (filters.languages && filters.languages.length > 0) ||
         (filters.category && filters.category.length > 0) ||
-        (filters.tags && filters.tags.length > 0),
+        (filters.tags && filters.tags.length > 0) ||
+        filters.commercialOnly,
     )
   }, [filters])
 
@@ -345,7 +346,11 @@ export default function VoiceLibraryPage() {
             (filters.tags ?? []).every((tag) => sample.tags?.includes(tag)),
           )
         : filteredSamples
-    const sorted = [...tagFiltered]
+    const commercialFiltered =
+      filters.commercialOnly === true
+        ? tagFiltered.filter((sample) => sample.canCommercialUse !== false)
+        : tagFiltered
+    const sorted = [...commercialFiltered]
     switch (sort) {
       case 'trending':
       case 'added-desc':
@@ -367,7 +372,7 @@ export default function VoiceLibraryPage() {
       default:
         return sorted
     }
-  }, [filteredSamples, sort, filters.tags])
+  }, [filteredSamples, sort, filters.tags, filters.commercialOnly])
 
   useEffect(() => {
     const pendingSamples = sortedSamples.filter(

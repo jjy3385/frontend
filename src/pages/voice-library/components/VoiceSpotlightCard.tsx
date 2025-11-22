@@ -52,7 +52,7 @@ export function VoiceSpotlightCard({
   isRemoving = false,
   isInMyVoices = false,
   onPlay,
-  isPlaying: _isPlaying,
+  isPlaying,
   isTableRow = false,
   onEdit,
   onDelete,
@@ -102,6 +102,11 @@ export function VoiceSpotlightCard({
     }
     return `${safeCount}명`
   }
+  const licenseBadgeLabel = sample.canCommercialUse === false ? '비상업 전용' : '상업 사용 가능'
+  const licenseBadgeClass =
+    sample.canCommercialUse === false
+      ? 'bg-amber-100 text-amber-700'
+      : 'bg-emerald-100 text-emerald-700'
 
   /* 🔹 일레븐랩스 스타일: 리스트 row 용 */
   if (isTableRow) {
@@ -168,7 +173,15 @@ export function VoiceSpotlightCard({
         </div>
 
         {/* 4열: 태그 */}
-        <div className="flex max-h-10 flex-wrap items-center gap-1 overflow-hidden text-[12px] text-muted">
+        <div className="flex max-h-10 flex-wrap items-center gap-2 overflow-hidden text-[12px] text-muted">
+          <span
+            className={cn(
+              'rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap',
+              licenseBadgeClass,
+            )}
+          >
+            {licenseBadgeLabel}
+          </span>
           {sample.tags?.length ? (
             sample.tags.slice(0, 4).map((tag) => (
               <span
