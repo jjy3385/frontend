@@ -4,7 +4,7 @@ import type { ProjectProgress } from '@/features/projects/types/progress'
 import { calculateProgressFromTargets, getCountryCode } from './episodeCardUtils'
 
 /**
- * 통합 프로젝트 상태 타입
+ * 통합 에피소드 상태 타입
  * SSE와 API 모두에서 사용하는 정규화된 상태
  */
 export type NormalizedStatus = 'pending' | 'processing' | 'completed' | 'failed'
@@ -20,7 +20,7 @@ export interface NormalizedTarget {
 }
 
 /**
- * 정규화된 프로젝트 데이터
+ * 정규화된 에피소드 데이터
  * SSE와 API 데이터를 통합한 일관된 인터페이스
  */
 export interface NormalizedProjectData {
@@ -123,12 +123,12 @@ function normalizeTargets(
 }
 
 /**
- * 프로젝트 데이터를 정규화
+ * 에피소드 데이터를 정규화
  * SSE 데이터가 있으면 우선 사용, 없으면 API 데이터 사용
  *
- * @param apiProject - API로부터 받은 프로젝트 데이터
+ * @param apiProject - API로부터 받은 에피소드 데이터
  * @param sseProgress - SSE로부터 받은 실시간 진행도 데이터 (optional)
- * @returns 정규화된 프로젝트 데이터
+ * @returns 정규화된 에피소드 데이터
  */
 export function normalizeProjectData(
   apiProject: ProjectSummary,

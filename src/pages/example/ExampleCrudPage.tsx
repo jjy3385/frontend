@@ -63,7 +63,7 @@ export default function ExampleCrudPage() {
 
       <Card className="border-surface-4 bg-surface-1/90 border p-6">
         <CardHeader className="mb-4">
-          <CardTitle>{editingItem ? '프로젝트 수정' : '새 프로젝트 추가'}</CardTitle>
+          <CardTitle>{editingItem ? '에피소드 수정' : '새 에피소드 추가'}</CardTitle>
           <CardDescription>
             이 폼은 React Hook Form을 사용하며, 제출 시 React Query mutation을 호출합니다.
           </CardDescription>
@@ -82,7 +82,7 @@ export default function ExampleCrudPage() {
 
       <Card className="border-surface-4 bg-surface-1/80 border p-6">
         <CardHeader className="mb-4">
-          <CardTitle>프로젝트 목록</CardTitle>
+          <CardTitle>에피소드 목록</CardTitle>
           <CardDescription>
             React Query가 리스트를 관리하고, 개별 카드에서는 수정/삭제 액션을 제공합니다.
           </CardDescription>

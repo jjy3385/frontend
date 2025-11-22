@@ -1,7 +1,7 @@
 /**
  * Smooth Progress localStorage 관리 유틸리티
  *
- * 프로젝트별 타겟 진행도를 localStorage에 저장/로드
+ * 에피소드별 타겟 진행도를 localStorage에 저장/로드
  * 새로고침 시에도 임의로 증가시킨 progress가 유지됨
  */
 
@@ -14,7 +14,7 @@ interface StoredProgress {
 }
 
 /**
- * 프로젝트별 smooth progress를 localStorage에 저장
+ * 에피소드별 smooth progress를 localStorage에 저장
  */
 export function saveSmoothProgress(projectId: string, progresses: Record<string, number>): void {
   try {
@@ -31,7 +31,7 @@ export function saveSmoothProgress(projectId: string, progresses: Record<string,
 }
 
 /**
- * 프로젝트별 smooth progress를 localStorage에서 로드
+ * 에피소드별 smooth progress를 localStorage에서 로드
  * 만료되었거나 없으면 null 반환
  */
 export function loadSmoothProgress(projectId: string): Record<string, number> | null {
@@ -59,7 +59,7 @@ export function loadSmoothProgress(projectId: string): Record<string, number> | 
 }
 
 /**
- * 특정 프로젝트의 저장된 progress 삭제
+ * 특정 에피소드의 저장된 progress 삭제
  */
 export function clearSmoothProgress(projectId: string): void {
   try {

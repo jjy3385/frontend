@@ -51,7 +51,7 @@ export function ProjectCreationDialogContent({
           >
             1
           </span>
-          <span>소스 선택</span>
+          <span>영상 업로드</span>
         </div>
         <div className="h-px w-8 bg-surface-4" />
         <div className={`flex items-center gap-2 ${isDetailsStep ? 'text-primary' : 'text-muted'}`}>

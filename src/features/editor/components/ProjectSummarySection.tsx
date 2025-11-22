@@ -1,6 +1,6 @@
 /**
- * 프로젝트 요약 섹션
- * 프로젝트 정보를 표시
+ * 에피소드 요약 섹션
+ * 에피소드 정보를 표시
  */
 
 import type { Segment } from '@/entities/segment/types'
@@ -34,9 +34,9 @@ export function ProjectSummarySection({
       {/* 이슈 섹션 */}
       <DubbingIssuesSection segments={segments} />
 
-      {/* 프로젝트 정보 */}
+      {/* 에피소드 정보 */}
       <section className="scrollbar-thin flex-1 overflow-y-auto rounded border border-surface-3 bg-white p-4">
-        <h3 className="mb-4 text-sm font-semibold text-foreground">프로젝트 정보</h3>
+        <h3 className="mb-4 text-sm font-semibold text-foreground">에피소드 정보</h3>
 
         {isLoading ? (
           <div className="flex items-center justify-center py-6">
@@ -99,7 +99,7 @@ export function ProjectSummarySection({
           </div>
         ) : (
           <div className="py-6 text-center text-sm text-muted">
-            프로젝트 정보를 불러올 수 없습니다
+            에피소드 정보를 불러올 수 없습니다
           </div>
         )}
       </section>

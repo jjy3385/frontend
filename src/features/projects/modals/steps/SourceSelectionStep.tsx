@@ -78,9 +78,9 @@ export function SourceSelectionStep({
   return (
     <div className="space-y-2">
       <div className="mb-6">
-        <DialogTitle>1단계 — 제작 소스 연결</DialogTitle>
+        <DialogTitle>1단계 — 영상 업로드</DialogTitle>
         <DialogDescription>
-          YouTube 링크를 불러오거나, 로컬에서 원본 영상을 업로드해 AI 더빙을 생성합니다
+          YouTube 링크를 불러오거나, 영상을 업로드해 더빙 영상을 생성합니다
         </DialogDescription>
       </div>
 

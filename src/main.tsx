@@ -16,7 +16,7 @@ async function enableMocks() {
 }
 
 // function PipelineStatusManager() {
-//   const { data: projects = [] } = useProjects() // 혹은 SSE를 구독할 프로젝트 ID 목록
+//   const { data: projects = [] } = useProjects() // 혹은 SSE를 구독할 에피소드 ID 목록
 //   return (
 //     <>
 //       {projects.map((project) => (

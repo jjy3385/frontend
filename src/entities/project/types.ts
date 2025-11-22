@@ -1,5 +1,5 @@
 /**
- * 프로젝트 전체 상태 (워커에서 보내는 stage 값)
+ * 에피소드 전체 상태 (워커에서 보내는 stage 값)
  * - 서버에서 string으로 전달되며, 워커의 현재 처리 단계를 나타냄
  * - 예: "starting", "asr_started", "translation_completed", "done", "failed"
  */
@@ -39,7 +39,7 @@ interface ProjectThumbnail {
 }
 
 /**
- * 프로젝트 리스트 API 응답 (ProjectOut)
+ * 에피소드 리스트 API 응답 (ProjectOut)
  */
 export interface ProjectSummary {
   id: string
@@ -64,7 +64,7 @@ export interface ProjectSummary {
 export type ProjectTargetStatus = 'pending' | 'processing' | 'completed' | 'failed'
 
 /**
- * 타겟 언어 정보 (ProjectTarget)
+ * 번역 언어 정보 (ProjectTarget)
  */
 export interface ProjectTarget {
   target_id: string

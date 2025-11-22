@@ -221,7 +221,7 @@ export function VoiceSpotlightCard({
               title="내가 만든 목소리"
             >
               <Crown className="h-4 w-4" />
-              <span className="text-[11px] font-medium">Owner</span>
+              <span className="text-[11px] font-medium">소유자</span>
             </div>
           ) : (
             (onAddToMyVoices || onRemoveFromMyVoices) && (

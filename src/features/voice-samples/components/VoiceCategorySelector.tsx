@@ -39,7 +39,7 @@ export function VoiceCategorySelector({
           )
         })}
       </div>
-      <p className="text-xs text-muted">원하는 용도를 여러 개 선택하면 라이브러리 검색 시 더 잘 노출됩니다.</p>
+      <p className="text-xs text-muted">원하는 용도를 여러 개 선택하면 검색 시 더 잘 노출됩니다.</p>
     </div>
   )
 }

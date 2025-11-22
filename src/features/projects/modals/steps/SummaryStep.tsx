@@ -71,7 +71,7 @@ export function SummaryStep({ draft, uploadProgress, onBack, onSubmit }: Summary
             label="원어"
             value={draft.sourceLanguage || (draft.detectAutomatically ? '자동 인식' : '미선택')}
           />
-          <SummaryRow label="타겟 언어" value={targetLanguagesValue} />
+          <SummaryRow label="번역 언어" value={targetLanguagesValue} />
           <SummaryRow
             label="화자 수"
             value={`${draft.speakerCount === 0 ? '자동 탐색' : `${draft.speakerCount}명`}`}
@@ -79,7 +79,7 @@ export function SummaryStep({ draft, uploadProgress, onBack, onSubmit }: Summary
         </div>
 
         <p className="mt-3 text-xs text-muted">
-          최종 산출물은 선택한 타겟 언어별 더빙 영상으로 생성됩니다.
+          최종 산출물은 선택한 번역 언어별 더빙 영상으로 생성됩니다.
         </p>
       </div>
 

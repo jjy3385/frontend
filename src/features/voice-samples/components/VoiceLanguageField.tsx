@@ -1,6 +1,7 @@
 import ReactCountryFlag from 'react-country-flag'
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/ui/Select'
+import { Label } from '@/shared/ui/Label'
 
 type LanguageOption = {
   language_code: string
@@ -39,9 +40,9 @@ export function VoiceLanguageField({
 }) {
   return (
     <div className="space-y-2">
-      <label>
+      <Label>
         언어<span className="ml-1 text-danger">*</span>
-      </label>
+      </Label>
       <Select value={value} onValueChange={onChange} disabled={disabled}>
         <SelectTrigger className="w-full">
           <SelectValue placeholder="언어를 선택하세요" />

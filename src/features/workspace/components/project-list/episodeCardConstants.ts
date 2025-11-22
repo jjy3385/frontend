@@ -36,7 +36,7 @@ export const STATUS_CLASS_MAP: Record<StatusLabel, string> = {
 }
 
 /**
- * 프로젝트 Stage → 표시 레이블
+ * 에피소드 Stage → 표시 레이블
  * (서버에서 워커 stage 값을 그대로 전달)
  *
  * 매핑 규칙:
@@ -103,7 +103,7 @@ export const PROJECT_STAGE_LABELS: Record<string, StatusLabel> = {
 }
 
 /**
- * 타겟 언어별 상태 → 표시 레이블
+ * 번역 언어별 상태 → 표시 레이블
  * (Enum: pending, processing, completed, failed)
  */
 export const TARGET_STATUS_LABELS: Record<string, StatusLabel> = {

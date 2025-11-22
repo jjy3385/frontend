@@ -13,9 +13,9 @@ interface UseSelectedLanguageProps {
 /**
  * 에디터에서 선택된 언어 상태를 관리하는 훅
  *
- * - 프로젝트 데이터와 SSE 진행률을 기반으로 기본 언어 결정
- * - 완료된 첫 번째 타겟 언어를 자동 선택
- * - 완료된 타겟 언어가 없으면 '원본' 선택
+ * - 에피소드 데이터와 SSE 진행률을 기반으로 기본 언어 결정
+ * - 완료된 첫 번째 번역 언어를 자동 선택
+ * - 완료된 번역 언어가 없으면 '원본' 선택
  * - 사용자가 수동으로 선택한 언어는 유지
  */
 export function useSelectedLanguage({ projectId }: UseSelectedLanguageProps) {

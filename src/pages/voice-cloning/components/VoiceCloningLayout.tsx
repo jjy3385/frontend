@@ -64,7 +64,7 @@ export function VoiceCloningLayout({
               >
                 1
               </span>
-              <span>소스 선택</span>
+              <span>목소리 업로드</span>
             </div>
             <div className="h-px w-8 bg-surface-4" />
             <div className={`flex items-center gap-2 ${isRecordStep ? 'text-primary' : 'text-muted'}`}>
@@ -75,7 +75,7 @@ export function VoiceCloningLayout({
               >
                 2
               </span>
-              <span>녹음 / 업로드</span>
+              <span>녹음 / 미리듣기</span>
             </div>
             <div className="h-px w-8 bg-surface-4" />
             <div className={`flex items-center gap-2 ${isDetailsStep ? 'text-primary' : 'text-muted'}`}>

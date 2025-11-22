@@ -7,7 +7,7 @@ import { Modal, ModalField, ModalSection } from '@/shared/ui/Modal'
 
 export default function ModalExamplePage() {
   const [open, setOpen] = useState(false)
-  const [projectName, setProjectName] = useState('영상 더빙 프로젝트')
+  const [projectName, setProjectName] = useState('영상 더빙 에피소드')
   const [owner, setOwner] = useState('Evelyn')
 
   return (
@@ -26,7 +26,7 @@ export default function ModalExamplePage() {
         </p>
         <div className="flex gap-3">
           <div className="space-y-2">
-            <Label htmlFor="example-project">프로젝트 이름</Label>
+            <Label htmlFor="example-project">에피소드 이름</Label>
             <Input
               id="example-project"
               value={projectName}
@@ -53,7 +53,7 @@ export default function ModalExamplePage() {
           }
           setOpen(next)
         }}
-        title="프로젝트 정보"
+        title="에피소드 정보"
         description="기본 정보를 확인하고 액션을 실행할 수 있습니다."
         dismissibleBackdrop={false}
         footer={
@@ -67,7 +67,7 @@ export default function ModalExamplePage() {
         }
       >
         <ModalSection className="space-y-3">
-          <ModalField label="프로젝트" value={projectName || '정보 없음'} />
+          <ModalField label="에피소드" value={projectName || '정보 없음'} />
           <ModalField label="담당자" value={owner || '정보 없음'} />
         </ModalSection>
         <ModalSection className="space-y-2">

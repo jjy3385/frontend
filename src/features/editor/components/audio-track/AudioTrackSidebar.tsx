@@ -66,7 +66,7 @@ export function AudioTrackSidebar({ trackRows, getTrackRowHeight }: AudioTrackSi
           onClick={addSpeakerTrack}
         >
           <Plus className="h-3.5 w-3.5" />
-          Add Speaker
+          스피커 추가
         </Button>
       </div>
     </div>

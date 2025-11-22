@@ -24,9 +24,13 @@ export function CreateEpisodeButton({
     <Button
       type="button"
       className={cn(
-        'fixed bottom-20 right-20 z-40 flex h-20 w-20 items-center justify-center rounded-full bg-primary text-white shadow-xl transition hover:bg-primary-hover focus-visible:ring-2 focus-visible:ring-offset-2',
+        'fixed z-40 flex h-20 w-20 items-center justify-center rounded-full bg-primary text-white shadow-xl transition hover:bg-primary-hover focus-visible:ring-2 focus-visible:ring-offset-2',
         className,
       )}
+      style={{
+        right: 'max(1rem, calc((100vw - 80rem) / 2 + 1rem))',
+        bottom: '4rem',
+      }}
       aria-label={label}
       onClick={() => {
         trackEvent('open_create_modal')

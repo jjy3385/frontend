@@ -131,7 +131,7 @@ export default function VoiceSampleEditPage() {
       )
       navigate(routes.voiceLibrary)
     } catch (error) {
-      console.error('음성 샘플 수정 실패:', error)
+      console.error('내 목소리 수정 실패:', error)
     } finally {
       setIsSubmitting(false)
     }
@@ -156,17 +156,11 @@ export default function VoiceSampleEditPage() {
   return (
     <VoiceCloningLayout
       title="Voice Sample"
-      subtitle="음성 샘플 수정"
-      description="음성 등록 폼과 동일한 레이아웃으로 모든 필드를 수정할 수 있습니다."
+      subtitle="내 목소리 수정"
+      description="내 목소리의 이름과 설명을 수정할 수 있습니다."
       step="details"
     >
       <div className="p-8 sm:p-12">
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-2xl font-semibold">세부 정보 입력</h2>
-          <Button type="button" variant="ghost" onClick={() => navigate(-1)} disabled={isSubmitting}>
-            뒤로
-          </Button>
-        </div>
         <form
           onSubmit={(e) => {
             void handleSubmit(e)
@@ -243,7 +237,7 @@ export default function VoiceSampleEditPage() {
             />
             <div className="space-y-1 text-sm leading-relaxed text-muted">
               <p>
-                음성 파일을 업로드함으로써 필요한 권리와 동의를 모두 확보했으며, 생성된 콘텐츠를 불법적이거나
+                음성 파일에 필요한 권리와 동의를 모두 확보했으며, 생성된 콘텐츠를 불법적이거나
                 부정한 목적으로 사용하지 않겠다는 점에 동의합니다. 실제 서비스와 동일한 수준의 정책을 참고용으로
                 제공합니다.
               </p>

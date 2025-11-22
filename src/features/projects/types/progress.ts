@@ -12,7 +12,7 @@ export interface ConnectedEvent {
 export interface TargetProgressEvent {
   eventType: 'target-progress'
   projectId: string
-  projectTitle: string // 프로젝트 제목 (서버에서 제공)
+  projectTitle: string // 에피소드 제목 (서버에서 제공)
   targetLang: string
   status: ProjectStatus
   progress: number // 0-100
@@ -25,7 +25,7 @@ export interface TargetProgressEvent {
 export interface ProjectProgressEvent {
   eventType: 'project-progress'
   projectId: string
-  projectTitle: string // 프로젝트 제목 (서버에서 제공)
+  projectTitle: string // 에피소드 제목 (서버에서 제공)
   status: ProjectStatus
   progress: number // 0-100 (average of all languages)
   message: string

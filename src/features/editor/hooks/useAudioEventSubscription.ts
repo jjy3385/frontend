@@ -18,7 +18,7 @@ import type { EditorState } from './useEditorState'
  * useGlobalSSE에서 발생하는 오디오 이벤트 중
  * 현재 projectId + languageCode에 해당하는 이벤트만 처리
  *
- * @param projectId - 프로젝트 ID
+ * @param projectId - 에피소드 ID
  * @param languageCode - 언어 코드
  * @param enabled - 구독 활성화 여부
  */

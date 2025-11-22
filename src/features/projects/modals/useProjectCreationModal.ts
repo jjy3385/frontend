@@ -65,7 +65,7 @@ export function useProjectCreationModal() {
       closeProjectCreation()
       showToast({
         id: 'example-create-success',
-        title: '프로젝트 생성 완료',
+        title: '에피소드 생성 완료',
         autoDismiss: 2500,
       })
     }, 400)
@@ -103,7 +103,7 @@ export function useProjectCreationModal() {
 
       showToast({
         id: 'upload-completed',
-        title: '프로젝트 업로드 완료',
+        title: '에피소드 업로드 완료',
         autoDismiss: 2500,
       })
     } catch (error) {
@@ -111,7 +111,7 @@ export function useProjectCreationModal() {
       handleProgressError('파일 업로드에 실패했습니다. 잠시 후 다시 시도해주세요.')
       showToast({
         id: 'example-create-error',
-        title: '프로젝트 생성 실패',
+        title: '에피소드 생성 실패',
         description: '업로드 중 오류가 발생했습니다.',
       })
     }
@@ -131,7 +131,7 @@ export function useProjectCreationModal() {
       handleProgressError('YouTube 소스 등록에 실패했습니다.')
       showToast({
         id: 'example-create-error',
-        title: '프로젝트 생성 실패',
+        title: '에피소드 생성 실패',
         description: 'YouTube 링크를 다시 확인한 뒤 재시도해주세요.',
       })
     }

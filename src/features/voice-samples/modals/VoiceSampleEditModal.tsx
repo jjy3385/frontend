@@ -56,7 +56,7 @@ export function VoiceSampleEditModal({
       onSuccess?.(updated)
       onOpenChange(false)
     } catch (error) {
-      console.error('음성 샘플 수정 실패:', error)
+      console.error('내 목소리 수정 실패:', error)
     }
   }
 
@@ -75,7 +75,7 @@ export function VoiceSampleEditModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
         <div className="mb-4 flex items-center justify-between">
-          <DialogTitle>음성 샘플 수정</DialogTitle>
+          <DialogTitle>내 목소리 수정</DialogTitle>
         </div>
 
         <form onSubmit={handleFormSubmit} className="space-y-6">

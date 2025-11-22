@@ -5,7 +5,7 @@ import { loadSmoothProgress, saveSmoothProgress } from './smoothProgressStorage'
 import { useMultiSmoothProgress } from './useSmoothProgress'
 
 /**
- * 프로젝트 진행도 단계
+ * 에피소드 진행도 단계
  * 각 단계 사이에서 부드럽게 증가하는 애니메이션 적용
  */
 const PROJECT_PROGRESS_STEPS = [1, 5, 20, 21, 35, 36, 85, 86, 100]
@@ -17,8 +17,8 @@ const PROJECT_PROGRESS_STEPS = [1, 5, 20, 21, 35, 36, 85, 86, 100]
  * - project 전체 진행률은 target별 진행도의 평균으로 계산
  * - smoothed progress를 localStorage에 저장하여 새로고침 시에도 유지
  *
- * @param projectId - 프로젝트 ID (localStorage 키로 사용)
- * @param normalizedData - 정규화된 프로젝트 데이터
+ * @param projectId - 에피소드 ID (localStorage 키로 사용)
+ * @param normalizedData - 정규화된 에피소드 데이터
  * @returns 화면에 표시할 데이터
  */
 export function useEpisodeCardData(projectId: string, normalizedData: NormalizedProjectData) {

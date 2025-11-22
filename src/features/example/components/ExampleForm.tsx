@@ -76,7 +76,7 @@ export function ExampleForm({
       className="grid gap-4 md:grid-cols-3"
     >
       <div className="space-y-2">
-        <Label htmlFor="example-form-name">프로젝트 이름</Label>
+        <Label htmlFor="example-form-name">에피소드 이름</Label>
         <Input
           id="example-form-name"
           placeholder="예: 신규 더빙 캠페인"

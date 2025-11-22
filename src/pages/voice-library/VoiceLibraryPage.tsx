@@ -557,7 +557,7 @@ export default function VoiceLibraryPage() {
         <VoiceLibraryTabs activeTab={tab} onChange={setTab} />
         <div className="flex items-center gap-4">
           <Button variant="primary" onClick={() => navigate(routes.voiceCloning)} className="gap-2">
-            + 음성 녹음
+            + 내 목소리 만들기
           </Button>
         </div>
       </div>

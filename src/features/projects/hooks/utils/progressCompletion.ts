@@ -1,7 +1,7 @@
 import type { ProjectProgressEvent, TargetProgressEvent } from '../../types/progress'
 
 /**
- * 타겟 언어 완료 체크
+ * 번역 언어 완료 체크
  */
 export function createTargetCompletionChecker(
   previousStatusMap: Map<string, string>,
@@ -25,7 +25,7 @@ export function createTargetCompletionChecker(
 }
 
 /**
- * 프로젝트 완료 체크
+ * 에피소드 완료 체크
  */
 export function createProjectCompletionChecker(
   previousStatusMap: Map<string, string>,
@@ -36,7 +36,7 @@ export function createProjectCompletionChecker(
 
     if (prevStatus !== 'completed' && event.status === 'completed') {
       // Project just completed!
-      const message = event.message || '프로젝트 처리가 완료되었습니다.'
+      const message = event.message || '에피소드 처리가 완료되었습니다.'
       onComplete?.(event.projectId, event.projectTitle, message)
       return { isNewCompletion: true, message }
     }

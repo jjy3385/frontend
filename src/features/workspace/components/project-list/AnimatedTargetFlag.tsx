@@ -12,7 +12,7 @@ interface AnimatedTargetFlagProps {
 }
 
 /**
- * 애니메이션이 적용된 타겟 언어 국기
+ * 애니메이션이 적용된 번역 언어 국기
  * SSE로 받은 진행도를 부드럽게 증가시켜 표시
  */
 export function AnimatedTargetFlag({

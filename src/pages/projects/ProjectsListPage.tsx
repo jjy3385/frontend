@@ -61,7 +61,7 @@ export default function ProjectsListPage() {
       <header className="space-y-4">
         <h1 className="text-3xl font-semibold text-foreground">에피소드 목록</h1>
         <p className="text-sm text-muted">
-          생성된 프로젝트 목록과 더빙 진행 상황을 조회합니다. 검색과 정렬은 현 상태를 유지하며 상세
+          생성된 에피소드 목록과 더빙 진행 상황을 조회합니다. 검색과 정렬은 현 상태를 유지하며 상세
           페이지로 이동합니다.
         </p>
         <div className="flex gap-3">
@@ -70,7 +70,7 @@ export default function ProjectsListPage() {
             <Input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="프로젝트 검색"
+              placeholder="에피소드 검색"
               className="pl-10"
             />
           </div>

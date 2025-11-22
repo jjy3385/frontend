@@ -143,7 +143,7 @@ export function PipelineStatusListener({ project }: { project: ProjectSummary })
         showToast({
           id: `pipeline-completed-${project.id}`,
           title: '영상 처리가 완료되었습니다.',
-          description: `${project.title ?? '프로젝트'}의 영상 번역이 완료되었어요.`,
+          description: `${project.title ?? '에피소드'}의 영상 번역이 완료되었어요.`,
           autoDismiss: 6000,
         })
       }

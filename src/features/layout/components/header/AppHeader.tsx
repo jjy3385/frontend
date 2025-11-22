@@ -1,4 +1,4 @@
-import { LogOut, User } from 'lucide-react'
+import { Waves, Clapperboard, LogOut, User } from 'lucide-react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 
 import { useLogoutMutation } from '@/features/auth/hooks/useAuthMutations'
@@ -16,22 +16,13 @@ import {
 
 import { NotificationDropdown } from './NotificationDropdown'
 
-const routeTitles: Array<{ pattern: RegExp; label: string }> = [
-  { pattern: /^\/workspace/, label: '워크스페이스' },
-  { pattern: /^\/voice-cloning/, label: '보이스 클로닝' },
-  { pattern: /^\/voice-library/, label: '보이스 라이브러리' },
-  { pattern: /^\/myinfo/, label: '내 정보' },
-]
-
 export function AppHeader() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
   const userName = useAuthStore((state) => state.userName)
   const location = useLocation()
   const navigate = useNavigate()
   const logoutMutation = useLogoutMutation()
-  const containerWidthClass = 'w-full'
-  const currentTitle =
-    routeTitles.find((entry) => entry.pattern.test(location.pathname))?.label ?? null
+  const containerWidthClass = 'w-full max-w-7xl'
   const initials =
     userName
       ?.split(' ')
@@ -47,9 +38,24 @@ export function AppHeader() {
   const handleSignOut = () => {
     logoutMutation.mutate()
   }
+
+  const navItems = [
+    {
+      label: '더빙',
+      to: routes.workspace,
+      isActive: /^\/workspace/.test(location.pathname),
+      icon: Clapperboard,
+    },
+    {
+      label: '보이스 마켓',
+      to: routes.voiceLibrary,
+      isActive: /^\/voice-library/.test(location.pathname),
+      icon: Waves,
+    },
+  ]
   // const userNavItems = isAuthenticated
   //   ? [
-  //       { to: `${routes.home}projects`, label: '프로젝트' },
+  //       { to: `${routes.home}projects`, label: '에피소드' },
   //       { to: `${routes.home}voice-samples`, label: '보이스 샘플' },
   //       { to: `${routes.home}guide`, label: '이용 가이드' },
   //       { to: `${routes.home}support`, label: '문의' },
@@ -57,7 +63,7 @@ export function AppHeader() {
   //   : []
 
   return (
-    <header className="sticky top-0 z-40 bg-[#E2E8F0]/95 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-surface-3 bg-[#F3F4F6]/90 backdrop-blur">
       <div
         className={`mx-auto flex ${containerWidthClass} items-center justify-between gap-6 px-6 py-2`}
       >
@@ -68,17 +74,28 @@ export function AppHeader() {
         >
           <span className="text-2xl font-semibold tracking-tight text-foreground">
             Dupliot
-            <span className="text-primary">.</span>
-          </span>
-          <span className="text-xs uppercase tracking-[0.35em] text-muted transition-colors duration-150 group-hover:text-foreground">
-            studio workspace
           </span>
         </Link>
 
         <div className="flex flex-1 items-center justify-start px-10">
-          {currentTitle ? (
-            <h2 className="text-lg font-semibold text-foreground">{currentTitle}</h2>
-          ) : null}
+          <nav className="flex items-center gap-8">
+            {navItems.map((item) => {
+              const Icon = item.icon
+              return (
+                <Link
+                  key={item.to}
+                  to={item.to}
+                  className={[
+                    'flex items-center gap-2 text-sm font-semibold transition-colors',
+                    item.isActive ? 'text-primary' : 'text-muted hover:text-foreground',
+                  ].join(' ')}
+                >
+                  <Icon className="h-4 w-4" />
+                  {item.label}
+                </Link>
+              )
+            })}
+          </nav>
         </div>
 
         <div className="ml-auto flex items-center gap-3">

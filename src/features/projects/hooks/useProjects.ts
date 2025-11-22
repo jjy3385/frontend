@@ -40,7 +40,7 @@ export function useCreateProjectMutation() {
       // void queryClient.invalidateQueries({ queryKey: queryKeys.example.all })
       // showToast({
       //   id: 'example-create-success',
-      //   title: '프로젝트 생성 후 업로드 진행 중',
+      //   title: '에피소드 생성 후 업로드 진행 중',
       //   autoDismiss: 2500,
       // })
     },

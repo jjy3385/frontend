@@ -41,10 +41,10 @@ export default function ProjectDetailPage() {
   if (!project) {
     return (
       <div className="mx-auto flex w-full max-w-5xl flex-col items-center gap-3 px-6 py-16 text-center">
-        <p className="text-lg font-semibold text-foreground">프로젝트를 찾을 수 없습니다.</p>
+        <p className="text-lg font-semibold text-foreground">에피소드를 찾을 수 없습니다.</p>
         <p className="text-sm text-muted">목록으로 돌아가 다시 시도하세요.</p>
         <Button asChild>
-          <Link to={routes.projects}>프로젝트 목록으로</Link>
+          <Link to={routes.projects}>에피소드 목록으로</Link>
         </Button>
       </div>
     )
@@ -81,7 +81,7 @@ export default function ProjectDetailPage() {
     <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-6 py-12">
       <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wider text-muted">프로젝트 상세</p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted">에피소드 상세</p>
           <h1 className="mt-1 text-3xl font-semibold text-foreground">{project.title}</h1>
           {/* <p className="mt-2 text-sm text-muted">
             {sourceLanguageLabel} → {targetLanguageLabels.join(', ')} | 화자 {project.speaker_count}

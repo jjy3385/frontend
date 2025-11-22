@@ -35,7 +35,7 @@ export function LanguageButton({ option, isSelected, onClick }: LanguageButtonPr
             isSelected
             ? 'shadow-sm'
             : 'border border-gray-300 bg-white text-gray-700 hover:bg-gray-50'
-          : // 타겟 언어 버튼 스타일
+          : // 번역 언어 버튼 스타일
             cn(
               'relative h-8 w-12 overflow-hidden border',
               isSelected
@@ -53,7 +53,7 @@ export function LanguageButton({ option, isSelected, onClick }: LanguageButtonPr
           <span>원어</span>
         </>
       ) : (
-        // 타겟 언어는 국기로 표시
+        // 번역 언어는 국기로 표시
         <div
           className={cn(
             'flex h-full w-full items-center justify-center',
