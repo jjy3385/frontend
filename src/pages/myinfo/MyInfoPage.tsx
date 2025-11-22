@@ -1,8 +1,7 @@
-import { useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { useQuery } from '@tanstack/react-query'
 import {
-  ArrowLeft,
   Bell,
   CalendarDays,
   KeyRound,
@@ -15,9 +14,14 @@ import { useNavigate } from 'react-router-dom'
 
 import { getCurrentUser, type UserOut } from '@/features/auth/api/authApi'
 import { YoutubeIntegrationCard } from '@/features/youtube/components/YoutubeIntegrationCard'
+import { CreditTopupModal } from '@/features/credits/components/CreditTopupModal'
+import { useCreditBalance, useCreditPackages, usePurchaseCredits } from '@/features/credits/hooks/useCredits'
+import type { CreditPackage } from '@/features/credits/api/creditsApi'
 import { routes } from '@/shared/config/routes'
+import { CREDIT_COST_PER_VOICE_ADD } from '@/shared/constants/credits'
 import { Badge } from '@/shared/ui/Badge'
 import { useAuthStore } from '@/shared/store/useAuthStore'
+import { useUiStore } from '@/shared/store/useUiStore'
 import { Button } from '@/shared/ui/Button'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/shared/ui/Card'
 import { Spinner } from '@/shared/ui/Spinner'
@@ -32,7 +36,12 @@ const fallbackUser: UserOut = {
 
 export default function MyInfoPage() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
+  const { showToast } = useUiStore()
   const navigate = useNavigate()
+  const [isCreditModalOpen, setIsCreditModalOpen] = useState(false)
+  const { data: creditBalanceData, isLoading: creditLoading, refetch: refetchCreditBalance } = useCreditBalance()
+  const { data: creditPackagesData } = useCreditPackages()
+  const purchaseCreditsMutation = usePurchaseCredits()
 
   const { data, isLoading } = useQuery({
     queryKey: ['auth', 'current-user'],
@@ -48,7 +57,18 @@ export default function MyInfoPage() {
 
   const profile = data ?? fallbackUser
   const isGoogleAccount = Boolean(profile.google_sub)
-  console.log(isGoogleAccount)
+  const creditBalance = creditBalanceData?.balance ?? 0
+  const fallbackPackages: CreditPackage[] = useMemo(
+    () => [
+      { id: 'pack-starter', label: '스타터 1,000', credits: 1000, priceKRW: 9900 },
+      { id: 'pack-pro', label: '프로 5,000', credits: 5000, priceKRW: 44900, bonusCredits: 250 },
+      { id: 'pack-team', label: '팀 10,000', credits: 10000, priceKRW: 84900, bonusCredits: 1000 },
+      { id: 'pack-elite', label: '엘리트 20,000', credits: 20000, priceKRW: 159900, bonusCredits: 2500 },
+    ],
+    [],
+  )
+  const creditPackages = creditPackagesData ?? fallbackPackages
+  const isPurchasingCredits = purchaseCreditsMutation.status === 'pending'
 
   const formattedJoinDate = useMemo(() => {
     if (!profile.createdAt) return '-'
@@ -90,6 +110,31 @@ export default function MyInfoPage() {
       },
     ],
     [profile.email, profile.role, formattedJoinDate],
+  )
+
+  const handlePurchasePackage = useCallback(
+    (pkg: CreditPackage) => {
+      purchaseCreditsMutation.mutate(
+        { packageId: pkg.id },
+        {
+          onSuccess: () => {
+            showToast({ title: '크레딧이 충전되었습니다.', variant: 'success' })
+            setIsCreditModalOpen(false)
+            void refetchCreditBalance()
+          },
+          onError: (error: unknown) => {
+            const message =
+              error instanceof Error
+                ? error.message
+                : typeof error === 'string'
+                  ? error
+                  : '충전에 실패했습니다.'
+            showToast({ title: '충전 실패', description: message, variant: 'error' })
+          },
+        },
+      )
+    },
+    [purchaseCreditsMutation, refetchCreditBalance, showToast],
   )
 
   if (!isAuthenticated) {
@@ -166,6 +211,31 @@ export default function MyInfoPage() {
             </div>
           </Card>
 
+          <Card className="flex flex-col gap-4">
+            <CardHeader>
+              <CardTitle>크레딧</CardTitle>
+              <CardDescription>보유 크레딧을 확인하고 충전하세요.</CardDescription>
+            </CardHeader>
+            <div className="flex flex-col gap-3 px-6 pb-6 md:flex-row md:items-center md:justify-between">
+              <div>
+                <p className="text-xs text-muted">보유 크레딧</p>
+                <p className="text-2xl font-semibold text-foreground">
+                  {creditLoading ? '불러오는 중...' : `${creditBalance.toLocaleString()} 크레딧`}
+                </p>
+                <p className="text-xs text-muted">
+                  내 목소리 추가 1회당 {CREDIT_COST_PER_VOICE_ADD.toLocaleString()} 크레딧 차감
+                </p>
+              </div>
+              <Button
+                className="gap-2"
+                onClick={() => setIsCreditModalOpen(true)}
+                disabled={creditLoading || isPurchasingCredits}
+              >
+                크레딧 충전하기
+              </Button>
+            </div>
+          </Card>
+
           <Card>
             <CardHeader>
               <CardTitle>활동 요약</CardTitle>
@@ -198,6 +268,14 @@ export default function MyInfoPage() {
             </div>
           </Card>
           <YoutubeIntegrationCard />
+          <CreditTopupModal
+            open={isCreditModalOpen}
+            onOpenChange={setIsCreditModalOpen}
+            packages={creditPackages}
+            onPurchase={handlePurchasePackage}
+            isPurchasing={isPurchasingCredits}
+            currentBalance={creditBalance}
+          />
         </div>
       )}
     </div>

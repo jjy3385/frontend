@@ -63,6 +63,17 @@ export function VoiceSpotlightCard({
     getPresetAvatarUrl(sample.avatarPreset || 'default') ?? DEFAULT_AVATAR,
   )
   const isProcessing = !sample.audio_sample_url
+  const isCommercialAllowed = sample.canCommercialUse !== false
+  const isPublicVoice = sample.isPublic !== false
+  const addDisabled =
+    isOwner || !isCommercialAllowed || !isPublicVoice || isInMyVoices || isAdding || isRemoving
+  const addDisabledReason = isInMyVoices
+    ? '이미 내 목소리에 있습니다.'
+    : !isPublicVoice
+      ? '비공개 보이스는 추가할 수 없습니다.'
+      : !isCommercialAllowed
+        ? '비상업용 보이스는 추가할 수 없습니다.'
+        : undefined
 
   useEffect(() => {
     setResolvedAvatar(getPresetAvatarUrl(sample.avatarPreset || 'default') ?? DEFAULT_AVATAR)
@@ -218,20 +229,23 @@ export function VoiceSpotlightCard({
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation()
+                  if (addDisabled) return
                   if (isInMyVoices && onRemoveFromMyVoices) {
                     onRemoveFromMyVoices()
                   } else if (!isInMyVoices && onAddToMyVoices) {
                     onAddToMyVoices()
                   }
                 }}
-                disabled={isAdding || isRemoving}
-                title={isInMyVoices ? '내 목소리에서 제거' : '내 목소리에 추가'}
+                disabled={addDisabled}
+                title={
+                  addDisabledReason ?? (isInMyVoices ? '내 목소리에서 제거' : '내 목소리에 추가')
+                }
                 className={cn(
                   'rounded-full p-1 transition-colors',
                   isInMyVoices
                     ? 'text-primary hover:bg-surface-2'
                     : 'text-muted hover:bg-surface-2 hover:text-foreground',
-                  (isAdding || isRemoving) && 'cursor-not-allowed opacity-50',
+                  addDisabled && 'cursor-not-allowed opacity-50',
                 )}
               >
                 {isAdding || isRemoving ? (
@@ -355,21 +369,24 @@ export function VoiceSpotlightCard({
                 <button
                   type="button"
                   onClick={() => {
+                    if (addDisabled) return
                     if (isInMyVoices && onRemoveFromMyVoices) {
                       onRemoveFromMyVoices()
                     } else if (!isInMyVoices && onAddToMyVoices) {
                       onAddToMyVoices()
                     }
                   }}
-                  disabled={isAdding || isRemoving}
+                  disabled={addDisabled}
                   className={cn(
                     'flex items-center gap-1 rounded-full px-2 py-1 text-xs transition-colors',
                     isInMyVoices
                       ? 'text-primary hover:bg-surface-2'
                       : 'text-muted hover:bg-surface-2',
-                    (isAdding || isRemoving) && 'cursor-not-allowed opacity-50',
+                    addDisabled && 'cursor-not-allowed opacity-50',
                   )}
-                  title={isInMyVoices ? '내 목소리에서 제거' : '내 목소리에 추가'}
+                  title={
+                    addDisabledReason ?? (isInMyVoices ? '내 목소리에서 제거' : '내 목소리에 추가')
+                  }
                 >
                   {isAdding || isRemoving ? (
                     <Spinner size="sm" />

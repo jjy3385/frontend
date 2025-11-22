@@ -1,17 +1,22 @@
 import { useMemo, useState, useEffect, useRef, useCallback } from 'react'
 
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowDown, ArrowUp, ChevronDown, Filter, Globe, Search } from 'lucide-react'
+import { ArrowDown, ArrowUp, ChevronDown, Filter } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 import type { VoiceSample, VoiceSamplesResponse } from '@/entities/voice-sample/types'
 import { getCurrentUser } from '@/features/auth/api/authApi'
 import { fetchVoiceSamples } from '@/features/voice-samples/api/voiceSamplesApi'
 import {
-  useAddToMyVoices,
   useDeleteVoiceSample,
   useRemoveFromMyVoices,
 } from '@/features/voice-samples/hooks/useVoiceSamples'
+import {
+  useCreditBalance,
+  usePurchaseVoiceWithCredits,
+} from '@/features/credits/hooks/useCredits'
+import { CREDIT_COST_PER_VOICE_ADD } from '@/shared/constants/credits'
+import { useUiStore } from '@/shared/store/useUiStore'
 import { useLanguage } from '@/features/languages/hooks/useLanguage'
 import { VOICE_CATEGORY_MAP } from '@/shared/constants/voiceCategories'
 import { env } from '@/shared/config/env'
@@ -35,6 +40,7 @@ import { CharacterVoicesSection } from './sections/CharacterVoicesSection'
 import { TrendingVoicesSection } from './sections/TrendingVoicesSection'
 import { UseCaseCarouselSection } from './sections/UseCaseCarouselSection'
 import { VoiceListSection } from './sections/VoiceListSection'
+import { VoicePurchaseModal } from './components/VoicePurchaseModal'
 
 type LibraryTab = 'library' | 'mine'
 
@@ -53,11 +59,11 @@ const getPresignedUrl = async (path: string): Promise<string | undefined> => {
     }
     const data = (await response.json()) as { url: string }
     return data.url
-  } catch (error) {
-    console.error('Presigned URL 가져오기 실패:', error)
-    return undefined
+    } catch (error: unknown) {
+      console.error('Presigned URL 가져오기 실패:', error)
+      return undefined
+    }
   }
-}
 
 export default function VoiceLibraryPage() {
   const [tab, setTab] = useState<LibraryTab>('library')
@@ -78,6 +84,11 @@ export default function VoiceLibraryPage() {
   const processingSourcesRef = useRef<Map<string, EventSource>>(new Map())
   const [addingToMyVoices, setAddingToMyVoices] = useState<Set<string>>(new Set())
   const [removingFromMyVoices, setRemovingFromMyVoices] = useState<Set<string>>(new Set())
+  const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false)
+  const [purchaseTarget, setPurchaseTarget] = useState<VoiceSample | null>(null)
+  const { showToast } = useUiStore()
+  const { data: creditBalanceData, refetch: refetchCreditBalance } = useCreditBalance()
+  const purchaseVoiceMutation = usePurchaseVoiceWithCredits()
   const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false)
   const { data: languageResponse } = useLanguage()
   const languageOptions = useMemo(
@@ -122,8 +133,8 @@ export default function VoiceLibraryPage() {
     placeholderData: keepPreviousData,
   })
 
-  const addToMyVoices = useAddToMyVoices()
   const removeFromMyVoices = useRemoveFromMyVoices()
+  const creditBalance = creditBalanceData?.balance ?? 0
   const isMyTab = tab === 'mine'
 
   // 현재 사용자 정보 가져오기
@@ -407,7 +418,7 @@ export default function VoiceLibraryPage() {
             source.close()
             sources.delete(sampleId)
           }
-        } catch (error) {
+        } catch (error: unknown) {
           console.error('Failed to parse voice sample SSE data:', error)
         }
       })
@@ -452,24 +463,72 @@ export default function VoiceLibraryPage() {
       .slice(0, 6)
   }, [sortedSamples])
 
-  // Add to my voices 핸들러
-  const handleAddToMyVoices = useCallback(
+  // Add to my voices 핸들러 (크레딧 차감 모달)
+  const handleRequestAddToMyVoices = useCallback(
     (sample: VoiceSample) => {
-      if (!sample.id || sample.isInMyVoices) return
-
-      setAddingToMyVoices((prev) => new Set(prev).add(sample.id))
-      addToMyVoices.mutate(sample.id, {
-        onSettled: () => {
-          setAddingToMyVoices((prev) => {
-            const next = new Set(prev)
-            next.delete(sample.id)
-            return next
-          })
-        },
-      })
+      if (!sample.id) return
+      if (sample.isInMyVoices) {
+        showToast({ title: '이미 내 목소리에 추가되어 있습니다.', variant: 'info' })
+        return
+      }
+      if (!sample.isPublic) {
+        showToast({ title: '비공개 보이스는 추가할 수 없습니다.', variant: 'warning' })
+        return
+      }
+      if (sample.canCommercialUse === false) {
+        showToast({ title: '비상업용 보이스는 추가할 수 없습니다.', variant: 'warning' })
+        return
+      }
+      setPurchaseTarget(sample)
+      setIsPurchaseModalOpen(true)
     },
-    [addToMyVoices],
+    [showToast],
   )
+
+  const handleConfirmPurchase = useCallback(async () => {
+    if (!purchaseTarget?.id) return
+    const sampleId = purchaseTarget.id
+    if (purchaseTarget.canCommercialUse === false || purchaseTarget.isPublic === false) {
+      showToast({ title: '추가할 수 없는 보이스입니다.', variant: 'warning' })
+      setIsPurchaseModalOpen(false)
+      setPurchaseTarget(null)
+      return
+    }
+    setAddingToMyVoices((prev) => new Set(prev).add(sampleId))
+    try {
+      await purchaseVoiceMutation.mutateAsync({
+        sampleId,
+        cost: CREDIT_COST_PER_VOICE_ADD,
+      })
+      showToast({ title: '내 목소리에 추가되었습니다.', variant: 'success' })
+      setIsPurchaseModalOpen(false)
+      setPurchaseTarget(null)
+      void refetchCreditBalance()
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : typeof error === 'string'
+            ? error
+            : '크레딧 결제에 실패했습니다.'
+      showToast({ title: '추가에 실패했습니다.', description: message, variant: 'error' })
+    } finally {
+      setAddingToMyVoices((prev) => {
+        const next = new Set(prev)
+        next.delete(sampleId)
+        return next
+      })
+    }
+  }, [purchaseTarget, purchaseVoiceMutation, refetchCreditBalance, showToast])
+
+  const handleNavigateToCredits = useCallback(() => {
+    navigate(routes.myinfo)
+  }, [navigate])
+
+  const handleClosePurchaseModal = useCallback(() => {
+    setIsPurchaseModalOpen(false)
+    setPurchaseTarget(null)
+  }, [])
 
   // Remove from my voices 핸들러
   const handleRemoveFromMyVoices = useCallback(
@@ -594,7 +653,7 @@ export default function VoiceLibraryPage() {
           voices={trendingVoices}
           onPlay={handlePlaySample}
           playingSampleId={playingSampleId}
-          onAddToMyVoices={handleAddToMyVoices}
+          onAddToMyVoices={handleRequestAddToMyVoices}
           onRemoveFromMyVoices={handleRemoveFromMyVoices}
           addingToMyVoices={addingToMyVoices}
           removingFromMyVoices={removingFromMyVoices}
@@ -603,6 +662,7 @@ export default function VoiceLibraryPage() {
             // 일단 trending으로 설정
             setSort('trending')
           }}
+          currentUserId={currentUser?._id}
         />
       )}
 
@@ -640,7 +700,7 @@ export default function VoiceLibraryPage() {
             isLoading={voiceQuery.isLoading}
             onPlay={handlePlaySample}
             playingSampleId={playingSampleId}
-            onAddToMyVoices={handleAddToMyVoices}
+            onAddToMyVoices={handleRequestAddToMyVoices}
             onRemoveFromMyVoices={handleRemoveFromMyVoices}
             addingToMyVoices={addingToMyVoices}
             removingFromMyVoices={removingFromMyVoices}
@@ -662,11 +722,12 @@ export default function VoiceLibraryPage() {
           voices={characterVoices}
           onPlay={handlePlaySample}
           playingSampleId={playingSampleId}
-          onAddToMyVoices={handleAddToMyVoices}
+          onAddToMyVoices={handleRequestAddToMyVoices}
           onRemoveFromMyVoices={handleRemoveFromMyVoices}
           addingToMyVoices={addingToMyVoices}
           removingFromMyVoices={removingFromMyVoices}
           showTitle={!search.trim()}
+          currentUserId={currentUser?._id}
         />
       )}
 
@@ -678,7 +739,7 @@ export default function VoiceLibraryPage() {
           isLoading={voiceQuery.isLoading}
           onPlay={handlePlaySample}
           playingSampleId={playingSampleId}
-          onAddToMyVoices={handleAddToMyVoices}
+          onAddToMyVoices={handleRequestAddToMyVoices}
           onRemoveFromMyVoices={handleRemoveFromMyVoices}
           addingToMyVoices={addingToMyVoices}
           removingFromMyVoices={removingFromMyVoices}
@@ -697,7 +758,7 @@ export default function VoiceLibraryPage() {
           isLoading={voiceQuery.isLoading}
           onPlay={handlePlaySample}
           playingSampleId={playingSampleId}
-          onAddToMyVoices={handleAddToMyVoices}
+          onAddToMyVoices={handleRequestAddToMyVoices}
           onRemoveFromMyVoices={handleRemoveFromMyVoices}
           addingToMyVoices={addingToMyVoices}
           removingFromMyVoices={removingFromMyVoices}
@@ -712,13 +773,25 @@ export default function VoiceLibraryPage() {
         <VoiceFiltersModal
           open={isFiltersModalOpen}
           onOpenChange={setIsFiltersModalOpen}
-        filters={filters}
-        onFiltersChange={setFilters}
-        onApply={() => {
-          console.log('Filters applied:', filters)
-        }}
-        tagOptions={tagOptions}
-      />
+          filters={filters}
+          onFiltersChange={setFilters}
+          onApply={() => {
+            console.log('Filters applied:', filters)
+          }}
+          tagOptions={tagOptions}
+        />
+        <VoicePurchaseModal
+          open={isPurchaseModalOpen}
+          sample={purchaseTarget}
+          creditBalance={creditBalance}
+          cost={CREDIT_COST_PER_VOICE_ADD}
+          isProcessing={purchaseVoiceMutation.status === 'pending'}
+          onClose={handleClosePurchaseModal}
+          onConfirm={() => {
+            void handleConfirmPurchase()
+          }}
+          onChargeCredits={handleNavigateToCredits}
+        />
       </div>
 
       {playerSample && (

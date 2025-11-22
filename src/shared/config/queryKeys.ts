@@ -40,4 +40,7 @@ export const queryKeys = {
   youtube: {
     status: () => ['youtube', 'status'] as const,
   },
+  credits: {
+    balance: () => ['credits', 'balance'] as const,
+  },
 }

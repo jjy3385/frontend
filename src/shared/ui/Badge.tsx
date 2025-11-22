@@ -19,6 +19,10 @@ const colorMap: Record<string, { wrapper: string; dot: string }> = {
     wrapper: 'border-success/40 bg-success/15 text-success-darker',
     dot: 'bg-success',
   },
+  success: {
+    wrapper: 'border-success/50 bg-success/15 text-success-darker',
+    dot: 'bg-success',
+  },
   default: {
     wrapper: 'border-surface-4 bg-surface-3 text-muted',
     dot: 'bg-muted',
