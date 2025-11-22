@@ -40,7 +40,7 @@ export function YoutubePublishDialog({
   useEffect(() => {
     if (!asset || !open) return
     setTitle(projectTitle)
-    setDescription(`Dupilot에서 자동 생성한 더빙 영상입니다.\n원본 프로젝트: ${projectTitle}`)
+    setDescription(`Dupilot에서 자동 생성한 더빙 영상입니다.\n원본 에피소드: ${projectTitle}`)
     setTags('Dupilot')
     setPrivacyStatus('unlisted')
   }, [asset, open, projectTitle, languageCode, languageLabel])

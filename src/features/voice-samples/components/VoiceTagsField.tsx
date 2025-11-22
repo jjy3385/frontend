@@ -15,7 +15,7 @@ export function VoiceTagsField({
   onChange,
   disabled = false,
   label = '태그',
-  placeholder = '태그를 입력하고 Enter로 추가하세요',
+  placeholder = 'SNS 해시태그처럼 자유롭게 적어주세요. (예: #차분한 #신나는)',
 }: VoiceTagsFieldProps) {
   const [input, setInput] = useState('')
 

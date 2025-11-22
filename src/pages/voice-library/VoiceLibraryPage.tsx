@@ -17,6 +17,7 @@ import {
 } from '@/features/credits/hooks/useCredits'
 import { CREDIT_COST_PER_VOICE_ADD } from '@/shared/constants/credits'
 import { useUiStore } from '@/shared/store/useUiStore'
+import { useAuthStore } from '@/shared/store/useAuthStore'
 import { useLanguage } from '@/features/languages/hooks/useLanguage'
 import { VOICE_CATEGORY_MAP } from '@/shared/constants/voiceCategories'
 import { env } from '@/shared/config/env'
@@ -87,6 +88,7 @@ export default function VoiceLibraryPage() {
   const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false)
   const [purchaseTarget, setPurchaseTarget] = useState<VoiceSample | null>(null)
   const { showToast } = useUiStore()
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
   const { data: creditBalanceData, refetch: refetchCreditBalance } = useCreditBalance()
   const purchaseVoiceMutation = usePurchaseVoiceWithCredits()
   const [isFiltersModalOpen, setIsFiltersModalOpen] = useState(false)
@@ -107,6 +109,12 @@ export default function VoiceLibraryPage() {
     if (!selectedCategory) return null
     return VOICE_CATEGORY_MAP[selectedCategory as keyof typeof VOICE_CATEGORY_MAP] ?? selectedCategory
   }, [selectedCategory])
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate(routes.login, { replace: true })
+    }
+  }, [isAuthenticated, navigate])
 
   const queryKey = useMemo(
     () => ['voice-library', tab, search, filters] as const,
@@ -549,6 +557,10 @@ export default function VoiceLibraryPage() {
     [removeFromMyVoices],
   )
 
+  if (!isAuthenticated) {
+    return null
+  }
+
   return (
     <>
       <div className="mx-auto max-w-7xl space-y-8 px-6 py-6 pb-28">
@@ -557,7 +569,7 @@ export default function VoiceLibraryPage() {
         <VoiceLibraryTabs activeTab={tab} onChange={setTab} />
         <div className="flex items-center gap-4">
           <Button variant="primary" onClick={() => navigate(routes.voiceCloning)} className="gap-2">
-            + 음성 녹음
+            + 내 목소리 만들기
           </Button>
         </div>
       </div>

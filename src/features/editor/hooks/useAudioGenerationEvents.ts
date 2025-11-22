@@ -27,7 +27,7 @@ type AudioGenerationEvent = {
  * 4. queryClient.setQueryData()로 해당 세그먼트만 업데이트
  * 5. presigned URL 캐시 무효화로 새 오디오 로드
  *
- * @param projectId - 프로젝트 ID
+ * @param projectId - 에피소드 ID
  * @param languageCode - 언어 코드
  * @param enabled - SSE 연결 활성화 여부 (default: true)
  */

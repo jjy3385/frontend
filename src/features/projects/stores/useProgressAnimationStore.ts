@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 
 interface ProgressState {
-  // 프로젝트ID-언어코드별 진행도
+  // 에피소드ID-언어코드별 진행도
   progress: Record<string, number>
 }
 
@@ -40,7 +40,7 @@ export const useProgressAnimationStore = create<ProgressState & ProgressActions>
         return { progress: newProgress }
       })
     } else {
-      // 프로젝트 전체 진행도 삭제
+      // 에피소드 전체 진행도 삭제
       set((state) => {
         const newProgress = { ...state.progress }
         Object.keys(newProgress).forEach((key) => {

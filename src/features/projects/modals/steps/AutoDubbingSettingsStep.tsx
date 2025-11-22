@@ -29,7 +29,7 @@ export const autoDubbingSettingsSchema = z
     replaceVoiceSamples: z.boolean(),
     // 빈 문자열도 통과시킴
     sourceLanguage: z.string().min(1, '언어를 선택해주세요').or(z.literal('')),
-    targetLanguages: z.array(z.string()).min(1, '타겟 언어를 최소 1개 선택하세요.'),
+    targetLanguages: z.array(z.string()).min(1, '번역 언어를 최소 1개 선택하세요.'),
     speakerCount: z.coerce.number().min(0).max(10),
     tagsInput: z.string().optional(),
   })

@@ -18,8 +18,8 @@ import { usePresignedUrl } from '@/shared/api/hooks'
 import type { TrackRow } from './types'
 
 const STATIC_TRACKS: TrackRow[] = [
-  { id: 'track-original', label: 'Original', color: '#888', type: 'waveform', size: 'small' },
-  { id: 'track-fx', label: 'Music & FX', color: '#BB86FC', type: 'waveform', size: 'small' },
+  { id: 'track-original', label: '원본트랙', color: '#888', type: 'waveform', size: 'small' },
+  { id: 'track-fx', label: '배경음&효과음', color: '#BB86FC', type: 'waveform', size: 'small' },
 ]
 
 const SPEAKER_ROW_HEIGHT = 84

@@ -4,8 +4,8 @@ import { useGlobalSSE } from '../hooks/useGlobalSSE'
  * 전역 SSE 연결 관리 컴포넌트
  *
  * 단일 SSE 연결로 모든 이벤트 타입을 처리:
- * - target-progress: 타겟 언어 파이프라인 진행률
- * - project-progress: 프로젝트 전체 진행률
+ * - target-progress: 번역 언어 파이프라인 진행률
+ * - project-progress: 에피소드 전체 진행률
  * - audio-completed/failed: 오디오 생성 완료/실패 (useSSEStore를 통해 구독자에게 전달)
  *
  * @example
@@ -16,13 +16,13 @@ import { useGlobalSSE } from '../hooks/useGlobalSSE'
  * </QueryClientProvider>
  */
 export function ProjectProgressManager() {
-  // 전역 SSE 연결 - 모든 프로젝트의 이벤트 구독
+  // 전역 SSE 연결 - 모든 에피소드의 이벤트 구독
   useGlobalSSE({
-    // 타겟 언어 작업 완료 시 추가 처리
+    // 번역 언어 작업 완료 시 추가 처리
     onTargetComplete: (projectId, targetLang) => {
       console.log(`[GlobalSSE] Target completed: ${projectId} - ${targetLang}`)
     },
-    // 프로젝트 전체 완료 시 추가 처리
+    // 에피소드 전체 완료 시 추가 처리
     onProjectComplete: (projectId) => {
       console.log(`[GlobalSSE] Project completed: ${projectId}`)
     },

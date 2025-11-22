@@ -16,7 +16,7 @@ interface EditorSummaryPanelProps {
 /**
  * 에디터 우측 패널 - 요약/번역 탭
  *
- * - 요약 탭: 세그먼트 요약 워크스페이스
+ * - 요약 탭: 세그먼트 요약 더빙
  * - 번역 탭: 번역 요약 섹션
  */
 export function EditorSummaryPanel({

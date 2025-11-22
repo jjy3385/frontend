@@ -35,7 +35,7 @@ export function ReviewStep({
         다시 녹음하기
       </button>
 
-      <h3 className="mb-4 text-center text-xl font-bold text-gray-900">녹음 샘플 확인</h3>
+      <h3 className="mb-4 text-center text-xl font-bold text-gray-900">미리듣기</h3>
       <p className="mb-8 text-center text-base leading-relaxed text-gray-600">
         샘플을 재생해보고 품질이 괜찮다면 다음 단계로 이동하세요.
       </p>

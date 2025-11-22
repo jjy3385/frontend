@@ -41,7 +41,7 @@ export function TargetLanguagesField({
   return (
     <div className="space-y-3">
       <Label>
-        타겟 언어 <span className="ml-1 text-danger">*</span>
+        번역 언어 <span className="ml-1 text-danger">*</span>
       </Label>
       <div className="">
         <div className="flex min-h-[130px] flex-col gap-3 rounded-2xl border border-dashed border-surface-4 p-4">
@@ -91,7 +91,7 @@ export function TargetLanguagesField({
           </div>
           <div className="flex flex-wrap gap-2">
             {selectedTargets.length === 0 ? (
-              <p className="text-sm text-muted">추가된 타겟 언어가 없습니다.</p>
+              <p className="text-sm text-muted">추가된 번역 언어가 없습니다.</p>
             ) : (
               selectedTargets.map((language) => {
                 const label = languageLabelMap[language] ?? language

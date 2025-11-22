@@ -10,7 +10,7 @@ import { Button } from '@/shared/ui/Button'
  * - 알림 목록 표시
  * - 개별 알림 읽음 처리 및 삭제
  * - 전체 읽음 처리 및 전체 삭제
- * - 알림 클릭 시 해당 프로젝트로 이동
+ * - 알림 클릭 시 해당 에피소드로 이동
  */
 export function NotificationList() {
   const navigate = useNavigate()

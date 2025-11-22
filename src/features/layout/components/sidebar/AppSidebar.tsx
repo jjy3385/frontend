@@ -12,8 +12,8 @@ type NavItem = {
 }
 
 const primaryNav: NavItem[] = [
-  { label: '워크스페이스', to: routes.workspace, icon: Home },
-  { label: '보이스 라이브러리', to: routes.voiceLibrary, icon: BookOpenCheck },
+  { label: '더빙', to: routes.workspace, icon: Home },
+  { label: '보이스 마켓', to: routes.voiceLibrary, icon: BookOpenCheck },
   { label: '보이스 클로닝', to: routes.voiceCloning, icon: Mic },
 ]
 

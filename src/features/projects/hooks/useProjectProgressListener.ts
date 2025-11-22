@@ -29,16 +29,16 @@ export interface UseProjectProgressListenerOptions {
 }
 
 /**
- * SSE 연결을 통해 프로젝트 진행도 이벤트를 구독하는 훅
+ * SSE 연결을 통해 에피소드 진행도 이벤트를 구독하는 훅
  *
  * @param options - 구독 옵션
  * @returns void
  *
  * @example
- * // 전체 프로젝트 구독 (대시보드)
+ * // 전체 에피소드 구독 (대시보드)
  * useProjectProgressListener()
  *
- * // 특정 프로젝트만 구독
+ * // 특정 에피소드만 구독
  * useProjectProgressListener({ projectId: 'project-123' })
  *
  * // 완료 콜백과 함께 사용

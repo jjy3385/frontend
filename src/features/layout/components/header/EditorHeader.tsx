@@ -77,7 +77,7 @@ export function EditorHeader() {
               </DropdownMenuItem>
               <DropdownMenuItem onSelect={handleVoiceSamples}>
                 <Waves className="text-muted h-4 w-4" />
-                음성 샘플
+                내 목소리
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem className="text-danger" onSelect={handleSignOut}>

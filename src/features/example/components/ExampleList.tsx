@@ -31,7 +31,7 @@ export function ExampleList({ items, stats, isDeleting, onEdit, onDelete }: Exam
       <div className="space-y-3">
         {items.length === 0 ? (
           <p className="border-surface-4 bg-surface-2 text-muted rounded-2xl border border-dashed py-6 text-center text-sm">
-            등록된 항목이 없습니다. 상단 폼에서 새 프로젝트를 추가해 보세요.
+            등록된 항목이 없습니다. 상단 폼에서 새 에피소드를 추가해 보세요.
           </p>
         ) : (
           items.map((item) => (

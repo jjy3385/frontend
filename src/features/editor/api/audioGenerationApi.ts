@@ -13,7 +13,7 @@ export type RegenerateTTSPayload = {
   translatedText: string // TTS 생성에 사용할 번역된 텍스트
   start: number // 세그먼트 시작 시간 (초)
   end: number // 세그먼트 종료 시간 (초)
-  targetLang: string // 타겟 언어 코드 (예: 'ko', 'en')
+  targetLang: string // 번역 언어 코드 (예: 'ko', 'en')
   mod: 'fixed' | 'dynamic' // fixed: 고정 길이, dynamic: 동적 길이
   voiceSampleId?: string // 음성 샘플 ID (선택사항)
 }

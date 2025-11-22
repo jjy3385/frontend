@@ -43,7 +43,7 @@ export function EditorHeader({
         <Breadcrumbs
           items={[
             { label: '홈', href: '/' },
-            { label: `프로젝트`, href: `/projects/${projectId}` },
+            { label: `에피소드`, href: `/projects/${projectId}` },
             { label: '에디터' },
           ]}
           className="opacity-50"
@@ -54,7 +54,7 @@ export function EditorHeader({
         <div className="flex items-center gap-3">
           <Button type="button" onClick={onExportClick} className="h-9">
             <Upload className="mr-2 h-4 w-4" />
-            Export
+            내보내기
           </Button>
           <Button
             variant="secondary"

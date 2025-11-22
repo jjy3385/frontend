@@ -33,7 +33,7 @@ export function RecordingStep({ formattedTime, onStopRecording, onCancel }: Reco
           읽어주세요
         </p>
         <p className="text-base leading-relaxed text-gray-800">
-          "안녕하세요! 지금 저는 제 목소리를 샘플링하고 있습니다. 잠시 뒤 이 목소리가 텍스트를
+          "안녕하세요! 지금 저는 제 목소리를 녹음하고 있습니다. 잠시 뒤 이 목소리가 텍스트를
           자동으로 읽어주게 될 거예요."
         </p>
       </div>

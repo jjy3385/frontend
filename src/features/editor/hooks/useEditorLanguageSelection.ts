@@ -20,7 +20,7 @@ interface UseEditorLanguageSelectionProps {
 /**
  * 에디터 언어 선택 로직
  *
- * - 완료된 첫 번째 타겟 언어를 기본값으로 선택
+ * - 완료된 첫 번째 번역 언어를 기본값으로 선택
  * - 모든 언어가 미완료면 원어 선택
  * - SSE 진행률에 따라 언어 활성화 상태 업데이트
  */
@@ -41,7 +41,7 @@ export function useEditorLanguageSelection({
       progress: 100,
     }
 
-    // 타겟 언어 옵션들
+    // 번역 언어 옵션들
     const targetOptions: LanguageOption[] =
       project.targets?.map((target) => {
         // SSE 진행률이 있으면 사용, 없으면 API 데이터 사용
@@ -65,7 +65,7 @@ export function useEditorLanguageSelection({
     return [originalOption, ...targetOptions]
   }, [project, sseProgress])
 
-  // 기본 선택 언어: 완료된 첫 번째 타겟 언어, 없으면 원어
+  // 기본 선택 언어: 완료된 첫 번째 번역 언어, 없으면 원어
   const defaultLanguageCode = useMemo(() => {
     const firstAvailableTarget = languageOptions.find(
       (option) => !option.isOriginal && option.isAvailable,

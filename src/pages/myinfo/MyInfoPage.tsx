@@ -243,7 +243,7 @@ export default function MyInfoPage() {
             </CardHeader>
             <div className="space-y-4">
               {[
-                { label: '생성한 프로젝트', value: '12', icon: UserRound },
+                { label: '생성한 에피소드', value: '12', icon: UserRound },
                 { label: '업로드 진행 중', value: '3', icon: PenSquare },
                 { label: '알림 수신', value: '8', icon: Bell },
               ].map(({ label, value, icon: Icon }) => (

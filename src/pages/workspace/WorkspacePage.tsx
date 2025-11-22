@@ -122,7 +122,7 @@ export default function WorkspacePage() {
     } else {
       showToast({
         title: '내보내기 실패',
-        description: '타겟 언어가 설정되지 않은 프로젝트입니다.',
+        description: '번역 언어가 설정되지 않은 에피소드입니다.',
         variant: 'error',
       })
     }
@@ -236,7 +236,7 @@ export default function WorkspacePage() {
         <div className="flex flex-col gap-4 pt-1 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-gray-900">
-              내 워크스페이스
+              더빙
             </h1>
           </div>
         </div>
@@ -252,7 +252,7 @@ export default function WorkspacePage() {
               <Search className="h-4 w-4 shrink-0 text-muted" />
 
               <Input
-                placeholder="프로젝트 검색..."
+                placeholder="에피소드 검색..."
                 className="h-8 min-w-[80px] flex-1 border-0 bg-transparent p-0 text-sm shadow-none focus-visible:ring-0"
                 value={workspaceSearchTerm}
                 onChange={(e) => setWorkspaceSearchTerm(e.target.value)}
@@ -373,7 +373,7 @@ export default function WorkspacePage() {
                       {/* Target Language Section */}
                       <div>
                         <DropdownMenuLabel className="mb-0 px-2 text-xs font-medium text-gray-500">
-                          타겟 언어
+                          번역 언어
                         </DropdownMenuLabel>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>

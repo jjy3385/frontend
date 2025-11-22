@@ -16,10 +16,10 @@ export function formatDuration(seconds = 0) {
 }
 
 /**
- * 프로젝트 Stage → 표시 레이블
+ * 에피소드 Stage → 표시 레이블
  * (워커에서 보내는 stage 값: "starting", "asr_started", "done", "failed" 등)
  *
- * @param stage - 프로젝트 현재 stage (워커가 전달하는 문자열)
+ * @param stage - 에피소드 현재 stage (워커가 전달하는 문자열)
  * @returns UI에 표시할 상태 레이블
  */
 export function getProjectStatusLabel(stage?: string): StatusLabel {
@@ -54,7 +54,7 @@ export function getProjectStatusLabel(stage?: string): StatusLabel {
  * 타겟 상태 → 표시 레이블
  * (Enum 타입: pending, processing, completed, failed)
  *
- * @param status - 타겟 언어별 상태
+ * @param status - 번역 언어별 상태
  * @returns UI에 표시할 상태 레이블
  */
 export function getTargetStatusLabel(status?: string): StatusLabel {
@@ -86,7 +86,7 @@ export function getCountryCode(languageCode: string): string {
 }
 
 /**
- * 프로젝트 ID에서 그라디언트 인덱스 계산
+ * 에피소드 ID에서 그라디언트 인덱스 계산
  */
 export function getGradientIndex(projectId: string, gradientsLength: number): number {
   return Math.abs(projectId.charCodeAt(0)) % gradientsLength

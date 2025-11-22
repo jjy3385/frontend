@@ -62,7 +62,7 @@ export default function VoiceSamplesPage() {
   const handlePlay = async (sample: VoiceSample) => {
     // id가 없으면 재생 불가
     if (!sample.id) {
-      console.warn('음성 샘플 ID가 없습니다:', sample)
+      console.warn('내 목소리 ID가 없습니다:', sample)
       return
     }
 

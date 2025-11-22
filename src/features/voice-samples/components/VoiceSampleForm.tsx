@@ -405,7 +405,7 @@ export function VoiceSampleForm({
         />
         <div className="space-y-1 text-sm leading-relaxed text-muted">
           <p>
-            음성 파일을 업로드함으로써 필요한 권리와 동의를 모두 확보했으며, 생성된 콘텐츠를 불법적이거나
+            음성 파일에 필요한 권리와 동의를 모두 확보했으며, 생성된 콘텐츠를 불법적이거나
             부정한 목적으로 사용하지 않겠다는 점에 동의합니다. 실제 서비스와 동일한 수준의 정책을 참고용으로
             제공합니다.
           </p>
@@ -427,7 +427,7 @@ export function VoiceSampleForm({
           variant="primary"
           disabled={!name.trim() || !audioFile || isUploading}
         >
-          {isUploading ? `${Math.round(uploadProgress)}%` : '보이스 클론 저장'}
+          {isUploading ? `${Math.round(uploadProgress)}%` : '내 목소리 저장'}
         </Button>
       </div>
     </form>

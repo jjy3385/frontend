@@ -1,5 +1,5 @@
 /**
- * 프로젝트 진행도 상태별 메시지 상수
+ * 에피소드 진행도 상태별 메시지 상수
  */
 export const PROGRESS_STATUS_MESSAGES = {
   pending: '대기 중',
@@ -9,14 +9,14 @@ export const PROGRESS_STATUS_MESSAGES = {
 } as const
 
 /**
- * 프로젝트 진행도 알림 메시지 상수
+ * 에피소드 진행도 알림 메시지 상수
  */
 export const NOTIFICATION_MESSAGES = {
-  // 타겟 언어 작업 완료
+  // 번역 언어 작업 완료
   TARGET_COMPLETED: (projectTitle: string, languageDisplay: string, languageCode: string) =>
-    `${projectTitle ?? '프로젝트'}의 ${languageDisplay}(${languageCode.toUpperCase()}) 작업이 완료되었습니다.`,
+    `${projectTitle ?? '에피소드'}의 ${languageDisplay}(${languageCode.toUpperCase()}) 작업이 완료되었습니다.`,
 
-  // 프로젝트 전체 완료
+  // 에피소드 전체 완료
   PROJECT_COMPLETED: (projectTitle: string) =>
     `${projectTitle}의 모든 언어 더빙 작업이 완료되었습니다.`,
 

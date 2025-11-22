@@ -1,4 +1,4 @@
-import { Waves } from 'lucide-react'
+import { Compass, Mic } from 'lucide-react'
 
 import { cn } from '@/shared/lib/utils'
 
@@ -26,7 +26,7 @@ export function VoiceLibraryTabs({ activeTab, onChange }: VoiceLibraryTabsProps)
             : 'text-muted hover:text-foreground',
         )}
       >
-        <Waves className="h-4 w-4" />
+        <Compass  className="h-4 w-4" />
         <span>탐색</span>
       </button>
 
@@ -41,7 +41,8 @@ export function VoiceLibraryTabs({ activeTab, onChange }: VoiceLibraryTabsProps)
             : 'text-muted hover:text-foreground',
         )}
       >
-        내 목소리
+        <Mic className="h-4 w-4" />
+        <span>내 목소리</span>
       </button>
 
     </div>

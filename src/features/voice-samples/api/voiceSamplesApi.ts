@@ -15,7 +15,7 @@ function transformVoiceSample(apiSample: VoiceSampleApiResponse): VoiceSample {
   // 백엔드에서 _id로 오거나 sample_id로 alias되어 올 수 있음
   const sampleId = String(apiSample.sample_id || apiSample._id || '')
   if (!sampleId || sampleId === 'undefined' || sampleId === 'null') {
-    console.error('음성 샘플 ID가 없습니다:', apiSample)
+    console.error('목소리 ID가 없습니다:', apiSample)
   }
   const categories = Array.isArray(apiSample.category)
     ? apiSample.category.filter(Boolean)

@@ -7,7 +7,7 @@ import { cn } from '@/shared/lib/utils'
 const navItems = [
   {
     icon: FolderKanban,
-    label: '프로젝트 목록',
+    label: '에피소드 목록',
     id: 'projects',
   },
   {

@@ -33,8 +33,8 @@ export interface UseGlobalSSEOptions {
  * 전역 SSE 연결 훅
  *
  * 단일 SSE 연결로 다양한 이벤트 타입을 처리:
- * - target-progress: 타겟 언어 파이프라인 진행률
- * - project-progress: 프로젝트 전체 진행률
+ * - target-progress: 번역 언어 파이프라인 진행률
+ * - project-progress: 에피소드 전체 진행률
  * - audio-completed: 오디오 생성 완료
  * - audio-failed: 오디오 생성 실패
  *
