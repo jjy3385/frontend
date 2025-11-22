@@ -1,0 +1,1 @@
+export const CREDIT_COST_PER_VOICE_ADD = 10

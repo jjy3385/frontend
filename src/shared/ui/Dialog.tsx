@@ -66,3 +66,10 @@ export function DialogTitle({ className, ...props }: DialogPrimitive.DialogTitle
 export function DialogDescription({ className, ...props }: DialogPrimitive.DialogDescriptionProps) {
   return <DialogPrimitive.Description className={cn('text-muted text-sm', className)} {...props} />
 }
+
+export function DialogFooter({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
+  return <div className={cn('mt-4 flex flex-col gap-3', className)} {...props} />
+}

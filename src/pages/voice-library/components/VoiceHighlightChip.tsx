@@ -27,6 +27,7 @@ interface VoiceHighlightChipProps {
   isAdding?: boolean
   isRemoving?: boolean
   isInMyVoices?: boolean
+  isOwner?: boolean
 }
 
 export function VoiceHighlightChip({
@@ -38,6 +39,7 @@ export function VoiceHighlightChip({
   isAdding = false,
   isRemoving = false,
   isInMyVoices = false,
+  isOwner = false,
 }: VoiceHighlightChipProps) {
   const [resolvedAvatar, setResolvedAvatar] = useState<string>(
     getPresetAvatarUrl(sample.avatarPreset || 'default'),
@@ -67,6 +69,17 @@ export function VoiceHighlightChip({
     sample.canCommercialUse === false
       ? 'bg-amber-100 text-amber-700'
       : 'bg-emerald-100 text-emerald-700'
+  const isCommercialAllowed = sample.canCommercialUse !== false
+  const isPublicVoice = sample.isPublic !== false
+  const addDisabled =
+    isOwner || !isCommercialAllowed || !isPublicVoice || isInMyVoices || isAdding || isRemoving
+  const addDisabledReason = isInMyVoices
+    ? '이미 내 목소리에 있습니다.'
+    : !isPublicVoice
+      ? '비공개 보이스는 추가할 수 없습니다.'
+      : !isCommercialAllowed
+        ? '비상업용 보이스는 추가할 수 없습니다.'
+        : undefined
 
   const countryCode = useMemo(() => {
     if (!sample.country) return undefined
@@ -192,25 +205,28 @@ export function VoiceHighlightChip({
           </button>
         )}
         {/* + 버튼 */}
-        {(onAddToMyVoices || onRemoveFromMyVoices) && (
+        {!isOwner && (onAddToMyVoices || onRemoveFromMyVoices) && (
           <button
             type="button"
             onClick={(e) => {
               e.stopPropagation()
+              if (addDisabled) return
               if (isInMyVoices && onRemoveFromMyVoices) {
                 onRemoveFromMyVoices()
               } else if (!isInMyVoices && onAddToMyVoices) {
                 onAddToMyVoices()
               }
             }}
-            disabled={isAdding || isRemoving}
-            title={isInMyVoices ? '내 목소리에서 제거' : '내 목소리에 추가'}
+            disabled={addDisabled}
+            title={
+              addDisabledReason ?? (isInMyVoices ? '내 목소리에서 제거' : '내 목소리에 추가')
+            }
             className={cn(
               'flex-shrink-0 rounded-full p-1.5 transition-colors',
               isInMyVoices
                 ? 'text-primary hover:bg-surface-2'
                 : 'text-muted hover:bg-surface-2 hover:text-foreground',
-              (isAdding || isRemoving) && 'cursor-not-allowed opacity-50',
+              addDisabled && 'cursor-not-allowed opacity-50',
             )}
           >
             {isAdding || isRemoving ? (
