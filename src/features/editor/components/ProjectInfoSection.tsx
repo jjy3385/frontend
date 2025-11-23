@@ -58,7 +58,7 @@ export function ProjectInfoSection({ projectId }: ProjectInfoSectionProps) {
   }
 
   return (
-    <div className="scrollbar-thin flex h-full flex-col overflow-y-auto rounded-2xl border border-outline/40 bg-surface-1 p-4 shadow-soft">
+    <div className="scrollbar-thin flex h-full flex-col overflow-y-auto rounded-2xl border border-outline/20 bg-surface-1 p-4 shadow-soft">
       <div className="space-y-6">
         {/* 프로젝트 제목 */}
         <div>

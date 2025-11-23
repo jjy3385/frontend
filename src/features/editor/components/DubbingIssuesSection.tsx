@@ -164,7 +164,7 @@ export function DubbingIssuesSection({ segments }: DubbingIssuesSectionProps) {
   }
 
   return (
-    <section className="flex h-full flex-col rounded-2xl border-outline/40 bg-surface-1 p-3 shadow-soft">
+    <section className="flex h-full flex-col rounded-2xl border border-outline/20 bg-surface-1 p-3 shadow-soft">
       <div className="mb-3 flex items-center justify-between px-2">
         <h3 className="text-sm font-semibold text-foreground">목록</h3>
         {issues.length > 0 && (
@@ -183,7 +183,7 @@ export function DubbingIssuesSection({ segments }: DubbingIssuesSectionProps) {
           {issues.map((issue) => (
             <div
               key={`${issue.segmentId}-${issue.id}`}
-              className={`group flex cursor-pointer items-center gap-3 rounded-lg border-outline/40 px-3 py-2 text-xs transition-all hover:border-primary/30 hover:bg-surface-2 ${
+              className={`group flex cursor-pointer items-center gap-3 rounded-lg border-outline/20 px-3 py-2 text-xs transition-all hover:border-primary/30 hover:bg-surface-2 ${
                 issue.resolved ? 'opacity-50' : ''
               }`}
               onClick={(e) => handleIssueClick(issue.segmentId, e)}

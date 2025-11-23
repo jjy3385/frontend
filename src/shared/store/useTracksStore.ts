@@ -40,14 +40,14 @@ type TracksState = {
 
 // 기본 트랙 색상 팔레트
 const TRACK_COLORS = [
-  '#ef4444', // 1: red (첫 스피커)
-  '#475D91', // 2: primary blue
-  '#2F7D67', // 3: green
-  '#725572', // 4: tertiary purple
-  '#C27C2A', // 5: amber
-  '#1B7F4D', // 6: deep green
-  '#233B6D', // 7: deep blue
-  '#00897B', // 8: teal
+  '#DC2626', // 1: vivid red
+  '#2563EB', // 2: vivid blue (primary)
+  '#16A34A', // 3: vivid green
+  '#9333EA', // 4: vivid purple/tertiary
+  '#D97706', // 5: vivid amber
+  '#15803D', // 6: deep green
+  '#1E40AF', // 7: deep blue
+  '#0D9488', // 8: teal
 ]
 
 export const useTracksStore = create<TracksState>()(

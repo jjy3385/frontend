@@ -53,10 +53,9 @@ export function VoiceSampleRowItem({
       onClick={() => onSelect(sample.id)}
       className={cn(
         'group/row relative mx-2 mb-1 flex cursor-pointer items-center gap-3 rounded-lg border px-3 py-2 transition-all duration-200',
-        'hover:bg-gray-50',
         isSelected
-          ? 'border-violet-200 bg-violet-50/60'
-          : 'border-transparent bg-white hover:border-gray-200',
+          ? 'border-primary/40 bg-primary/10 shadow-soft'
+          : 'border-transparent bg-surface-1 hover:border-outline/30 hover:bg-surface-2',
       )}
     >
       <VoiceSampleAvatar
@@ -72,7 +71,7 @@ export function VoiceSampleRowItem({
           <span
             className={cn(
               'truncate text-sm font-semibold transition-colors',
-              isSelected ? 'text-violet-900' : 'text-gray-900',
+              isSelected ? 'text-primary' : 'text-foreground',
             )}
           >
             {sample.name}
@@ -80,9 +79,11 @@ export function VoiceSampleRowItem({
         </div>
 
         {sample.id === 'clone' ? (
-          <span className="text-xs text-gray-500">오디오 특성을 자동으로 감지하여 복제합니다.</span>
+          <span className="text-xs text-muted-foreground">
+            오디오 특성을 자동으로 감지하여 복제합니다.
+          </span>
         ) : (
-          <p className="truncate text-xs text-gray-500 group-hover/row:text-gray-600">
+          <p className="truncate text-xs text-muted-foreground group-hover/row:text-foreground">
             {sample.description || '설명이 없는 음성입니다.'}
           </p>
         )}
@@ -96,7 +97,7 @@ export function VoiceSampleRowItem({
 
       {isSelected && (
         <div className="ml-2 flex shrink-0 items-center">
-          <Check className="h-4 w-4 text-violet-600" />
+          <Check className="h-4 w-4 text-primary" />
         </div>
       )}
     </div>
