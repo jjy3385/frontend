@@ -59,6 +59,8 @@ export function AutoDubbingSettingsStep({
     defaultValues: {
       ...initialValues,
       tagsInput: initialValues.tagsInput ?? stringifyTags(initialValues.tags ?? []),
+      sourceLanguage: initialValues.sourceLanguage || 'en',
+      detectAutomatically: false,
     },
   })
 
@@ -97,7 +99,9 @@ export function AutoDubbingSettingsStep({
 
   useEffect(() => {
     if (!sourceLanguage && languageItems.length > 0) {
-      setValue('sourceLanguage', languageItems[0].language_code, { shouldDirty: false })
+      const enOption = languageItems.find((lang) => lang.language_code === 'en')
+      const fallback = enOption?.language_code ?? languageItems[0].language_code
+      setValue('sourceLanguage', fallback, { shouldDirty: false })
     }
   }, [languageItems, setValue, sourceLanguage])
 
@@ -190,6 +194,17 @@ export function AutoDubbingSettingsStep({
         error={errors.targetLanguages?.message}
       />
 
+      <SourceLanguageField
+        detectAutomatically={detectAutomatically}
+        replaceVoiceSamples={replaceVoiceSamples}
+        onDetectChange={handleDetectChange}
+        onReplaceVoiceSamplesChange={handleReplaceVoiceSamplesChange}
+        languages={languageItems}
+        sourceLanguage={sourceLanguage}
+        onSourceLanguageChange={handleSourceLanguageChange}
+        error={errors.sourceLanguage?.message}
+      />      
+
       <TagsField
         registration={register('tagsInput')}
         previewTags={parsedTags}
@@ -200,17 +215,6 @@ export function AutoDubbingSettingsStep({
         registration={register('speakerCount', { valueAsNumber: true })}
         value={speakerCount}
         error={errors.speakerCount?.message}
-      />
-
-      <SourceLanguageField
-        detectAutomatically={detectAutomatically}
-        replaceVoiceSamples={replaceVoiceSamples}
-        onDetectChange={handleDetectChange}
-        onReplaceVoiceSamplesChange={handleReplaceVoiceSamplesChange}
-        languages={languageItems}
-        sourceLanguage={sourceLanguage}
-        onSourceLanguageChange={handleSourceLanguageChange}
-        error={errors.sourceLanguage?.message}
       />
 
       {uploadProgress.stage !== 'idle' ? (

@@ -25,63 +25,51 @@ export function SourceLanguageField({
   onSourceLanguageChange,
   error,
 }: SourceLanguageFieldProps) {
-  const isDisabled = detectAutomatically
+  // 원어 자동 인식은 숨기고 항상 false로 유지
+  const handleDetect = () => {
+    onDetectChange(false)
+  }
+
+  // 기본 원어는 영어(en)로 고정
+  const effectiveSource = sourceLanguage || 'en'
 
   return (
-    <div className="space-y-1">
-      <div className="flex flex-col gap-2">
-        <div className="flex flex-col gap-2">
-          <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold text-secondary">
-            <Checkbox
-              checked={detectAutomatically}
-              onCheckedChange={(checked) => onDetectChange(Boolean(checked))}
-            />
-            원어 자동 인식 사용
-          </label>
+    <div className="space-y-3">
+      {/* 숨겨진 자동 인식 토글 */}
+      <input type="hidden" value="false" />
 
-          <div className="space-y-1">
-            <Label className="sr-only" htmlFor="source-language">
-              원어 선택
-            </Label>
-            <Select
-              disabled={isDisabled}
-              value={sourceLanguage}
-              onValueChange={onSourceLanguageChange}
-            >
-              <SelectTrigger
-                id="source-language"
-                className={
-                  isDisabled
-                    ? 'border-outline bg-surface-2 !text-muted-foreground opacity-90 shadow-none'
-                    : undefined
-                }
-              >
-                <SelectValue
-                  placeholder="원어를 선택하세요"
-                  className={isDisabled ? '!text-muted-foreground' : undefined}
-                />
-              </SelectTrigger>
-              <SelectContent align="start">
-                {languages.map((language) => (
-                  <SelectItem key={language.language_code} value={language.language_code}>
-                    {language.name_ko}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <ValidationMessage message={error} />
-          </div>
-        </div>
-
-        <div className="pt-1">
-          <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold text-secondary">
-            <Checkbox
-              checked={replaceVoiceSamples}
-              onCheckedChange={(checked) => onReplaceVoiceSamplesChange(Boolean(checked))}
-            />
-            음성샘플 자동 추천
-          </label>
-        </div>
+      <div className="space-y-1">
+        <Label className="font-semibold" htmlFor="source-language">
+          원어 선택
+        </Label>
+        <Select
+          value={effectiveSource}
+          onValueChange={(value) => {
+            handleDetect()
+            onSourceLanguageChange(value)
+          }}
+        >
+          <SelectTrigger id="source-language">
+            <SelectValue placeholder="원어를 선택하세요" />
+          </SelectTrigger>
+          <SelectContent align="start">
+            {languages.map((language) => (
+              <SelectItem key={language.language_code} value={language.language_code}>
+                {language.name_ko}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <ValidationMessage message={error} />
+        <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold text-secondary">
+          <Checkbox
+            checked={replaceVoiceSamples}
+            onCheckedChange={(checked) => onReplaceVoiceSamplesChange(Boolean(checked))}
+          />
+          음성샘플 자동 추천
+        </label>        
+      </div>
+      <div className="pt-1">
       </div>
     </div>
   )

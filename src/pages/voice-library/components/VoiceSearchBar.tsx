@@ -31,7 +31,7 @@ export function VoiceSearchBar({
       {chips.map((chip, idx) => (
         <span
           key={`${chip.label}-${chip.value}-${idx}`}
-          className="bg-primary-container text-on-primary-container inline-flex h-7 items-center gap-1 rounded-full px-2 text-xs font-semibold shadow-soft"
+          className="bg-tertiary-container text-on-tertiary-container inline-flex h-7 items-center gap-1 rounded-full px-2 text-xs font-semibold shadow-soft"
         >
           {chip.icon ? <span className="text-base">{chip.icon}</span> : null}
           <span className="whitespace-nowrap">
@@ -40,7 +40,7 @@ export function VoiceSearchBar({
           <button
             type="button"
             onClick={chip.onRemove}
-            className="text-on-primary-container/80 hover:text-on-primary-container ml-0.5"
+            className="text-on-tertiary-container/80 hover:text-on-tertiary-container ml-0.5"
             aria-label={`${chip.label} 제거`}
           >
             <X className="h-3 w-3" />

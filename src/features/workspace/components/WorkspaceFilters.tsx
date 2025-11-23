@@ -61,26 +61,26 @@ export function WorkspaceFilters({
 
         {/* Active Filters inside Search Bar */}
         {workspaceSourceLanguageFilter && (
-          <span className="bg-primary-container text-on-primary-container inline-flex h-7 items-center gap-1 rounded-full px-2 text-xs font-semibold whitespace-nowrap shadow-soft">
+          <span className="bg-tertiary-container text-on-tertiary-container inline-flex h-7 items-center gap-1 rounded-full px-2 text-xs font-semibold whitespace-nowrap shadow-soft">
             원본:{' '}
             {languages.find((l) => l.language_code === workspaceSourceLanguageFilter)?.name_ko}
             <button
               type="button"
               onClick={() => setWorkspaceSourceLanguageFilter(null)}
-              className="text-on-primary-container/80 hover:text-on-primary-container ml-0.5"
+              className="text-on-tertiary-container/80 hover:text-on-tertiary-container ml-0.5"
             >
               <X className="h-3 w-3" />
             </button>
           </span>
         )}
         {workspaceTargetLanguageFilter && (
-          <span className="bg-primary-container text-on-primary-container inline-flex h-7 items-center gap-1 rounded-full px-2 text-xs font-semibold whitespace-nowrap shadow-soft">
+          <span className="bg-tertiary-container text-on-tertiary-container inline-flex h-7 items-center gap-1 rounded-full px-2 text-xs font-semibold whitespace-nowrap shadow-soft">
             번역:{' '}
             {languages.find((l) => l.language_code === workspaceTargetLanguageFilter)?.name_ko}
             <button
               type="button"
               onClick={() => setWorkspaceTargetLanguageFilter(null)}
-              className="text-on-primary-container/80 hover:text-on-primary-container ml-0.5"
+              className="text-on-tertiary-container/80 hover:text-on-tertiary-container ml-0.5"
             >
               <X className="h-3 w-3" />
             </button>
@@ -89,13 +89,13 @@ export function WorkspaceFilters({
         {workspaceSelectedTags.map((tag) => (
           <span
             key={tag}
-            className="bg-primary/10 text-primary inline-flex h-7 items-center gap-1 rounded-full px-2 text-xs font-medium whitespace-nowrap"
+            className="bg-tertiary/10 text-tertiary inline-flex h-7 items-center gap-1 rounded-full px-2 text-xs font-medium whitespace-nowrap"
           >
             #{tag}
             <button
               type="button"
               onClick={() => toggleTagFilter(tag)}
-              className="hover:text-primary/80 ml-0.5"
+              className="hover:text-tertiary/80 ml-0.5"
             >
               <X className="h-3 w-3" />
             </button>
