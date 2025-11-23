@@ -36,7 +36,7 @@ export function ProjectInfoSection({ projectId }: ProjectInfoSectionProps) {
   if (!project) {
     return (
       <div className="flex h-full items-center justify-center">
-        <p className="text-sm text-muted">프로젝트 정보를 불러올 수 없습니다.</p>
+        <p className="text-sm text-muted-foreground">프로젝트 정보를 불러올 수 없습니다.</p>
       </div>
     )
   }

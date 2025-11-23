@@ -9,6 +9,8 @@ interface EpisodeCardInfoProps {
  */
 export function EpisodeCardInfo({ project }: EpisodeCardInfoProps) {
   return (
-    <p className="line-clamp-1 text-lg font-semibold">{project.title}</p>
+    <p className="line-clamp-1 text-lg font-semibold text-on-primary-container">
+      {project.title}
+    </p>
   )
 }
