@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useCallback, useState } from 'react'
 
-import { Filter, Search, X } from 'lucide-react'
+import { Plus, X } from 'lucide-react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import type { ProjectSummary } from '@/entities/project/types'
@@ -8,20 +8,11 @@ import { useLanguage } from '@/features/languages/hooks/useLanguage'
 import { ExportDialog } from '@/features/projects/modals/ExportDialog'
 import { useProjects, useDeleteProjectMutation } from '@/features/projects/hooks/useProjects'
 import { ProjectList } from '@/features/workspace/components/project-list/ProjectList'
+import { WorkspaceFilters } from '@/features/workspace/components/WorkspaceFilters'
 import { UploadCard } from '@/features/workspace/components/upload-card/UploadCard'
 import { useAuthStore } from '@/shared/store/useAuthStore'
 import { useUiStore } from '@/shared/store/useUiStore'
 import { Button } from '@/shared/ui/Button'
-import { Checkbox } from '@/shared/ui/Checkbox'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/shared/ui/Dropdown'
-import { Input } from '@/shared/ui/Input'
 import { Spinner } from '@/shared/ui/Spinner'
 
 const stepMap = {
@@ -106,10 +97,12 @@ export default function WorkspacePage() {
     setTagFilterQuery('')
     setWorkspaceSourceLanguageFilter(null)
     setWorkspaceTargetLanguageFilter(null)
+    setWorkspaceSearchTerm('')
   }, [
     setWorkspaceSelectedTags,
     setWorkspaceSourceLanguageFilter,
     setWorkspaceTargetLanguageFilter,
+    setWorkspaceSearchTerm,
   ])
 
 
@@ -214,6 +207,12 @@ export default function WorkspacePage() {
     workspaceTargetLanguageFilter,
   ])
 
+  const hasActiveFilters =
+    workspaceSearchTerm.trim().length > 0 ||
+    workspaceSelectedTags.length > 0 ||
+    !!workspaceSourceLanguageFilter ||
+    !!workspaceTargetLanguageFilter
+
   const filteredTags = useMemo(() => {
     const query = tagFilterQuery.trim().toLowerCase()
     return tagStats.filter(({ tag }) => tag.toLowerCase().includes(query))
@@ -230,14 +229,15 @@ export default function WorkspacePage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-white">
+    <div className="flex min-h-screen flex-col bg-background">
       <main className="mx-auto w-full max-w-7xl space-y-8 px-6 py-6">
         {/* Header */}
         <div className="flex flex-col gap-4 pt-1 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight text-gray-900">
-              더빙
-            </h1>
+            <h1 className="text-foreground text-2xl font-bold tracking-tight">더빙</h1>
+            <p className="text-muted-foreground mt-1 text-sm">
+              에피소드를 검색하고 언어 필터를 적용해 관리하세요.
+            </p>
           </div>
         </div>
 
@@ -246,250 +246,38 @@ export default function WorkspacePage() {
 
         {/* Projects Section */}
         <div className="space-y-6 pt-1">
-          <div className="flex items-center gap-4">
-            {/* Search Bar */}
-            <div className="relative flex min-h-[2.5rem] flex-1 flex-wrap items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-1 shadow-sm focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20">
-              <Search className="h-4 w-4 shrink-0 text-muted" />
+          <WorkspaceFilters
+            workspaceSearchTerm={workspaceSearchTerm}
+            setWorkspaceSearchTerm={setWorkspaceSearchTerm}
+            workspaceSourceLanguageFilter={workspaceSourceLanguageFilter}
+            setWorkspaceSourceLanguageFilter={setWorkspaceSourceLanguageFilter}
+            workspaceTargetLanguageFilter={workspaceTargetLanguageFilter}
+            setWorkspaceTargetLanguageFilter={setWorkspaceTargetLanguageFilter}
+            workspaceSelectedTags={workspaceSelectedTags}
+            toggleTagFilter={toggleTagFilter}
+            clearAllFilters={clearAllFilters}
+            languages={languages}
+            filteredTags={filteredTags}
+            tagFilterQuery={tagFilterQuery}
+            setTagFilterQuery={setTagFilterQuery}
+          />
 
-              <Input
-                placeholder="에피소드 검색..."
-                className="h-8 min-w-[80px] flex-1 border-0 bg-transparent p-0 text-sm shadow-none focus-visible:ring-0"
-                value={workspaceSearchTerm}
-                onChange={(e) => setWorkspaceSearchTerm(e.target.value)}
-              />
-
-              {/* Active Filters inside Search Bar */}
-              {workspaceSourceLanguageFilter && (
-                <span className="bg-gray-200 text-gray-700 inline-flex h-6 items-center gap-1 rounded-full px-2 text-xs font-medium whitespace-nowrap">
-                  원본: {languages.find((l) => l.language_code === workspaceSourceLanguageFilter)?.name_ko}
-                  <button
-                    type="button"
-                    onClick={() => setWorkspaceSourceLanguageFilter(null)}
-                    className="hover:text-gray-900 ml-0.5"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </span>
-              )}
-              {workspaceTargetLanguageFilter && (
-                <span className="bg-gray-200 text-gray-700 inline-flex h-6 items-center gap-1 rounded-full px-2 text-xs font-medium whitespace-nowrap">
-                  타겟: {languages.find((l) => l.language_code === workspaceTargetLanguageFilter)?.name_ko}
-                  <button
-                    type="button"
-                    onClick={() => setWorkspaceTargetLanguageFilter(null)}
-                    className="hover:text-gray-900 ml-0.5"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </span>
-              )}
-              {workspaceSelectedTags.map((tag) => (
-                <span
-                  key={tag}
-                  className="bg-primary/10 text-primary inline-flex h-6 items-center gap-1 rounded-full px-2 text-xs font-medium whitespace-nowrap"
-                >
-                  #{tag}
-                  <button
-                    type="button"
-                    onClick={() => toggleTagFilter(tag)}
-                    className="hover:text-primary/80 ml-0.5"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </span>
-              ))}
-
-              {(workspaceSelectedTags.length > 0 ||
-                workspaceSourceLanguageFilter ||
-                workspaceTargetLanguageFilter) && (
-                <button
-                  type="button"
-                  onClick={clearAllFilters}
-                  className="text-muted-foreground hover:text-foreground ml-1 rounded-full p-0.5 transition-colors"
-                  aria-label="필터 초기화"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              )}
+          {isLoading ? (
+            <div className="flex h-64 items-center justify-center">
+              <Spinner size="lg" />
             </div>
-
-            {/* Filter Dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  className="h-8 gap-1 rounded-full border-surface-3 px-3 py-1.5 text-xs font-medium"
-                  aria-label="필터"
-                >
-                  <Filter className="h-3 w-3" />
-                  필터
-                </Button>
-              </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-80 p-0">
-                    {/* Language Filters Grid */}
-                    <div className="grid grid-cols-2 gap-2 p-2">
-                      {/* Source Language Section */}
-                      <div>
-                        <DropdownMenuLabel className="mb-0 px-2 text-xs font-medium text-gray-500">
-                          원본 언어
-                        </DropdownMenuLabel>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              className="h-8 w-full justify-between px-2 py-1 text-sm font-normal"
-                            >
-                              <span className="truncate">
-                                {workspaceSourceLanguageFilter
-                                  ? languages.find(
-                                      (l) => l.language_code === workspaceSourceLanguageFilter,
-                                    )?.name_ko || '선택됨'
-                                  : '전체'}
-                              </span>
-                              <span className="text-muted-foreground ml-2 text-xs">▼</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent className="max-h-60 w-48 overflow-y-auto">
-                            <DropdownMenuItem
-                              onSelect={() => setWorkspaceSourceLanguageFilter(null)}
-                            >
-                              모든 언어
-                            </DropdownMenuItem>
-                            {languages.map((lang) => (
-                              <DropdownMenuItem
-                                key={lang.language_code}
-                                onSelect={() =>
-                                  setWorkspaceSourceLanguageFilter(lang.language_code)
-                                }
-                              >
-                                {lang.name_ko}
-                              </DropdownMenuItem>
-                            ))}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-
-                      {/* Target Language Section */}
-                      <div>
-                        <DropdownMenuLabel className="mb-0 px-2 text-xs font-medium text-gray-500">
-                          번역 언어
-                        </DropdownMenuLabel>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              className="h-8 w-full justify-between px-2 py-1 text-sm font-normal"
-                            >
-                              <span className="truncate">
-                                {workspaceTargetLanguageFilter
-                                  ? languages.find(
-                                      (l) => l.language_code === workspaceTargetLanguageFilter,
-                                    )?.name_ko || '선택됨'
-                                  : '전체'}
-                              </span>
-                              <span className="text-muted-foreground ml-2 text-xs">▼</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent className="max-h-60 w-48 overflow-y-auto">
-                            <DropdownMenuItem
-                              onSelect={() => setWorkspaceTargetLanguageFilter(null)}
-                            >
-                              모든 언어
-                            </DropdownMenuItem>
-                            {languages.map((lang) => (
-                              <DropdownMenuItem
-                                key={lang.language_code}
-                                onSelect={() =>
-                                  setWorkspaceTargetLanguageFilter(lang.language_code)
-                                }
-                              >
-                                {lang.name_ko}
-                              </DropdownMenuItem>
-                            ))}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </div>
-
-                    <DropdownMenuSeparator />
-
-                    {/* Tag Search Section */}
-                    <div className="p-2">
-                      <DropdownMenuLabel className="mb-2 px-2 text-xs font-medium text-gray-500">
-                        태그 검색
-                      </DropdownMenuLabel>
-                      <div className="px-2 pb-2">
-                        <Input
-                          placeholder="태그 검색..."
-                          value={tagFilterQuery}
-                          onChange={(e) => setTagFilterQuery(e.target.value)}
-                          className="h-8 text-sm"
-                        />
-                      </div>
-                      <div className="max-h-48 overflow-y-auto">
-                        {filteredTags.length > 0 ? (
-                          filteredTags.map(({ tag, count }) => (
-                            <div
-                              key={tag}
-                              className="flex items-center space-x-2 px-2 py-1.5 hover:bg-gray-100"
-                            >
-                              <Checkbox
-                                id={`filter-tag-${tag}`}
-                                checked={workspaceSelectedTags.includes(tag)}
-                                onCheckedChange={() => toggleTagFilter(tag)}
-                              />
-                              <label
-                                htmlFor={`filter-tag-${tag}`}
-                                className="flex-1 cursor-pointer text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                              >
-                                <div className="flex items-center justify-between">
-                                  <span>#{tag}</span>
-                                  <span className="text-muted-foreground text-xs">
-                                    {count}
-                                  </span>
-                                </div>
-                              </label>
-                            </div>
-                          ))
-                        ) : (
-                          <div className="py-2 text-center text-xs text-gray-500">
-                            검색 결과가 없습니다
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <DropdownMenuSeparator />
-
-                    <div className="p-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="w-full justify-center text-xs text-gray-500 hover:text-gray-900"
-                        onClick={clearAllFilters}
-                      >
-                        필터 초기화
-                      </Button>
-                    </div>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-
-
-            {isLoading ? (
-              <div className="flex h-64 items-center justify-center">
-                <Spinner size="lg" />
-              </div>
-            ) : (
-              <ProjectList
-                projects={filteredProjects}
-                onExport={handleExportProject}
-                onDelete={handleDeleteProject}
-                onTagClick={handleTagClick}
-              />
-            )}
-          </div>
+          ) : (
+            <ProjectList
+              projects={filteredProjects}
+              onExport={handleExportProject}
+              onDelete={handleDeleteProject}
+              onTagClick={handleTagClick}
+              isFilteredEmpty={filteredProjects.length === 0 && hasActiveFilters}
+              onClearFilters={clearAllFilters}
+              onCreate={() => openProjectCreation('source')}
+            />
+          )}
+        </div>
       </main>
 
       {exportProjectId && exportLanguageCode && (

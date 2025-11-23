@@ -31,7 +31,7 @@ export function SourceLanguageField({
     <div className="space-y-1">
       <div className="flex flex-col gap-2">
         <div className="flex flex-col gap-2">
-          <label className="flex cursor-pointer items-center gap-2 text-sm text-muted">
+          <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold text-secondary">
             <Checkbox
               checked={detectAutomatically}
               onCheckedChange={(checked) => onDetectChange(Boolean(checked))}
@@ -52,7 +52,7 @@ export function SourceLanguageField({
                 id="source-language"
                 className={
                   isDisabled
-                    ? 'border-dashed bg-surface-2 !text-muted-foreground opacity-70 shadow-none'
+                    ? 'border-outline bg-surface-2 !text-muted-foreground opacity-90 shadow-none'
                     : undefined
                 }
               >
@@ -74,7 +74,7 @@ export function SourceLanguageField({
         </div>
 
         <div className="pt-1">
-          <label className="flex cursor-pointer items-center gap-2 text-sm text-muted">
+          <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold text-secondary">
             <Checkbox
               checked={replaceVoiceSamples}
               onCheckedChange={(checked) => onReplaceVoiceSamplesChange(Boolean(checked))}

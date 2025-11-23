@@ -55,13 +55,13 @@ export function DubbingIssuesSection({ segments }: DubbingIssuesSectionProps) {
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case 'high':
-        return 'bg-red-100 text-red-700 border-red-200'
+        return 'bg-error-container text-destructive border-error-container/70'
       case 'medium':
-        return 'bg-yellow-100 text-yellow-700 border-yellow-200'
+        return 'bg-tertiary-container text-on-primary-container border-tertiary/40'
       case 'low':
-        return 'bg-gray-100 text-gray-600 border-gray-200'
+        return 'bg-surface-2 text-muted-foreground border-outline/30'
       default:
-        return 'bg-gray-100 text-gray-600 border-gray-200'
+        return 'bg-surface-2 text-muted-foreground border-outline/30'
     }
   }
 
@@ -164,18 +164,18 @@ export function DubbingIssuesSection({ segments }: DubbingIssuesSectionProps) {
   }
 
   return (
-    <section className="flex h-full flex-col rounded border border-surface-3 bg-white p-3">
+    <section className="flex h-full flex-col rounded-2xl border border-outline/20 bg-surface-1 p-3 shadow-soft">
       <div className="mb-3 flex items-center justify-between px-2">
         <h3 className="text-sm font-semibold text-foreground">목록</h3>
         {issues.length > 0 && (
-          <span className="text-sm text-muted">
+          <span className="text-sm text-muted-foreground">
             {issues.filter((i) => !i.resolved).length}/{issues.length}
           </span>
         )}
       </div>
 
       {issues.length === 0 ? (
-        <div className="text-sm text-muted">
+        <div className="text-sm text-muted-foreground">
           <p>현재 이슈가 없습니다.</p>
         </div>
       ) : (
@@ -183,7 +183,7 @@ export function DubbingIssuesSection({ segments }: DubbingIssuesSectionProps) {
           {issues.map((issue) => (
             <div
               key={`${issue.segmentId}-${issue.id}`}
-              className={`group flex cursor-pointer items-center gap-3 rounded border border-surface-3 px-3 py-2 text-xs transition-all hover:border-primary/30 hover:bg-surface-1 ${
+              className={`group flex cursor-pointer items-center gap-3 rounded-lg border-outline/20 px-3 py-2 text-xs transition-all hover:border-primary/30 hover:bg-surface-2 ${
                 issue.resolved ? 'opacity-50' : ''
               }`}
               onClick={(e) => handleIssueClick(issue.segmentId, e)}
@@ -198,7 +198,7 @@ export function DubbingIssuesSection({ segments }: DubbingIssuesSectionProps) {
             >
               {/* 심각도 */}
               <span
-                className={`shrink-0 rounded px-2 py-0.5 text-[10px] font-semibold uppercase ${getSeverityColor(
+                className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase ${getSeverityColor(
                   issue.severity,
                 )}`}
               >
@@ -210,7 +210,7 @@ export function DubbingIssuesSection({ segments }: DubbingIssuesSectionProps) {
                 <span className="truncate font-medium text-foreground">
                   {getIssueTypeLabel(issue.issue_type)}
                 </span>
-                <span className="truncate text-muted">
+                <span className="truncate text-muted-foreground">
                   {getIssueMessage(issue.issue_type, issue.diff)}
                 </span>
 
@@ -222,13 +222,13 @@ export function DubbingIssuesSection({ segments }: DubbingIssuesSectionProps) {
 
               {/* 해결 상태 */}
               {issue.resolved && (
-                <span className="shrink-0 rounded bg-green-100 px-2 py-0.5 text-[10px] font-medium text-green-700">
+                <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
                   해결됨
                 </span>
               )}
 
               {/* 타임스탬프 - 강조 */}
-              <span className="shrink-0 rounded bg-primary/10 px-2 py-1 text-xs font-semibold text-primary">
+              <span className="shrink-0 rounded-full bg-primary-container px-2 py-1 text-xs font-semibold text-on-primary-container">
                 {formatTime(issue.segmentStart)}
               </span>
             </div>

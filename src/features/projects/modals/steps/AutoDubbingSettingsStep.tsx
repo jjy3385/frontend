@@ -173,7 +173,7 @@ export function AutoDubbingSettingsStep({
       aria-busy={isProcessing}
     >
       <DialogTitle>2단계 — 자동 더빙 설정</DialogTitle>
-      <DialogDescription>
+      <DialogDescription className="text-muted-foreground">
         제목과 언어, 화자 수를 지정하면 에피소드 자동 번역을 시작합니다.
       </DialogDescription>
 
@@ -224,7 +224,7 @@ export function AutoDubbingSettingsStep({
 
       <div className="flex justify-between gap-3 pt-2">
         <Button
-          variant="ghost"
+          variant="secondary"
           type="button"
           onClick={onBack}
           disabled={isSubmitting || isProcessing}

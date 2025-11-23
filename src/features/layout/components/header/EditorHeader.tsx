@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useLogoutMutation } from '@/features/auth/hooks/useAuthMutations'
 import { routes } from '@/shared/config/routes'
 import { useAuthStore } from '@/shared/store/useAuthStore'
+import { LogoIcon } from '@/shared/ui/LogoIcon'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,6 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/shared/ui/Dropdown'
+
 
 export function EditorHeader() {
   const navigate = useNavigate()
@@ -49,9 +51,9 @@ export function EditorHeader() {
           className="focus-visible:outline-hidden focus-visible:ring-primary group flex items-center gap-1 focus-visible:ring-2 focus-visible:ring-offset-2"
           aria-label="Dupliot 홈으로 이동"
         >
+          <LogoIcon />
           <span className="text-foreground text-xl font-semibold tracking-tight">
             Dupliot
-            <span className="text-primary">.</span>
           </span>
         </Link>
 

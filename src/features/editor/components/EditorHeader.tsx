@@ -6,6 +6,23 @@ import { Button } from '@/shared/ui/Button'
 import { LanguageSelector } from './LanguageSelector'
 import { SaveIndicator } from './SaveIndicator'
 
+const LogoIcon = () => (
+  <svg
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className="mr-2 h-7 w-7"
+  >
+    <path
+      d="M12 2.5L3.5 7.2V16.8L12 21.5L20.5 16.8V7.2L12 2.5Z"
+      className="fill-foreground"
+    />
+    <path d="M10 8.5L16 12L10 15.5V8.5Z" className="fill-background" />
+  </svg>
+)
+
 interface EditorHeaderProps {
   projectId: string
   selectedLanguage: string
@@ -38,17 +55,16 @@ export function EditorHeader({
   onMuxClick,
 }: EditorHeaderProps) {
   return (
-    <div className="relative flex items-center justify-between border-b-[3px] px-4 py-2">
-      {/* Left: Breadcrumbs */}
-      <div className="flex items-center">
-        <div className="text-xs">
+    <div className="relative flex items-center justify-between border-b border-outline/40 bg-background/90 px-4 py-3 backdrop-blur">
+      {/* Left: Logo + Breadcrumbs */}
+      <div className="flex items-center gap-3">
+        <div className="text-xs rounded-full border border-outline/30 bg-surface-1 px-3 py-1.5 shadow-soft">
           <Breadcrumbs
             items={[
               { label: '홈', href: '/' },
-              { label: `프로젝트`, href: `/projects/${projectId}` },
+              { label: `에피소드`, href: `/projects/${projectId}` },
               { label: '에디터' },
             ]}
-            className="opacity-50"
           />
         </div>
       </div>

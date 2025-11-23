@@ -11,7 +11,17 @@ export function convertSegmentsToTracks(segments: Segment[]): TrackRow[] {
   if (segments.length === 0) return []
 
   // 색상 팔레트
-  const palette = ['#f97316', '#0e5be9', '#8b5cf6', '#22c55e']
+  const palette = [
+    '#EF4444', // 1: red (first speaker 강조, 더 선명)
+    '#475D91', // 2: primary blue
+    '#2F7D67', // 3: green
+    '#725572', // 4: tertiary purple
+    '#C27C2A', // 5: amber
+    '#1B7F4D', // 6: deep green variation
+    '#233B6D', // 7: deeper primary variation
+    '#00897B', // 8: teal
+    '#6F4E7C', // 9: muted purple variation
+  ]
 
   // speaker_tag 기준으로 그룹화
   const speakerMap = new Map<

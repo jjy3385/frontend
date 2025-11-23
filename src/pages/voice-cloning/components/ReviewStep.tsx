@@ -22,11 +22,11 @@ export function ReviewStep({
   onProceed,
 }: ReviewStepProps) {
   return (
-    <div className="flex flex-col p-12">
+    <div className="flex flex-col bg-surface-1 p-12 text-foreground">
       {/* Back Button */}
       <button
         type="button"
-        className="mb-8 flex items-center gap-2 text-sm text-gray-600 transition-colors hover:text-gray-900"
+        className="mb-8 flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
         onClick={onRetry}
       >
         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -35,16 +35,16 @@ export function ReviewStep({
         다시 녹음하기
       </button>
 
-      <h3 className="mb-4 text-center text-xl font-bold text-gray-900">미리듣기</h3>
-      <p className="mb-8 text-center text-base leading-relaxed text-gray-600">
+      <h3 className="mb-4 text-center text-xl font-bold text-foreground">미리듣기</h3>
+      <p className="mb-8 text-center text-base leading-relaxed text-muted-foreground">
         샘플을 재생해보고 품질이 괜찮다면 다음 단계로 이동하세요.
       </p>
 
       {recordingState === 'converting' ? (
         <div className="mb-8 flex justify-center">
           <div className="text-center">
-            <div className="mb-4 inline-block h-12 w-12 animate-spin rounded-full border-4 border-gray-300 border-t-purple-600" />
-            <p className="text-sm text-gray-600">파일 처리 중...</p>
+            <div className="mb-4 inline-block h-12 w-12 animate-spin rounded-full border-4 border-outline/60 border-t-primary" />
+            <p className="text-sm text-muted-foreground">파일 처리 중...</p>
           </div>
         </div>
       ) : (
@@ -58,13 +58,13 @@ export function ReviewStep({
         )
       )}
 
-      <div className="mb-12 rounded-xl border border-gray-200 bg-white p-4">
+      <div className="mb-12 rounded-xl border border-outline/50 bg-surface-2 p-4">
         <div className="flex items-center justify-between">
-          <span className="text-sm text-gray-600">녹음 길이</span>
-          <span className="text-sm font-semibold text-gray-900">{recordedDuration}초</span>
+          <span className="text-sm text-muted-foreground">녹음 길이</span>
+          <span className="text-sm font-semibold text-foreground">{recordedDuration}초</span>
         </div>
         {recordedDuration < 2 && (
-          <p className="mt-2 text-xs text-amber-600">최소 2초 이상 녹음해주세요</p>
+          <p className="mt-2 text-xs text-warning">최소 2초 이상 녹음해주세요</p>
         )}
       </div>
 

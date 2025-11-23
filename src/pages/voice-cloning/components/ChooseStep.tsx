@@ -24,12 +24,12 @@ export function ChooseStep({
   onRecordClick,
 }: ChooseStepProps) {
   return (
-    <div className="flex flex-col p-12">
+    <div className="flex flex-col bg-surface-1 p-12 text-foreground">
       {/* Icon Flow */}
       <div className="mb-8 flex items-center justify-center gap-6">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-purple-100">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
           <svg
-            className="h-8 w-8 text-purple-600"
+            className="h-8 w-8"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -42,17 +42,12 @@ export function ChooseStep({
             />
           </svg>
         </div>
-        <svg
-          className="h-6 w-6 text-gray-400"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
+        <svg className="h-6 w-6 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-purple-100">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
           <svg
-            className="h-8 w-8 text-purple-600"
+            className="h-8 w-8"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -65,17 +60,12 @@ export function ChooseStep({
             />
           </svg>
         </div>
-        <svg
-          className="h-6 w-6 text-gray-400"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
+        <svg className="h-6 w-6 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
         </svg>
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-purple-100">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary">
           <svg
-            className="h-8 w-8 text-purple-600"
+            className="h-8 w-8"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -97,48 +87,18 @@ export function ChooseStep({
       </div>
 
       {/* Description */}
-      <p className="mb-16 text-center text-base leading-relaxed text-gray-600">
+      <p className="mb-16 text-center text-base leading-relaxed text-muted-foreground">
         마이크를 활성화하여 직접 녹음하거나,
         <br />
         오디오 파일을 업로드하여 목소리를 학습시키세요.
       </p>
 
-      {/* Drag & Drop Area */}
-      {/* <div
-        className={`mb-8 rounded-2xl border-2 border-dashed p-12 text-center transition-all ${
-          isDragOver
-            ? 'border-purple-500 bg-purple-50'
-            : 'border-gray-300 bg-gray-50 hover:border-gray-400'
-        }`}
-        onDragOver={onDragOver}
-        onDragLeave={onDragLeave}
-        onDrop={onDrop}
-      >
-        <div className="mb-4 flex justify-center">
-          <svg
-            className="h-12 w-12 text-gray-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-            />
-          </svg>
-        </div>
-        <p className="text-sm text-gray-600">파일을 여기에 끌어다 놓거나</p>
-        <p className="text-xs text-gray-500">지원 형식: WAV, MP3, M4A (최대 10MB)</p>
-      </div> */}
-
       {/* Action Buttons */}
       <div className="flex justify-center gap-4">
         <Button
           type="button"
-          variant="secondary"
-          className="rounded-full px-6 py-3 text-sm font-semibold"
+          variant="outline"
+          className="rounded-full border-primary/60 px-6 py-3 text-sm font-semibold text-foreground hover:border-primary hover:bg-primary/5"
           onClick={() => fileInputRef.current?.click()}
         >
           파일 업로드

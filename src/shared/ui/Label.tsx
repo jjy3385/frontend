@@ -5,5 +5,5 @@ import { cn } from '../lib/utils'
 type LabelProps = LabelHTMLAttributes<HTMLLabelElement>
 
 export function Label({ className, ...props }: LabelProps) {
-  return <label className={cn('text-muted text-sm font-medium', className)} {...props} />
+  return <label className={cn('text-foreground text-sm font-medium', className)} {...props} />
 }

@@ -101,16 +101,18 @@ export function VoiceFiltersModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
+      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto scrollbar-thin">
         <div className="flex items-center gap-2">
-          <Filter className="h-5 w-5 text-muted" />
-          <DialogTitle>필터</DialogTitle>
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <Filter className="h-5 w-5" />
+          </div>
+          <DialogTitle className="text-foreground text-xl font-semibold">필터</DialogTitle>
         </div>
 
         <div className="mt-6 space-y-6">
           {/* Languages */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">언어</label>
+            <label className="text-sm font-medium text-foreground">언어</label>
             <Select
               value={localFilters.languages?.[0] || ''}
               onValueChange={(value) => {
@@ -172,7 +174,7 @@ export function VoiceFiltersModal({
 
           {/* Category */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">카테고리</label>
+            <label className="text-sm font-medium text-foreground">카테고리</label>
             <div className="flex flex-wrap gap-2">
               {VOICE_CATEGORIES.map(({ code, label }) => (
                 <button
@@ -192,7 +194,7 @@ export function VoiceFiltersModal({
                     'rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors',
                     localFilters.category?.includes(code)
                       ? 'border-primary bg-primary/10 text-primary'
-                      : 'border-surface-3 bg-surface-1 text-muted hover:bg-surface-2',
+                      : 'border-outline/40 bg-surface-1 text-foreground hover:border-primary',
                   )}
                 >
                   {label}
@@ -203,16 +205,16 @@ export function VoiceFiltersModal({
 
           {/* Tags */}
           <div className="space-y-2">
-            <label className="text-sm font-medium">태그 검색</label>
+            <label className="text-sm font-medium text-foreground">태그 검색</label>
             <Input
               placeholder="태그 검색..."
               value={tagInput}
               onChange={(e) => setTagInput(e.target.value)}
               className="h-10"
             />
-            <div className="max-h-40 space-y-2 overflow-y-auto rounded-lg border border-surface-3 p-3">
+            <div className="max-h-40 space-y-2 overflow-y-auto rounded-lg bg-surface-2 p-3 shadow-inner scrollbar-thin">
               {filteredTags.length === 0 ? (
-                <p className="text-xs text-muted">추가/선택할 태그가 없습니다.</p>
+                <p className="text-xs text-muted-foreground">추가/선택할 태그가 없습니다.</p>
               ) : (
                 filteredTags.map(({ tag, count }) => {
                   const isSelected = localFilters.tags?.includes(tag)
@@ -224,7 +226,7 @@ export function VoiceFiltersModal({
                         'flex w-full items-center justify-between rounded-lg px-2 py-1 text-sm',
                         isSelected
                           ? 'border border-primary bg-primary/10 text-primary'
-                          : 'border border-surface-3 text-foreground hover:border-primary',
+                          : 'border border-outline/30 text-foreground hover:border-primary',
                       )}
                       onClick={() => {
                         setLocalFilters((prev) => {
@@ -238,7 +240,7 @@ export function VoiceFiltersModal({
                       }}
                     >
                       <span>#{tag}</span>
-                      <span className="text-xs text-muted">{count}</span>
+                      <span className="text-xs text-muted-foreground">{count}</span>
                     </button>
                   )
                 })
@@ -255,7 +257,7 @@ export function VoiceFiltersModal({
                   'rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors',
                   localFilters.commercialOnly
                     ? 'border-primary bg-primary/10 text-primary'
-                    : 'border-surface-3 bg-surface-1 text-muted hover:bg-surface-2',
+                    : 'border-outline/40 bg-surface-1 text-foreground hover:border-primary hover:bg-surface-2',
                 )}
                 onClick={() =>
                   setLocalFilters((prev) => ({
@@ -267,9 +269,6 @@ export function VoiceFiltersModal({
                 상업 사용 가능한 음성만 보기
               </button>
             </div>
-            <p className="text-xs text-muted">
-              YouTube 등 배포를 고려하면 상업 사용 가능 음성만 선택하는 것을 권장합니다.
-            </p>
           </div>
         </div>
 

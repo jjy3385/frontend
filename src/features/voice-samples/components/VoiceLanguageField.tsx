@@ -40,9 +40,12 @@ export function VoiceLanguageField({
 }) {
   return (
     <div className="space-y-2">
-      <Label>
-        언어<span className="ml-1 text-danger">*</span>
-      </Label>
+      <div className="flex items-center gap-2">
+        <Label className="font-semibold">언어</Label>
+        <span className="bg-primary-container text-on-primary-container inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold leading-none">
+          필수
+        </span>
+      </div>
       <Select value={value} onValueChange={onChange} disabled={disabled}>
         <SelectTrigger className="w-full">
           <SelectValue placeholder="언어를 선택하세요" />

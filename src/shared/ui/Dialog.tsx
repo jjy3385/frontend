@@ -33,7 +33,7 @@ export function DialogContent({
       <DialogOverlay className="z-[50]" />
       <DialogPrimitive.Content
         className={cn(
-          'border-surface-3 bg-surface-1 fixed left-1/2 top-1/2 z-50 w-[90vw] max-w-2xl -translate-x-1/2 -translate-y-1/2 rounded-lg border p-6 shadow-2xl shadow-black/20 focus:outline-none',
+          'border-surface-3 bg-surface-2 text-foreground fixed left-1/2 top-1/2 z-50 w-[90vw] max-w-2xl -translate-x-1/2 -translate-y-1/2 rounded-2xl border p-6 shadow-2xl shadow-black/20 focus:outline-none',
           className,
         )}
         {...props}
@@ -43,7 +43,7 @@ export function DialogContent({
           <Button
             variant="ghost"
             size="icon"
-            className="text-muted hover:text-foreground absolute right-4 top-4 h-8 w-8 rounded-full"
+            className="text-muted-foreground hover:text-foreground absolute right-4 top-4 h-8 w-8 rounded-full"
             aria-label="Close dialog"
           >
             <X className="h-4 w-4" />
@@ -64,7 +64,12 @@ export function DialogTitle({ className, ...props }: DialogPrimitive.DialogTitle
 }
 
 export function DialogDescription({ className, ...props }: DialogPrimitive.DialogDescriptionProps) {
-  return <DialogPrimitive.Description className={cn('text-muted text-sm', className)} {...props} />
+  return (
+    <DialogPrimitive.Description
+      className={cn('text-muted-foreground text-sm', className)}
+      {...props}
+    />
+  )
 }
 
 export function DialogFooter({

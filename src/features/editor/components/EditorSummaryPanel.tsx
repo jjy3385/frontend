@@ -40,19 +40,19 @@ export function EditorSummaryPanel({
           <TabsList className="flex h-auto w-full justify-between gap-0 rounded-none border-0 bg-transparent p-0">
             <TabsTrigger
               value="issues"
-              className="data-[state=active]:text-balck data-[state=active]:bg-tran rounded-none border-primary px-4 py-2 text-xs font-semibold data-[state=active]:border-b-2"
+              className="rounded-none border-b-2 border-transparent bg-transparent px-4 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground"
             >
               이슈
             </TabsTrigger>
             <TabsTrigger
               value="translation"
-              className="data-[state=active]:text-balck data-[state=active]:bg-tran rounded-none border-primary px-4 py-2 text-xs font-semibold data-[state=active]:border-b-2"
+              className="rounded-none border-b-2 border-transparent bg-transparent px-4 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground"
             >
               번역
             </TabsTrigger>
             <TabsTrigger
               value="info"
-              className="data-[state=active]:text-balck data-[state=active]:bg-tran ml-auto rounded-none border-primary px-3 py-2 text-xs font-semibold data-[state=active]:border-b-2"
+              className="ml-auto rounded-none border-b-2 border-transparent bg-transparent px-3 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:bg-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:text-foreground"
             >
               <Info className="h-4 w-4" />
             </TabsTrigger>

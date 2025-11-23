@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 
 import type { ProjectDetail } from '@/entities/project/types'
 import type { ProjectProgress } from '@/features/projects/types/progress'
+import { getLanguageName } from '@/shared/lib/language'
 
 export interface LanguageOption {
   code: string
@@ -34,7 +35,7 @@ export function useEditorLanguageSelection({
     // 원어 옵션
     const originalOption: LanguageOption = {
       code: 'original',
-      label: project.source_language || '원어',
+      label: getLanguageName(project.source_language) || '원어',
       isOriginal: true,
       isAvailable: true, // 원어는 항상 선택 가능
       status: null,
@@ -54,7 +55,7 @@ export function useEditorLanguageSelection({
 
         return {
           code: target.language_code,
-          label: target.language_code.toUpperCase(),
+          label: getLanguageName(target.language_code) || target.language_code.toUpperCase(),
           isOriginal: false,
           isAvailable,
           status,

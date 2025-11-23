@@ -11,6 +11,7 @@ import {
   VoiceLanguageField,
   VoiceNameField,
   VoiceTagsField,
+  VoiceVisibilityAndLicense,
 } from '@/features/voice-samples/components'
 import { fetchVoiceSample, updateVoiceSample } from '@/features/voice-samples/api/voiceSamplesApi'
 import { useLanguage } from '@/features/languages/hooks/useLanguage'
@@ -186,61 +187,31 @@ export default function VoiceSampleEditPage() {
             setAvatarPreview(getPresetAvatarUrl(preset) ?? null)
           }}
           disabled={isSubmitting}
-            helperText="512x512 이하 PNG/JPG 권장, 미선택 시 기존 또는 기본 이미지가 사용됩니다."
-          />
+          helperText="512x512 이하 PNG/JPG 권장, 미선택 시 기존 또는 기본 이미지가 사용됩니다."
+        />
 
-          <div className="grid gap-4 rounded-xl border border-surface-3 bg-surface-1 p-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="license-code">라이선스</Label>
-              <select
-                id="license-code"
-                value={licenseCode}
-                onChange={(e) => handleLicenseChange(e.target.value)}
-                className="w-full rounded-lg border border-surface-3 bg-surface-1 px-3 py-2 text-sm"
-                disabled={isSubmitting}
-              >
-                <option value="commercial">상업적 사용 허용</option>
-                <option value="noncommercial">비상업용(상업 사용 불가)</option>
-              </select>
-              <p className="text-xs text-muted">
-                에피소드(유튜브 배포 등)에서는 상업적 사용이 기본이므로 비상업 라이선스는 사용이 제한됩니다.
-              </p>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="is-public">공개 여부</Label>
-              <div className="flex items-center gap-3 rounded-lg border border-surface-3 bg-surface-1 px-3 py-2">
-                <input
-                  id="is-public"
-                  type="checkbox"
-                  className="h-4 w-4 accent-primary"
-                  checked={isPublic}
-                  onChange={(e) => handlePublicToggle(e.target.checked)}
-                  disabled={isSubmitting}
-                />
-                <div className="text-sm leading-tight">
-                  <div className="font-medium">공개</div>
-                  <div className="text-xs text-muted">
-                    공개 시 이후 삭제가 불가합니다. AI 학습 또는 타 사용자에게 노출될 수 있습니다.
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+        <VoiceVisibilityAndLicense
+          licenseCode={licenseCode}
+          isPublic={isPublic}
+          disabled={isSubmitting}
+          onLicenseChange={handleLicenseChange}
+          onPublicToggle={handlePublicToggle}
+        />
 
           <VoiceDescriptionField value={notes} onChange={setNotes} disabled={isSubmitting} />
           <div className="flex items-start gap-3">
-            <input
-              type="checkbox"
-              className="mt-1 h-5 w-5 rounded border-surface-4 text-primary focus:ring-accent"
-              defaultChecked
-              readOnly
-            />
-            <div className="space-y-1 text-sm leading-relaxed text-muted">
-              <p>
-                음성 파일에 필요한 권리와 동의를 모두 확보했으며, 생성된 콘텐츠를 불법적이거나
-                부정한 목적으로 사용하지 않겠다는 점에 동의합니다. 실제 서비스와 동일한 수준의 정책을 참고용으로
-                제공합니다.
-              </p>
+        <input
+          type="checkbox"
+          className="mt-1 h-5 w-5 rounded border-surface-4 text-primary focus:ring-accent"
+          defaultChecked
+          readOnly
+        />
+        <div className="space-y-1 text-sm leading-relaxed text-muted-foreground">
+          <p>
+            음성 파일에 필요한 권리와 동의를 모두 확보했으며, 생성된 콘텐츠를 불법적이거나
+            부정한 목적으로 사용하지 않겠다는 점에 동의합니다. 실제 서비스와 동일한 수준의 정책을 참고용으로
+            제공합니다.
+          </p>
               <div className="flex flex-wrap gap-3 text-primary underline underline-offset-4">
                 <Link to={routes.termsOfService}>이용약관</Link>
                 <Link to={routes.prohibitedPolicy}>금지 콘텐츠 및 사용 정책</Link>

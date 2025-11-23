@@ -51,25 +51,23 @@ export const TrackRow = memo(
     // Different styles for each track type
     const getTrackStyle = () => {
       if (track.type === 'waveform') {
-        // Original track: neutral gray gradient
         if (track.id === 'track-original') {
           return {
-            background: 'linear-gradient(to bottom, #e5e7eb 0%, #d1d5db 100%)',
-            className: 'rounded-lg shadow-inner',
+            background: undefined,
+            className: 'rounded-xl border border-outline/40 bg-surface-2 shadow-inner',
           }
         }
-        // Music & FX track: violet gradient (Material Design)
         if (track.id === 'track-fx') {
           return {
-            background: 'linear-gradient(to bottom, #ede7f6 0%, #d1c4e9 100%)',
-            className: 'rounded-lg shadow-inner',
+            background: undefined,
+            className: 'rounded-xl border border-outline/40 bg-surface-1 shadow-inner',
           }
         }
       }
-      // Speaker tracks: alternating subtle violet background
+      // Speaker tracks: subtle alternating surface tones
       return {
-        background: index % 2 === 0 ? 'rgba(101,0,238,0.02)' : 'transparent',
-        className: '',
+        background: undefined,
+        className: index % 2 === 0 ? 'bg-surface-1' : 'bg-surface-2/70',
       }
     }
 
@@ -78,7 +76,7 @@ export const TrackRow = memo(
     return (
       <div
         ref={ref}
-        className={`relative overflow-visible border-b ${trackStyle.className} ${track.type === 'waveform' ? 'px-2 py-2' : 'px-4 py-3'}`}
+        className={`relative overflow-visible border-b border-outline/20 ${trackStyle.className} ${track.type === 'waveform' ? 'px-2 py-2' : 'px-4 py-3'}`}
         style={{
           background: trackStyle.background,
           height: `${height}px`,
@@ -110,7 +108,7 @@ export const TrackRow = memo(
             ))}
           </>
         ) : (
-          <div className="border-surface-3 text-muted flex h-full items-center justify-center rounded-xl border border-dashed text-xs">
+          <div className="text-muted-foreground flex h-full items-center justify-center rounded-xl border border-dashed border-outline/40 text-xs">
             FX Placeholder
           </div>
         )}

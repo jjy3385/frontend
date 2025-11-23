@@ -28,9 +28,9 @@ export function Breadcrumbs({ items, className, separator = 'chevron' }: Breadcr
 
   const Separator = () => {
     if (separator === 'slash') {
-      return <span className="text-muted mx-2 text-sm">/</span>
+      return <span className="text-muted-foreground mx-2 text-sm">/</span>
     }
-    return <ChevronRight className="text-muted mx-1 h-4 w-4" />
+    return <ChevronRight className="text-muted-foreground mx-1 h-4 w-4" />
   }
 
   return (
@@ -47,8 +47,8 @@ export function Breadcrumbs({ items, className, separator = 'chevron' }: Breadcr
                   <Link
                     to={item.href}
                     className={cn(
-                      'text-muted hover:text-primary text-xs transition-colors',
-                      isFirst && 'font-medium',
+                      'text-muted-foreground hover:text-primary text-xs font-medium transition-colors',
+                      isFirst && 'text-foreground',
                     )}
                   >
                     {item.label}
@@ -56,8 +56,8 @@ export function Breadcrumbs({ items, className, separator = 'chevron' }: Breadcr
                 ) : (
                   <span
                     className={cn(
-                      'text-foreground text-xs',
-                      isLast ? 'font-semibold' : 'text-muted',
+                      'text-xs',
+                      isLast ? 'text-foreground font-semibold' : 'text-muted-foreground',
                     )}
                     aria-current={isLast ? 'page' : undefined}
                   >

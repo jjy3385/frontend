@@ -31,15 +31,17 @@ export function VoiceCategorySelector({
               className={`rounded-full border px-3 py-1.5 text-xs font-medium transition ${
                 isSelected
                   ? 'border-primary bg-primary/10 text-primary'
-                  : 'border-surface-4 bg-surface-1 text-muted hover:border-primary'
-              } ${disabled ? 'cursor-not-allowed opacity-60' : ''}`}
+                  : 'border-surface-4 bg-surface-1 text-foreground hover:border-primary'
+              } ${disabled ? 'cursor-not-allowed opacity-60 text-muted-foreground' : ''}`}
             >
               {label}
             </button>
           )
         })}
       </div>
-      <p className="text-xs text-muted">원하는 용도를 여러 개 선택하면 검색 시 더 잘 노출됩니다.</p>
+      <p className="text-xs text-muted-foreground">
+        원하는 용도를 여러 개 선택하면 검색 시 더 잘 노출됩니다.
+      </p>
     </div>
   )
 }
