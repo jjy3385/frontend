@@ -101,7 +101,12 @@ export function VoicePlayerBar({
             </button>
             <button
               type="button"
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-foreground text-background shadow-sm transition-transform hover:scale-[1.02] disabled:opacity-60"
+              className={cn(
+                'flex h-10 w-10 items-center justify-center rounded-full border transition-all disabled:opacity-60',
+                isPlaying
+                  ? 'border-secondary/40 bg-secondary/15 text-secondary'
+                  : 'border-secondary/30 bg-secondary/10 text-secondary/80 hover:border-secondary/40 hover:text-secondary',
+              )}
               onClick={onPlayPause}
               disabled={isLoading}
               title={isPlaying ? '일시정지' : '재생'}

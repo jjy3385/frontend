@@ -84,20 +84,20 @@ export function UseCaseCarouselSection({ onCategoryClick }: UseCaseCarouselSecti
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 rounded-full"
+            className="h-9 w-9 rounded-full text-foreground hover:border-outline hover:bg-surface-2"
             onClick={handlePrev}
             disabled={VOICE_CATEGORIES.length <= cardsPerView}
           >
-            <ChevronLeft className="h-3 w-3" />
+            <ChevronLeft className="h-4 w-4" />
           </Button>
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8 rounded-full"
+            className="h-9 w-9 rounded-full text-foreground hover:border-outline hover:bg-surface-2"
             onClick={handleNext}
             disabled={VOICE_CATEGORIES.length <= cardsPerView}
           >
-            <ChevronRight className="h-3 w-3" />
+            <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
       </div>

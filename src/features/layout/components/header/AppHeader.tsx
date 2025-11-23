@@ -48,11 +48,11 @@ export function AppHeader() {
         <Link
           to={routes.home}
           className="focus-visible:outline-hidden group flex items-center leading-tight focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-          aria-label="Dupliot 홈으로 이동"
+          aria-label="Dupilot 홈으로 이동"
         >
           <LogoIcon />
           <span className="text-2xl font-bold tracking-tight text-foreground">
-            Dupliot
+            Dupilot
           </span>
         </Link>
 

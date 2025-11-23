@@ -199,7 +199,12 @@ export function VoiceHighlightChip({
               onPlay(sample)
             }}
             title={isPlaying ? '일시정지' : '재생'}
-            className="flex-shrink-0 rounded-full p-1.5 text-muted transition-colors hover:bg-surface-2 hover:text-foreground"
+            className={cn(
+              'flex-shrink-0 rounded-full p-1.5 transition-colors',
+              isPlaying
+                ? 'border border-secondary/40 bg-secondary/15 text-secondary'
+                : 'text-secondary/80 hover:border hover:border-secondary/30 hover:bg-secondary/10 hover:text-secondary',
+            )}
           >
             {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
           </button>
