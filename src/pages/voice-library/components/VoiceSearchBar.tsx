@@ -1,6 +1,7 @@
 import { Search, X } from 'lucide-react'
 
 import { Input } from '@/shared/ui/Input'
+
 import type { FilterChip } from '../hooks/useVoiceLibraryFilters'
 
 interface VoiceSearchBarProps {

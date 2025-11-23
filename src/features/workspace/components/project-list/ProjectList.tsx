@@ -1,5 +1,4 @@
 import type { ProjectSummary } from '@/entities/project/types'
-
 import { Button } from '@/shared/ui/Button'
 
 import { EpisodeCard } from './EpisodeCard'

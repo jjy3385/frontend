@@ -557,10 +557,6 @@ export default function VoiceLibraryPage() {
     [removeFromMyVoices],
   )
 
-  if (!isAuthenticated) {
-    return null
-  }
-
   const setTabWithParam = useCallback(
     (next: LibraryTab) => {
       setTab(next)
@@ -579,6 +575,10 @@ export default function VoiceLibraryPage() {
       setTab(nextTab)
     }
   }, [searchParams, tab])
+
+  if (!isAuthenticated) {
+    return null
+  }
 
   return (
     <>
