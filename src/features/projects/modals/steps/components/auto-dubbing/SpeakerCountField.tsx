@@ -16,7 +16,9 @@ export function AudioSpeakerCountField({ registration, value, error }: SpeakerCo
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-3">
-        <Label htmlFor="speaker-count">화자 수</Label>
+        <Label htmlFor="speaker-count" className="font-semibold">
+          화자 수
+        </Label>
         <Select
           name={name}
           value={String(value)}
@@ -42,7 +44,7 @@ export function AudioSpeakerCountField({ registration, value, error }: SpeakerCo
       </div>
 
       <div>
-        <p className="text-xs text-muted">권장: 1~5명, 최대 10명까지 설정할 수 있습니다.</p>
+        <p className="text-xs text-secondary">권장: 1~5명, 최대 10명까지 설정할 수 있습니다.</p>
         <ValidationMessage message={error} />
       </div>
     </div>

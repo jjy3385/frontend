@@ -63,8 +63,8 @@ export function NotificationList() {
   if (notifications.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
-        <Bell className="mb-3 h-12 w-12 text-muted" />
-        <p className="text-sm text-muted">알림이 없습니다</p>
+        <Bell className="mb-3 h-12 w-12 text-muted-foreground" />
+        <p className="text-sm text-muted-foreground">알림이 없습니다</p>
       </div>
     )
   }
@@ -76,7 +76,9 @@ export function NotificationList() {
         <h3 className="text-sm font-semibold text-foreground">
           알림
           {unreadCount > 0 && (
-            <span className="ml-2 text-xs font-normal text-muted">({unreadCount}개 읽지 않음)</span>
+            <span className="ml-2 text-xs font-normal text-muted-foreground">
+              ({unreadCount}개 읽지 않음)
+            </span>
           )}
         </h3>
         <div className="flex items-center gap-1">
@@ -85,7 +87,7 @@ export function NotificationList() {
               variant="ghost"
               size="sm"
               onClick={markAllAsRead}
-              className="h-7 px-2 text-xs text-muted hover:text-foreground"
+              className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground"
               title="모두 읽음으로 표시"
             >
               <CheckCheck className="h-3.5 w-3.5" />
@@ -96,7 +98,7 @@ export function NotificationList() {
               variant="ghost"
               size="sm"
               onClick={clearAll}
-              className="h-7 px-2 text-xs text-muted hover:text-danger"
+              className="h-7 px-2 text-xs text-muted-foreground hover:text-danger"
               title="모두 삭제"
             >
               <Trash2 className="h-3.5 w-3.5" />
@@ -130,13 +132,13 @@ export function NotificationList() {
                 </span>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-2">
-                    <p className="text-sm font-medium text-foreground">{notification.title}</p>
+                    <p className="text-sm font-semibold text-tertiary">{notification.title}</p>
                     {!notification.read && (
                       <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-primary" />
                     )}
                   </div>
-                  <p className="mt-1 text-xs text-muted">{notification.message}</p>
-                  <p className="mt-1.5 text-xs text-muted">
+                  <p className="mt-1 text-xs text-muted-foreground">{notification.message}</p>
+                  <p className="mt-1.5 text-xs text-muted-foreground">
                     {formatTimestamp(notification.timestamp)}
                   </p>
                 </div>
@@ -152,7 +154,7 @@ export function NotificationList() {
               className="absolute right-2 top-3 rounded p-1 opacity-0 transition-opacity hover:bg-surface-3 group-hover:opacity-100"
               title="삭제"
             >
-              <X className="h-3.5 w-3.5 text-muted" />
+              <X className="h-3.5 w-3.5 text-muted-foreground" />
             </button>
           </div>
         ))}

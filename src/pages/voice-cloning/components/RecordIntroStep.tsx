@@ -20,11 +20,11 @@ export function RecordIntroStep({
   onBack,
 }: RecordIntroStepProps) {
   return (
-    <div className="flex flex-col p-12">
+    <div className="flex flex-col bg-surface-1 p-12 text-foreground">
       {/* Back Button */}
       <button
         type="button"
-        className="mb-8 flex items-center gap-2 text-sm text-gray-600 transition-colors hover:text-gray-900"
+        className="mb-8 flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
         onClick={onBack}
       >
         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -53,21 +53,21 @@ export function RecordIntroStep({
       </div> */}
 
       {/* Instructions */}
-      <div className="mb-8 rounded-2xl bg-gray-50 p-6">
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
+      <div className="mb-8 rounded-2xl bg-surface-2 p-6">
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           다음 문장을 읽어주세요
         </p>
-        <p className="text-base leading-relaxed text-gray-800">
+        <p className="text-base leading-relaxed text-foreground">
           "안녕하세요! 지금 저는 제 목소리를 녹음하고 있습니다. 잠시 뒤 이 목소리가 텍스트를
           자동으로 읽어주게 될 거예요."
         </p>
       </div>
 
       {/* Settings */}
-      <div className="mb-12 flex items-center justify-between rounded-xl border border-gray-200 bg-white p-4">
+      <div className="mb-12 flex items-center justify-between rounded-xl border border-outline/50 bg-surface-2 p-4">
         <div className="flex items-center gap-3">
           <svg
-            className="h-5 w-5 text-gray-400"
+            className="h-5 w-5 text-muted-foreground"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -79,13 +79,13 @@ export function RecordIntroStep({
               d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"
             />
           </svg>
-          <span className="text-sm font-medium text-gray-700">AI 노이즈 제거</span>
+          <span className="text-sm font-medium text-foreground">AI 노이즈 제거</span>
         </div>
         <button
           type="button"
           onClick={onRemoveNoiseToggle}
           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-            removeNoise ? 'bg-purple-600' : 'bg-gray-300'
+            removeNoise ? 'bg-primary' : 'bg-surface-4'
           }`}
         >
           <span

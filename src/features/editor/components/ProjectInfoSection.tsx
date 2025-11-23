@@ -58,28 +58,28 @@ export function ProjectInfoSection({ projectId }: ProjectInfoSectionProps) {
   }
 
   return (
-    <div className="flex h-full flex-col overflow-y-auto p-4">
+    <div className="scrollbar-thin flex h-full flex-col overflow-y-auto rounded-2xl border border-outline/40 bg-surface-1 p-4 shadow-soft">
       <div className="space-y-6">
         {/* 프로젝트 제목 */}
         <div>
-          <h3 className="font-semibold text-foreground">{project.title}</h3>
+          <h3 className="text-foreground text-lg font-semibold">{project.title}</h3>
         </div>
 
         {/* 기본 정보 */}
         <div className="space-y-3">
           <div className="flex items-start gap-3">
-            <Calendar className="mt-0.5 h-4 w-4 text-muted" />
+            <Calendar className="mt-0.5 h-4 w-4 text-muted-foreground" />
             <div className="flex-1">
-              <p className="text-xs font-medium text-muted">생성일</p>
+              <p className="text-xs font-medium text-muted-foreground">생성일</p>
               <p className="mt-0.5 text-sm text-foreground">{formatDate(project.created_at)}</p>
             </div>
           </div>
 
           {project.duration_seconds && (
             <div className="flex items-start gap-3">
-              <Clock className="mt-0.5 h-4 w-4 text-muted" />
+              <Clock className="mt-0.5 h-4 w-4 text-muted-foreground" />
               <div className="flex-1">
-                <p className="text-xs font-medium text-muted">영상 길이</p>
+                <p className="text-xs font-medium text-muted-foreground">영상 길이</p>
                 <p className="mt-0.5 text-sm text-foreground">
                   {formatDuration(project.duration_seconds)}
                 </p>
@@ -90,11 +90,11 @@ export function ProjectInfoSection({ projectId }: ProjectInfoSectionProps) {
           {project.source_language && (
             <div className="flex flex-col">
               <div className="mb-2 flex items-center gap-3">
-                <Globe className="mt-0.5 h-4 w-4 text-muted" />
-                <p className="text-xs font-medium text-muted">원본 언어</p>
+                <Globe className="mt-0.5 h-4 w-4 text-muted-foreground" />
+                <p className="text-xs font-medium text-muted-foreground">원본 언어</p>
               </div>
 
-              <div className="inline-flex w-fit items-center gap-2 rounded bg-surface-2 px-3 py-1.5">
+              <div className="inline-flex w-fit items-center gap-2 rounded-lg bg-surface-2 px-3 py-1.5">
                 <span className="text-lg leading-none">
                   {getLanguageFlag(project.source_language)}
                 </span>
@@ -110,14 +110,14 @@ export function ProjectInfoSection({ projectId }: ProjectInfoSectionProps) {
         {project.targets && project.targets.length > 0 && (
           <div>
             <div className="mb-2 flex items-center gap-2">
-              <Globe className="h-4 w-4 text-muted" />
-              <h4 className="text-xs font-medium text-muted">타겟 언어</h4>
+              <Globe className="h-4 w-4 text-muted-foreground" />
+              <h4 className="text-xs font-medium text-muted-foreground">타겟 언어</h4>
             </div>
             <div className="flex flex-wrap gap-2">
               {project.targets.map((target) => (
                 <div
                   key={target.target_id}
-                  className="flex items-center gap-2 rounded bg-surface-2 px-3 py-1.5"
+                  className="flex items-center gap-2 rounded-lg bg-surface-2 px-3 py-1.5"
                 >
                   <span className="text-lg leading-none">
                     {getLanguageFlag(target.language_code)}
@@ -135,8 +135,8 @@ export function ProjectInfoSection({ projectId }: ProjectInfoSectionProps) {
         {project.tags && project.tags.length > 0 && (
           <div>
             <div className="mb-2 flex items-center gap-2">
-              <Tag className="h-4 w-4 text-muted" />
-              <h4 className="text-xs font-medium text-muted">태그</h4>
+              <Tag className="h-4 w-4 text-muted-foreground" />
+              <h4 className="text-xs font-medium text-muted-foreground">태그</h4>
             </div>
             <div className="flex flex-wrap gap-2">
               {project.tags.map((tag, index) => (
@@ -154,8 +154,8 @@ export function ProjectInfoSection({ projectId }: ProjectInfoSectionProps) {
         {/* 이슈 */}
         {project.issue_count > 0 && (
           <div>
-            <h4 className="mb-2 text-xs font-medium text-muted">이슈</h4>
-            <div className="rounded-lg border border-surface-3 bg-surface-2 px-3 py-2">
+            <h4 className="mb-2 text-xs font-medium text-muted-foreground">이슈</h4>
+            <div className="rounded-lg border border-outline/40 bg-surface-2 px-3 py-2">
               <span className="text-sm font-medium text-foreground">
                 {project.issue_count}개의 이슈
               </span>

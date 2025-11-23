@@ -116,8 +116,8 @@ export function VoiceSpotlightCard({
   const licenseBadgeLabel = sample.canCommercialUse === false ? '비상업 전용' : '상업 사용 가능'
   const licenseBadgeClass =
     sample.canCommercialUse === false
-      ? 'bg-amber-100 text-amber-700'
-      : 'bg-emerald-100 text-emerald-700'
+      ? 'bg-warning/20 text-warning'
+      : 'bg-primary/10 text-primary'
 
   /* 🔹 일레븐랩스 스타일: 리스트 row 용 */
   if (isTableRow) {
@@ -159,7 +159,7 @@ export function VoiceSpotlightCard({
         </div>
 
         {/* 2열: Language */}
-        <div className="flex items-center gap-2 text-[13px] text-muted">
+        <div className="flex items-center gap-2 text-[13px] text-muted-foreground">
           {countryCode && (
             <ReactCountryFlag
               countryCode={countryCode}
@@ -173,18 +173,18 @@ export function VoiceSpotlightCard({
         </div>
 
         {/* 3열: 카테고리 */}
-        <div className="min-w-0 text-[13px] text-muted">
+        <div className="min-w-0 text-[13px] text-muted-foreground">
           {categoryText ? (
             <span className="block truncate" title={categoryText}>
               {categoryText}
             </span>
           ) : (
-            <span className="text-[11px] text-muted">카테고리 없음</span>
+            <span className="text-[11px] text-muted-foreground">카테고리 없음</span>
           )}
         </div>
 
         {/* 4열: 태그 */}
-        <div className="flex max-h-10 flex-wrap items-center gap-2 overflow-hidden text-[12px] text-muted">
+        <div className="flex max-h-10 flex-wrap items-center gap-2 overflow-hidden text-[12px] text-muted-foreground">
           <span
             className={cn(
               'rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap',
@@ -197,18 +197,18 @@ export function VoiceSpotlightCard({
             sample.tags.slice(0, 4).map((tag) => (
               <span
                 key={tag}
-                className="rounded-full bg-surface-2 px-2 py-0.5 text-[11px] text-muted whitespace-nowrap"
+                className="rounded-full bg-surface-2 px-2 py-0.5 text-[11px] text-foreground whitespace-nowrap"
               >
                 #{tag}
               </span>
             ))
           ) : (
-            <span className="text-[11px] text-muted">태그 없음</span>
+            <span className="text-[11px] text-muted-foreground">태그 없음</span>
           )}
         </div>
 
         {/* 5열: 사용 수 */}
-        <div className="text-right text-[12px] text-muted">
+        <div className="text-right text-[12px] text-muted-foreground">
           {`${formatUserCount(sample.addedCount)} 사용`}
         </div>
 
@@ -300,11 +300,11 @@ export function VoiceSpotlightCard({
           ) : (
             <button
               type="button"
-              className="rounded-full p-1 text-muted transition-colors hover:bg-surface-2"
-            >
-              <MoreHorizontal className="h-4 w-4" />
-            </button>
-          )}
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-surface-2 text-muted-foreground shadow-inner transition hover:bg-surface-3 hover:text-foreground"
+              >
+                <MoreHorizontal className="h-4 w-4" />
+              </button>
+            )}
         </div>
       </div>
     )
@@ -338,7 +338,9 @@ export function VoiceSpotlightCard({
           <div className="min-w-0 flex-1">
             <h3 className="text-base font-semibold">{sample.name}</h3>
             {sample.description && (
-              <p className="line-clamp-1 text-sm text-muted">{sample.description}</p>
+              <p className="line-clamp-1 text-sm font-medium text-muted-foreground">
+                {sample.description}
+              </p>
             )}
           </div>
           <div className="flex flex-col items-end justify-center gap-2">

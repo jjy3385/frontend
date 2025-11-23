@@ -16,16 +16,16 @@ export function AudioTrackSidebar({ trackRows, getTrackRowHeight }: AudioTrackSi
   const addSpeakerTrack = useTracksStore((state) => state.addSpeakerTrack)
 
   return (
-    <div className="border-surface-3 bg-surface-2 border-r">
+    <div className="border-outline/40 bg-surface-1 border-r">
       {/* 티커라인 패딩 */}
-      <div className="border-surface-3 h-10 border-b" />
+      <div className="border-outline/40 h-10 border-b" />
 
       {trackRows.map((track) => {
         if (track.type === 'speaker') {
           return (
             <div
               key={track.id}
-              className="border-surface-3 group flex items-center justify-between border-b px-4 text-sm"
+              className="border-outline/30 group flex items-center justify-between border-b px-4 text-sm"
               style={{ height: `${getTrackRowHeight(track)}px` }}
             >
               <TrackNameEditor
@@ -45,7 +45,7 @@ export function AudioTrackSidebar({ trackRows, getTrackRowHeight }: AudioTrackSi
         return (
           <div
             key={track.id}
-            className="border-surface-3 group flex items-center justify-between border-b px-4 text-sm"
+            className="border-outline/30 group flex items-center justify-between border-b px-4 text-sm"
             style={{ height: `${getTrackRowHeight(track)}px` }}
           >
             <div className="flex items-center gap-2">
@@ -57,12 +57,12 @@ export function AudioTrackSidebar({ trackRows, getTrackRowHeight }: AudioTrackSi
       })}
 
       {/* 티커라인 패딩 with Add Speaker button */}
-      <div className="border-surface-3 flex h-10 items-center border-b px-3">
+      <div className="border-outline/40 flex h-10 items-center border-b px-3">
         <Button
           type="button"
           variant="ghost"
           size="sm"
-          className="w-full gap-1"
+          className="w-full gap-1 text-foreground"
           onClick={addSpeakerTrack}
         >
           <Plus className="h-3.5 w-3.5" />

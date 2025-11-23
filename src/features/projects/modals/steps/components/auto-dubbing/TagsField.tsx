@@ -13,13 +13,15 @@ type TagsFieldProps = {
 export function TagsField({ registration, previewTags, error }: TagsFieldProps) {
   return (
     <div className="space-y-1">
-      <Label htmlFor="episode-tags">태그 (선택)</Label>
+      <Label htmlFor="episode-tags" className="font-semibold">
+        태그 (선택)
+      </Label>
       <Input
         id="episode-tags"
         placeholder="SNS 해시태그처럼 자유롭게 적어주세요. (예: #게임 #튜토리얼)"
         {...registration}
       />
-      <div className="flex items-center justify-between text-xs text-muted">
+      <div className="flex items-center justify-between text-xs text-secondary">
         <span>쉼표 또는 띄어쓰기로 구분, 최대 10개까지 입력됩니다.</span>
         {previewTags.length > 0 ? (
           <span className="text-foreground/70">

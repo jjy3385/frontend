@@ -76,10 +76,10 @@ export function SourceSelectionStep({
   }
 
   return (
-    <div className="space-y-2">
-      <div className="mb-6">
+    <div className="space-y-3">
+      <div className="mb-4">
         <DialogTitle>1단계 — 영상 업로드</DialogTitle>
-        <DialogDescription>
+        <DialogDescription className="text-sm">
           YouTube 링크를 불러오거나, 영상을 업로드해 더빙 영상을 생성합니다
         </DialogDescription>
       </div>
@@ -87,14 +87,14 @@ export function SourceSelectionStep({
       <div className="space-y-4">
         {/* <Label htmlFor="youtube-url">YouTube 링크</Label> */}
         <div>
-          <div className="border-surface-4 bg-surface-1 flex items-center gap-3 rounded-2xl border px-4">
-            <Link2 className="text-muted h-5 w-5" />
+          <div className="bg-surface-2 flex items-center gap-3 rounded-2xl px-4 py-2.5 shadow-soft">
+            <Link2 className="text-muted-foreground h-5 w-5" />
             <Input
               id="youtube-url"
               placeholder="https://youtube.com/watch?v=..."
               value={youtubeUrl}
               onChange={(event) => handleYoutubeChange(event.target.value)}
-              className="border-none px-0 focus-visible:ring-0"
+              className="border-none bg-surface-2 px-0 text-foreground shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none"
             />
           </div>
           <ValidationMessage
@@ -106,7 +106,7 @@ export function SourceSelectionStep({
           />
         </div>
       </div>
-      <div className="text-muted text-center">OR</div>
+      <div className="text-muted-foreground text-center">OR</div>
       <div className="space-y-1">
         <input
           id="project-source-upload"
@@ -122,9 +122,8 @@ export function SourceSelectionStep({
         </Button>
 
         {fileSummary ? (
-          <div className="text-muted space-y-2">
-            {/* 선택된 파일 */}
-            <p className="text-muted overflow-hidden text-ellipsis whitespace-nowrap font-medium">
+          <div className="text-muted-foreground space-y-2">
+            <p className="overflow-hidden text-ellipsis whitespace-nowrap font-medium">
               {fileSummary}
             </p>
           </div>
@@ -133,7 +132,7 @@ export function SourceSelectionStep({
       </div>
 
       <div className="flex justify-end gap-3 pt-4">
-        <Button variant="ghost" type="button" onClick={onCancel}>
+        <Button variant="secondary" type="button" onClick={onCancel}>
           취소
         </Button>
         <Button type="button" onClick={handleSubmit} disabled={!canProceed}>

@@ -132,9 +132,13 @@ export function LoginForm() {
         </Button>
         <div id="google-login-button" className="w-full" />
       </div>
-      <div className="text-muted flex flex-wrap items-center justify-between gap-3 text-sm">
-        <Link to={routes.signup} className="text-primary font-medium hover:underline">
+      <div className="text-muted-foreground flex flex-wrap items-center justify-between gap-3 text-sm">
+        <Link
+          to={routes.signup}
+          className="inline-flex items-center gap-1 text-primary font-medium hover:underline"
+        >
           회원가입 이동
+          <span aria-hidden="true">→</span>
         </Link>
       </div>
     </form>

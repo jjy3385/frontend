@@ -71,9 +71,12 @@ export function VoiceTagsField({
           onBlur={handleAdd}
           disabled={disabled}
           placeholder={placeholder}
-          className="flex-1 min-w-[160px] border-none bg-transparent text-sm outline-none placeholder:text-muted"
+          className="flex-1 min-w-[160px] border-none bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
         />
       </div>
+      <p className="text-xs text-muted-foreground">
+        원하는 용도를 여러 개 선택하면 검색 시 더 잘 노출됩니다.
+      </p>
     </div>
   )
 }

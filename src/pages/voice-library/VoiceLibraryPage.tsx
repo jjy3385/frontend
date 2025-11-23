@@ -1,8 +1,8 @@
 import { useMemo, useState, useEffect, useRef, useCallback } from 'react'
 
 import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowDown, ArrowUp, ChevronDown, Filter } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { ArrowDown, ArrowUp, ChevronDown, Filter, Plus } from 'lucide-react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import type { VoiceSample, VoiceSamplesResponse } from '@/entities/voice-sample/types'
 import { getCurrentUser } from '@/features/auth/api/authApi'
@@ -34,8 +34,6 @@ import { VoicePlayerBar } from './components/VoicePlayerBar'
 import { VoiceSearchBar } from './components/VoiceSearchBar'
 import type { VoiceFilters } from './hooks/useVoiceLibraryFilters'
 import { VoiceFiltersModal } from './components/VoiceFiltersModal'
-import { VoiceLibraryTabs } from './components/VoiceLibraryTabs'
-import { FilterChipsBar } from './components/FilterChipsBar'
 import { useVoiceLibraryFilters } from './hooks/useVoiceLibraryFilters'
 import { CharacterVoicesSection } from './sections/CharacterVoicesSection'
 import { TrendingVoicesSection } from './sections/TrendingVoicesSection'
@@ -67,7 +65,9 @@ const getPresignedUrl = async (path: string): Promise<string | undefined> => {
   }
 
 export default function VoiceLibraryPage() {
-  const [tab, setTab] = useState<LibraryTab>('library')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const initialTab = (searchParams.get('tab') as LibraryTab | null) ?? 'library'
+  const [tab, setTab] = useState<LibraryTab>(initialTab)
   const [search, setSearch] = useState('')
   const [sort, setSort] = useState<
     'trending' | 'added-desc' | 'added-asc' | 'created-desc' | 'created-asc'
@@ -561,99 +561,117 @@ export default function VoiceLibraryPage() {
     return null
   }
 
+  const setTabWithParam = useCallback(
+    (next: LibraryTab) => {
+      setTab(next)
+      const params = new URLSearchParams(searchParams)
+      params.set('tab', next)
+      setSearchParams(params, { replace: true })
+    },
+    [searchParams, setSearchParams],
+  )
+
+  const tabLabel = tab === 'library' ? '탐색' : '내 목소리'
+
+  useEffect(() => {
+    const nextTab = (searchParams.get('tab') as LibraryTab | null) ?? 'library'
+    if (nextTab !== tab) {
+      setTab(nextTab)
+    }
+  }, [searchParams, tab])
+
   return (
     <>
       <div className="mx-auto max-w-7xl space-y-8 px-6 py-6 pb-28">
-      {/* 상단 네비게이션 */}
-      <div className="flex items-center justify-between gap-4">
-        <VoiceLibraryTabs activeTab={tab} onChange={setTab} />
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div className="space-y-1">
+            <h1 className="text-foreground text-2xl font-bold">보이스 마켓</h1>
+            <p className="text-muted-foreground text-sm">
+              원하는 목소리를 검색하고 필터로 빠르게 찾아보세요.
+            </p>
+          </div>
+          {/* 탭 선택은 헤더 드롭다운(AppHeader)에서 처리 */}
+        </div>
+
+        {/* 검색 및 필터 */}
         <div className="flex items-center gap-4">
-          <Button variant="primary" onClick={() => navigate(routes.voiceCloning)} className="gap-2">
-            + 내 목소리 만들기
-          </Button>
-        </div>
-      </div>
-
-      {/* 검색 및 필터 */}
-      <div className="flex items-center gap-4">
-        <VoiceSearchBar value={search} onChange={setSearch} />
-        <div className="flex items-center gap-2 text-xs">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="primary"
-                className="h-8 gap-1 rounded-full px-3 py-1.5 text-xs font-medium"
-              >
-                {sort === 'trending' && (
-                  <>
+          <VoiceSearchBar
+            value={search}
+            onChange={setSearch}
+            chips={chips}
+            onResetChips={() => {
+              resetFilters()
+              setSelectedCategory(null)
+            }}
+          />
+          <div className="flex items-center gap-2 text-xs">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="secondary"
+                  className="h-10 gap-2 rounded-full border-outline/30 bg-primary-container px-3 py-1.5 text-sm font-medium text-on-primary-container shadow-soft hover:bg-primary-container/90"
+                >
+                  {sort === 'trending' && (
+                    <>
+                      인기순 <ArrowDown className="h-3 w-3 text-on-primary-container" />
+                    </>
+                  )}
+                  {sort === 'added-desc' && (
+                    <>
+                      인기순 <ArrowDown className="h-3 w-3 text-on-primary-container" />
+                    </>
+                  )}
+                  {sort === 'added-asc' && (
+                    <>
+                      인기순 <ArrowUp className="h-3 w-3 text-on-primary-container" />
+                    </>
+                  )}
+                  {sort === 'created-desc' && (
+                    <>
+                      최신순 <ArrowDown className="h-3 w-3 text-on-primary-container" />
+                    </>
+                  )}
+                  {sort === 'created-asc' && (
+                    <>
+                      오래된순 <ArrowUp className="h-3 w-3 text-on-primary-container" />
+                    </>
+                  )}
+                  <ChevronDown className="h-3 w-3 text-on-primary-container" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuItem onClick={() => setSort('added-desc')}>
+                  <div className="flex items-center gap-1">
                     인기순 <ArrowDown className="h-3 w-3" />
-                  </>
-                )}
-                {sort === 'added-desc' && (
-                  <>
-                    인기순 <ArrowDown className="h-3 w-3" />
-                  </>
-                )}
-                {sort === 'added-asc' && (
-                  <>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSort('added-asc')}>
+                  <div className="flex items-center gap-1">
                     인기순 <ArrowUp className="h-3 w-3" />
-                  </>
-                )}
-                {sort === 'created-desc' && (
-                  <>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSort('created-desc')}>
+                  <div className="flex items-center gap-1">
                     최신순 <ArrowDown className="h-3 w-3" />
-                  </>
-                )}
-                {sort === 'created-asc' && (
-                  <>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSort('created-asc')}>
+                  <div className="flex items-center gap-1">
                     오래된순 <ArrowUp className="h-3 w-3" />
-                  </>
-                )}
-                <ChevronDown className="h-3 w-3" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
-              <DropdownMenuItem onClick={() => setSort('added-desc')}>
-                <div className="flex items-center gap-1">
-                  인기순 <ArrowDown className="h-3 w-3" />
-                </div>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setSort('added-asc')}>
-                <div className="flex items-center gap-1">
-                  인기순 <ArrowUp className="h-3 w-3" />
-                </div>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setSort('created-desc')}>
-                <div className="flex items-center gap-1">
-                  최신순 <ArrowDown className="h-3 w-3" />
-                </div>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setSort('created-asc')}>
-                <div className="flex items-center gap-1">
-                  오래된순 <ArrowUp className="h-3 w-3" />
-                </div>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <Button
-            variant="secondary"
-            onClick={() => setIsFiltersModalOpen(true)}
-            className="h-8 gap-1 rounded-full border-surface-3 px-3 py-1.5 text-xs"
-          >
-            <Filter className="h-3 w-3" />
-            필터
-          </Button>
+                  </div>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button
+              variant="secondary"
+              onClick={() => setIsFiltersModalOpen(true)}
+              className="h-10 gap-2 rounded-full border-outline/30 bg-primary-container px-3 py-1.5 text-sm font-medium text-on-primary-container shadow-soft hover:bg-primary-container/90"
+            >
+              <Filter className="h-4 w-4" />
+              필터
+            </Button>
+          </div>
         </div>
-      </div>
-
-      {/* 적용된 필터 칩 */}
-      <FilterChipsBar
-        chips={chips}
-        onReset={() => {
-          resetFilters()
-          setSelectedCategory(null)
-        }}
-      />
 
       {/* Trending voices 섹션 */}
       {tab === 'library' &&
@@ -806,6 +824,8 @@ export default function VoiceLibraryPage() {
         />
       </div>
 
+      <FloatingVoiceButton onClick={() => navigate(routes.voiceCloning)} />
+
       {playerSample && (
         <VoicePlayerBar
           sample={playerSample}
@@ -820,5 +840,86 @@ export default function VoiceLibraryPage() {
         />
       )}
     </>
+  )
+}
+
+function VoiceLibraryEmptyState({ onCreate }: { onCreate: () => void }) {
+  return (
+    <div className="bg-surface-1 border-surface-4/80 text-center rounded-3xl border p-10 shadow-soft">
+      <div className="mx-auto mb-6 h-40 w-40 max-w-[260px]">
+        <EmptyStateIllustration />
+      </div>
+      <h3 className="text-foreground text-xl font-semibold">보이스 샘플이 없습니다</h3>
+      <p className="text-muted-foreground mt-2 text-sm">
+        새로운 보이스를 클로닝하거나 업로드해 보이스 마켓을 시작해 보세요.
+      </p>
+      <div className="mt-6 flex justify-center">
+        <Button size="lg" onClick={onCreate}>
+          새 보이스 만들기
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+function EmptyStateIllustration() {
+  return (
+    <svg viewBox="0 0 220 200" role="img" aria-hidden="true" className="h-full w-full">
+      <defs>
+        <linearGradient id="voiceMicGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.9" />
+          <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.65" />
+        </linearGradient>
+      </defs>
+      <circle cx="110" cy="110" r="90" fill="hsl(var(--primary) / 0.08)" />
+      <circle cx="110" cy="90" r="55" fill="hsl(var(--primary) / 0.08)" />
+      <rect x="95" y="35" width="30" height="90" rx="15" fill="url(#voiceMicGradient)" />
+      <rect x="80" y="60" width="60" height="40" rx="12" fill="hsl(var(--primary) / 0.18)" />
+      <rect x="88" y="68" width="44" height="24" rx="6" fill="hsl(var(--primary) / 0.28)" />
+      <path
+        d="M70 100c0 22 18 40 40 40s40-18 40-40"
+        stroke="hsl(var(--primary))"
+        strokeWidth="8"
+        strokeLinecap="round"
+        fill="none"
+      />
+      <rect x="101" y="134" width="18" height="42" rx="4" fill="hsl(var(--primary))" />
+      <rect x="86" y="172" width="48" height="12" rx="6" fill="hsl(var(--primary) / 0.3)" />
+      <circle cx="60" cy="55" r="12" fill="hsl(var(--primary) / 0.16)" />
+      <circle cx="160" cy="55" r="12" fill="hsl(var(--primary) / 0.16)" />
+      <text
+        x="60"
+        y="59"
+        textAnchor="middle"
+        fontSize="10"
+        fontWeight="600"
+        fill="hsl(var(--primary))"
+      >
+        A
+      </text>
+      <text
+        x="160"
+        y="59"
+        textAnchor="middle"
+        fontSize="10"
+        fontWeight="600"
+        fill="hsl(var(--primary))"
+      >
+        가
+      </text>
+    </svg>
+  )
+}
+
+function FloatingVoiceButton({ onClick }: { onClick: () => void }) {
+  return (
+    <Button
+      type="button"
+      className="bg-primary text-primary-foreground fixed right-[max(1rem,calc((100vw-80rem)/2+1rem))] bottom-16 z-40 flex h-16 w-16 items-center justify-center rounded-full shadow-xl shadow-black/20 transition hover:bg-primary-hover focus-visible:ring-2 focus-visible:ring-offset-2"
+      onClick={onClick}
+      aria-label="내 목소리 만들기"
+    >
+      <Plus className="h-6 w-6" />
+    </Button>
   )
 }

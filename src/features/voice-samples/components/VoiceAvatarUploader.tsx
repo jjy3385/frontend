@@ -40,7 +40,7 @@ export function VoiceAvatarUploader({
 
   return (
     <div className="space-y-2">
-      <Label>아바타 이미지</Label>
+      <Label className="font-semibold text-foreground">아바타 이미지</Label>
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap items-center gap-4">
           {presetAvatars.map((preset) => {
@@ -69,8 +69,9 @@ export function VoiceAvatarUploader({
             )
           })}
         </div>
-        <div className="space-y-1 text-xs text-muted">
+        <div className="space-y-1 text-xs text-muted-foreground">
           <p>기본 아바타 중 하나를 선택하세요.</p>
+          <p>아바타는 목소리 카드에 노출되며, 선택하지 않으면 기본 이미지가 사용됩니다.</p>
         </div>
       </div>
     </div>

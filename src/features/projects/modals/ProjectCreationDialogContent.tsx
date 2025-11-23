@@ -44,8 +44,10 @@ export function ProjectCreationDialogContent({
         event.preventDefault()
       }}
     >
-      <div className="mb-6 flex items-center gap-2 text-sm font-medium">
-        <div className={`flex items-center gap-2 ${isSourceStep ? 'text-primary' : 'text-muted'}`}>
+      <div className="mb-6 flex items-center gap-2 rounded-2xl bg-surface-2 px-4 py-3 text-sm font-medium">
+        <div
+          className={`flex items-center gap-2 ${isSourceStep ? 'text-primary' : 'text-muted-foreground'}`}
+        >
           <span
             className={`flex h-6 w-6 items-center justify-center rounded-full text-xs ${isSourceStep ? 'bg-primary text-white' : 'text-muted-foreground bg-surface-4'}`}
           >
@@ -53,8 +55,10 @@ export function ProjectCreationDialogContent({
           </span>
           <span>영상 업로드</span>
         </div>
-        <div className="h-px w-8 bg-surface-4" />
-        <div className={`flex items-center gap-2 ${isDetailsStep ? 'text-primary' : 'text-muted'}`}>
+        <div className="h-px flex-1 bg-surface-4" />
+        <div
+          className={`flex items-center gap-2 ${isDetailsStep ? 'text-primary' : 'text-muted-foreground'}`}
+        >
           <span
             className={`flex h-6 w-6 items-center justify-center rounded-full text-xs ${isDetailsStep ? 'bg-primary text-white' : 'text-muted-foreground bg-surface-4'}`}
           >
@@ -62,8 +66,10 @@ export function ProjectCreationDialogContent({
           </span>
           <span>자동 더빙 설정</span>
         </div>
-        <div className="h-px w-8 bg-surface-4" />
-        <div className={`flex items-center gap-2 ${isSummaryStep ? 'text-primary' : 'text-muted'}`}>
+        <div className="h-px flex-1 bg-surface-4" />
+        <div
+          className={`flex items-center gap-2 ${isSummaryStep ? 'text-primary' : 'text-muted-foreground'}`}
+        >
           <span
             className={`flex h-6 w-6 items-center justify-center rounded-full text-xs ${isSummaryStep ? 'bg-primary text-white' : 'text-muted-foreground bg-surface-4'}`}
           >

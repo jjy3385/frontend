@@ -40,9 +40,12 @@ export function TargetLanguagesField({
 }: TargetLanguagesFieldProps) {
   return (
     <div className="space-y-3">
-      <Label>
-        번역 언어 <span className="ml-1 text-danger">*</span>
-      </Label>
+      <div className="flex items-center gap-2">
+        <Label className="font-semibold">번역 언어</Label>
+        <span className="bg-primary-container text-on-primary-container inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold leading-none">
+          필수
+        </span>
+      </div>
       <div className="">
         <div className="flex min-h-[130px] flex-col gap-3 rounded-2xl border border-dashed border-surface-4 p-4">
           <div className="flex flex-col gap-3 md:flex-row">
@@ -80,7 +83,7 @@ export function TargetLanguagesField({
             </div>
             <Button
               type="button"
-              variant="secondary"
+              variant="primary"
               className="md:w-40"
               disabled={!pendingTarget}
               onClick={onAddTarget}

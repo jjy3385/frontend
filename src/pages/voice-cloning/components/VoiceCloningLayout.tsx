@@ -22,7 +22,7 @@ export function VoiceCloningLayout({
   const isDetailsStep = step === 'details'
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-gradient-to-b from-gray-50 to-white">
+    <div className="relative min-h-screen w-full overflow-hidden bg-background">
       {/* Animated Background */}
       <WaveBackground />
 
@@ -44,56 +44,58 @@ export function VoiceCloningLayout({
                 d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
               />
             </svg>
-            <span className="text-sm font-semibold uppercase tracking-wider text-gray-600">
+            <span className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
               {title}
             </span>
           </div>
-          <h1 className="mb-4 text-4xl font-bold leading-tight text-gray-900 md:text-5xl">
+          <h1 className="mb-4 text-4xl font-bold leading-tight text-foreground md:text-5xl">
             {subtitle}
           </h1>
-          {description && <p className="mx-auto text-lg text-gray-600">{description}</p>}
+          {description && <p className="mx-auto text-lg text-muted-foreground">{description}</p>}
         </div>
 
         {step ? (
-          <div className="mb-6 flex items-center justify-center gap-2 text-sm font-medium">
-            <div className={`flex items-center gap-2 ${isSourceStep ? 'text-primary' : 'text-muted'}`}>
-              <span
-                className={`flex h-6 w-6 items-center justify-center rounded-full text-xs ${
-                  isSourceStep ? 'bg-primary text-white' : 'bg-surface-4 text-muted-foreground'
-                }`}
+          <div className="mb-6 flex justify-center">
+            <div className="inline-flex items-center gap-2 rounded-2xl bg-transparent px-4 py-3 text-sm font-medium">
+              <div
+                className={`flex items-center gap-2 ${isSourceStep ? 'text-primary' : 'text-muted-foreground'}`}
               >
-                1
-              </span>
-              <span>목소리 업로드</span>
-            </div>
-            <div className="h-px w-8 bg-surface-4" />
-            <div className={`flex items-center gap-2 ${isRecordStep ? 'text-primary' : 'text-muted'}`}>
-              <span
-                className={`flex h-6 w-6 items-center justify-center rounded-full text-xs ${
-                  isRecordStep ? 'bg-primary text-white' : 'bg-surface-4 text-muted-foreground'
-                }`}
+                <span
+                  className={`flex h-6 w-6 items-center justify-center rounded-full text-xs ${isSourceStep ? 'bg-primary text-white' : 'text-muted-foreground bg-surface-4'}`}
+                >
+                  1
+                </span>
+                <span>목소리 업로드</span>
+              </div>
+              <div className="h-px w-6 bg-surface-4" />
+              <div
+                className={`flex items-center gap-2 ${isRecordStep ? 'text-primary' : 'text-muted-foreground'}`}
               >
-                2
-              </span>
-              <span>녹음 / 미리듣기</span>
-            </div>
-            <div className="h-px w-8 bg-surface-4" />
-            <div className={`flex items-center gap-2 ${isDetailsStep ? 'text-primary' : 'text-muted'}`}>
-              <span
-                className={`flex h-6 w-6 items-center justify-center rounded-full text-xs ${
-                  isDetailsStep ? 'bg-primary text-white' : 'bg-surface-4 text-muted-foreground'
-                }`}
+                <span
+                  className={`flex h-6 w-6 items-center justify-center rounded-full text-xs ${isRecordStep ? 'bg-primary text-white' : 'text-muted-foreground bg-surface-4'}`}
+                >
+                  2
+                </span>
+                <span>녹음 / 미리듣기</span>
+              </div>
+              <div className="h-px w-6 bg-surface-4" />
+              <div
+                className={`flex items-center gap-2 ${isDetailsStep ? 'text-primary' : 'text-muted-foreground'}`}
               >
-                3
-              </span>
-              <span>정보 입력</span>
+                <span
+                  className={`flex h-6 w-6 items-center justify-center rounded-full text-xs ${isDetailsStep ? 'bg-primary text-white' : 'text-muted-foreground bg-surface-4'}`}
+                >
+                  3
+                </span>
+                <span>정보 입력</span>
+              </div>
             </div>
           </div>
         ) : null}
 
         {/* Main Card */}
         <div className="mx-auto max-w-4xl">
-          <div className="overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-2xl shadow-purple-100/50">
+          <div className="overflow-hidden rounded-3xl bg-surface-1 shadow-2xl shadow-black/15">
             {children}
           </div>
         </div>

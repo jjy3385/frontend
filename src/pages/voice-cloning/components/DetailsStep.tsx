@@ -8,11 +8,11 @@ interface DetailsStepProps {
 
 export function DetailsStep({ selectedFile, onBack, onSuccess }: DetailsStepProps) {
   return (
-    <div className="flex flex-col p-12">
+    <div className="flex flex-col bg-surface-1 p-12 text-foreground">
       {/* Back Button */}
       <button
         type="button"
-        className="mb-8 flex items-center gap-2 text-sm text-gray-600 transition-colors hover:text-gray-900"
+        className="mb-8 flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
         onClick={onBack}
       >
         <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -29,8 +29,8 @@ export function DetailsStep({ selectedFile, onBack, onSuccess }: DetailsStepProp
           onSuccess={onSuccess}
         />
       ) : (
-        <div className="rounded-xl bg-gray-50 p-8 text-center">
-          <p className="text-sm text-gray-600">사용할 샘플이 없습니다.</p>
+        <div className="rounded-xl bg-surface-2 p-8 text-center">
+          <p className="text-sm text-muted-foreground">사용할 샘플이 없습니다.</p>
         </div>
       )}
     </div>

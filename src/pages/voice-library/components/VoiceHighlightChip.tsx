@@ -67,8 +67,8 @@ export function VoiceHighlightChip({
   const licenseBadgeLabel = sample.canCommercialUse === false ? '비상업 전용' : '상업 사용 가능'
   const licenseBadgeClass =
     sample.canCommercialUse === false
-      ? 'bg-amber-100 text-amber-700'
-      : 'bg-emerald-100 text-emerald-700'
+      ? 'bg-warning/20 text-warning'
+      : 'bg-primary/10 text-primary'
   const isCommercialAllowed = sample.canCommercialUse !== false
   const isPublicVoice = sample.isPublic !== false
   const addDisabled =
@@ -108,7 +108,7 @@ export function VoiceHighlightChip({
         // ElevenLabs 스타일: 작은 카드 / 라운드 / 은은한 그림자
         'group flex items-center gap-3 rounded-3xl',
         'bg-surface-1 px-3 py-3 shadow-sm',
-        'border border-surface-3',
+        'border border-outline/40',
         'transition-all hover:-translate-y-[1px] hover:shadow-md',
       )}
     >
@@ -153,7 +153,7 @@ export function VoiceHighlightChip({
             </span>
           </div>
           {/* 두 번째 줄: 언어/국기 및 사용 수 */}
-          <div className="mt-0.5 flex items-center gap-2 text-[11px] text-muted">
+          <div className="mt-0.5 flex items-center gap-2 text-[11px] text-muted-foreground">
             {countryCode && (
               <ReactCountryFlag
                 countryCode={countryCode}
@@ -166,12 +166,12 @@ export function VoiceHighlightChip({
                 sample.country) ||
                 '언어 미상'}
             </span>
-            <span className="text-muted">•</span>
-            <span className="truncate">{`${formatUserCount(sample.addedCount)} 사용`}</span>
+            <span className="text-muted-foreground">•</span>
+            <span className="truncate text-foreground">{`${formatUserCount(sample.addedCount)} 사용`}</span>
           </div>          
           {/* 세 번째 줄: 카테고리 + 태그 한 줄 */}
-          <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-muted">
-            <span className="rounded-full bg-surface-2 px-2 py-0.5">
+          <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
+            <span className="rounded-full bg-surface-2 px-2 py-0.5 text-foreground">
               {sample.category?.length
                 ? VOICE_CATEGORY_MAP[sample.category[0] as keyof typeof VOICE_CATEGORY_MAP] ??
                   sample.category[0]
@@ -180,7 +180,7 @@ export function VoiceHighlightChip({
             {sample.tags?.slice(0, 3).map((tag) => (
               <span
                 key={tag}
-                className="rounded-full bg-surface-2 px-2 py-0.5 text-[10px] text-muted"
+                className="rounded-full bg-surface-2 px-2 py-0.5 text-[10px] text-foreground"
               >
                 #{tag}
               </span>

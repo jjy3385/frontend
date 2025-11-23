@@ -22,7 +22,7 @@ export function NotificationDropdown() {
       <DropdownMenuTrigger asChild>
         <button
           type="button"
-          className="relative inline-flex h-11 w-11 items-center justify-center rounded-full border border-surface-4 bg-surface-2 text-foreground shadow-inner transition-colors hover:bg-surface-3"
+          className="relative inline-flex h-11 w-11 items-center justify-center rounded-full bg-surface-container text-foreground shadow-inner transition-colors hover:bg-surface-container-high"
           aria-label={`알림 ${unreadCount}개`}
         >
           <Bell className="h-5 w-5" />

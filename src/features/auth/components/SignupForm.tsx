@@ -93,7 +93,7 @@ export function SignupForm() {
           <ValidationMessage message={errors.confirmPassword?.message} />
         </div>
       </div>
-      <div className="border-surface-4 bg-surface-2 flex items-start gap-3 rounded-2xl border p-4">
+      <div className="bg-secondary-container border-secondary-container/60 flex items-start gap-3 rounded-2xl border p-4">
         <Checkbox
           id="agreeTerms"
           checked={agreeTerms}
@@ -104,8 +104,12 @@ export function SignupForm() {
             })
           }
         />
-        <Label htmlFor="agreeTerms" className="text-muted text-sm leading-relaxed">
-          [필수] 서비스 이용약관 및 개인정보 처리방침에 동의합니다.
+        <Label
+          htmlFor="agreeTerms"
+          className="text-on-secondary-container text-sm leading-relaxed font-medium"
+        >
+          <span className="text-primary font-semibold">[필수]</span> 서비스 이용약관 및 개인정보
+          처리방침에 동의합니다.
         </Label>
       </div>
       <ValidationMessage message={errors.agreeTerms?.message} />
@@ -124,7 +128,7 @@ export function SignupForm() {
           )}
         </Button>
       </div>
-      <p className="text-muted text-sm">
+      <p className="text-muted-foreground text-sm">
         이미 계정이 있나요?{' '}
         <Link to={routes.login} className="text-primary font-medium hover:underline">
           로그인하기

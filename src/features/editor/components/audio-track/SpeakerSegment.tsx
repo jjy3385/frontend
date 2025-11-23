@@ -123,6 +123,17 @@ export function SpeakerSegment({
 
   const isLoading = isVisible && (urlLoading || waveformLoading)
 
+  const hexToRgba = (hex: string, alpha: number) => {
+    const normalized = hex.replace('#', '')
+    if (normalized.length !== 6) return hex
+    const r = parseInt(normalized.slice(0, 2), 16)
+    const g = parseInt(normalized.slice(2, 4), 16)
+    const b = parseInt(normalized.slice(4, 6), 16)
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`
+  }
+
+  const backgroundColor = color.startsWith('#') ? hexToRgba(color, 0.12) : color
+
   return (
     <>
       <div
@@ -139,7 +150,7 @@ export function SpeakerSegment({
         style={{
           left: `${startPx}px`,
           width: `${widthPx}px`,
-          backgroundColor: `${color}20`,
+          backgroundColor,
           borderColor: color,
           color: color,
           // Y축 드래그 시 마우스를 따라 이동
