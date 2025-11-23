@@ -16,7 +16,8 @@ const config: Config = {
           4: 'hsl(var(--surface-4) / <alpha-value>)',
         },
         foreground: 'hsl(var(--foreground) / <alpha-value>)',
-        muted: 'hsl(var(--muted) / <alpha-value>)',
+        // Use the darker muted-foreground tone for both to improve readability
+        muted: 'hsl(var(--muted-foreground) / <alpha-value>)',
         'muted-foreground': 'hsl(var(--muted-foreground) / <alpha-value>)',
         accent: {
           DEFAULT: 'hsl(var(--accent) / <alpha-value>)',
