@@ -50,8 +50,8 @@ export function AppHeader() {
           className="focus-visible:outline-hidden group flex items-center leading-tight focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           aria-label="Dupilot 홈으로 이동"
         >
-          <LogoIcon />
-          <span className="text-2xl font-bold tracking-tight text-foreground">
+          <LogoIcon className="mr-2 h-8 w-8" outerClassName="fill-on-primary-container" />
+          <span className="text-2xl font-bold tracking-tight text-on-primary-container">
             Dupilot
           </span>
         </Link>
@@ -63,8 +63,8 @@ export function AppHeader() {
               className={[
                 'flex h-full items-center border-b-2 px-1 text-sm font-medium transition-colors font-semibold',
                 /^\/workspace/.test(location.pathname)
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-muted-foreground hover:text-foreground font-semibold',
+                  ? 'border-[hsl(var(--on-primary-container))] text-on-primary-container'
+                  : 'border-transparent text-muted-foreground hover:text-on-primary-container font-semibold',
               ].join(' ')}
             >
               더빙
@@ -77,8 +77,8 @@ export function AppHeader() {
                   className={[
                     'flex h-full items-center border-b-2 px-1 text-sm font-medium transition-colors font-semibold',
                     /^\/voice-library/.test(location.pathname)
-                      ? 'border-primary/60 text-foreground'
-                      : 'border-transparent text-muted-foreground hover:text-foreground font-semibold',
+                      ? 'border-[hsl(var(--on-primary-container))] text-on-primary-container'
+                      : 'border-transparent text-muted-foreground hover:text-on-primary-container font-semibold',
                   ].join(' ')}
                 >
                   보이스 마켓

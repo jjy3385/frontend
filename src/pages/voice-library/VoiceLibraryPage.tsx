@@ -585,7 +585,7 @@ export default function VoiceLibraryPage() {
       <div className="mx-auto max-w-7xl space-y-8 px-6 py-6 pb-28">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div className="space-y-1">
-            <h1 className="text-foreground text-2xl font-bold">보이스 마켓</h1>
+            <h1 className="text-on-primary-container text-2xl font-bold">보이스 마켓</h1>
             <p className="text-muted-foreground text-sm">
               원하는 목소리를 검색하고 필터로 빠르게 찾아보세요.
             </p>

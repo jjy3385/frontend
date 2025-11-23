@@ -110,7 +110,7 @@ export function HomeHeroSection({
         <h1 className="text-foreground text-balance text-4xl font-semibold leading-tight md:text-5xl">
           {title}
         </h1>
-        <p className="text-muted text-lg leading-relaxed">
+        <p className="text-muted-foreground text-lg leading-relaxed">
           {description}
         </p>
         <div className="flex flex-wrap justify-center gap-3">

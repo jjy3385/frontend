@@ -234,7 +234,7 @@ export default function WorkspacePage() {
         {/* Header */}
         <div className="flex flex-col gap-4 pt-1 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-foreground text-2xl font-bold tracking-tight">더빙</h1>
+            <h1 className="text-on-primary-container text-2xl font-bold tracking-tight">더빙</h1>
             <p className="text-muted-foreground mt-1 text-sm">
               에피소드를 검색하고 언어 필터를 적용해 관리하세요.
             </p>
