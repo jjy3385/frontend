@@ -50,7 +50,7 @@ export function AppHeader() {
           className="focus-visible:outline-hidden group flex items-center leading-tight focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
           aria-label="Dupilot 홈으로 이동"
         >
-          <LogoIcon className="mr-2 h-8 w-8" outerClassName="fill-on-primary-container" />
+          <LogoIcon />
           <span className="text-2xl font-bold tracking-tight text-on-primary-container">
             Dupilot
           </span>

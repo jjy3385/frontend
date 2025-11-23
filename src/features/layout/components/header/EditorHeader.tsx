@@ -52,7 +52,7 @@ export function EditorHeader() {
           aria-label="Dupliot 홈으로 이동"
         >
           <LogoIcon />
-          <span className="text-foreground text-xl font-semibold tracking-tight">
+          <span className="text-2xl font-bold tracking-tight text-on-primary-container">
             Dupliot
           </span>
         </Link>
