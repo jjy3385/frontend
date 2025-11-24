@@ -19,10 +19,10 @@ interface TextRevealProps {
   rootMargin?: string
 }
 
-export function TextReveal({
-  text,
-  className,
-  delay = 0,
+export function TextReveal({ 
+  text, 
+  className, 
+  delay = 0, 
   duration = 800,
   threshold = 0.1,
   mode = 'word',
@@ -31,21 +31,20 @@ export function TextReveal({
   staggerDuration,
   repeat = false,
   trigger,
-  rootMargin = '0px',
+  rootMargin = '0px'
 }: TextRevealProps): JSX.Element {
   const containerRef = useRef<HTMLDivElement>(null)
   const hasAnimated = useRef(false)
 
   // Default stagger duration based on mode if not provided
-  const finalStaggerDuration =
-    staggerDuration ?? (mode === 'word' ? 100 : mode === 'line' ? 200 : 30)
+  const finalStaggerDuration = staggerDuration ?? (mode === 'word' ? 100 : mode === 'line' ? 200 : 30)
 
   useEffect(() => {
     const container = containerRef.current
     if (!container) return
 
     const targetSelector = mode === 'word' ? '.word' : mode === 'line' ? '.line' : '.letter'
-
+    
     // Animation configuration based on direction
     let initialTranslateY: number | number[] = 0
     let initialTranslateX: number | number[] = 0
@@ -160,7 +159,7 @@ export function TextReveal({
           }
         })
       },
-      { threshold, rootMargin },
+      { threshold, rootMargin }
     )
 
     observer.observe(container)
@@ -169,19 +168,7 @@ export function TextReveal({
       observer.disconnect()
       anime.remove(container.querySelectorAll(targetSelector))
     }
-  }, [
-    text,
-    delay,
-    duration,
-    threshold,
-    mode,
-    direction,
-    staggerMode,
-    repeat,
-    trigger,
-    finalStaggerDuration,
-    rootMargin,
-  ])
+  }, [text, delay, duration, threshold, mode, direction, staggerMode, repeat, trigger, finalStaggerDuration, rootMargin])
 
   // 텍스트가 문자열이 아닌 경우 (예: ReactNode) 안전하게 렌더링
   if (typeof text !== 'string') {
@@ -195,10 +182,7 @@ export function TextReveal({
     content = lines.map((line, lineIndex) => (
       <span key={lineIndex}>
         {line.split(' ').map((word, wordIndex) => (
-          <span
-            key={`${lineIndex}-${wordIndex}`}
-            className="word mr-[0.3em] inline-block opacity-0"
-          >
+          <span key={`${lineIndex}-${wordIndex}`} className="word inline-block opacity-0 mr-[0.3em]">
             {word}
           </span>
         ))}
@@ -209,7 +193,9 @@ export function TextReveal({
     const lines = text.split('\n')
     content = lines.map((line, lineIndex) => (
       <span key={lineIndex}>
-        <span className="line inline-block opacity-0">{line}</span>
+        <span className="line inline-block opacity-0">
+          {line}
+        </span>
         {lineIndex < lines.length - 1 && <br />}
       </span>
     ))
@@ -219,11 +205,7 @@ export function TextReveal({
     content = lines.map((line, lineIndex) => (
       <span key={lineIndex}>
         {line.split('').map((char, charIndex) => (
-          <span
-            key={`${lineIndex}-${charIndex}`}
-            className="letter inline-block opacity-0"
-            style={{ minWidth: char === ' ' ? '0.25em' : 'auto' }}
-          >
+          <span key={`${lineIndex}-${charIndex}`} className="letter inline-block opacity-0" style={{ minWidth: char === ' ' ? '0.25em' : 'auto' }}>
             {char === ' ' ? '\u00A0' : char}
           </span>
         ))}
